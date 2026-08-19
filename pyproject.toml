@@ -1,0 +1,55 @@
+[project]
+name = "mizan"
+version = "0.1.0"
+description = "Sovereign AI Model Registry and Adaptive Compliance Engine"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    # API layer
+    "fastapi>=0.111.0",
+    "uvicorn[standard]>=0.30.0",
+    "pydantic>=2.7.0",
+    # Data access: SQLAlchemy Core provides a dialect-agnostic query layer.
+    # Switching to Postgres requires only a connection-string change; no DDL
+    # or query rewrites. We do NOT use the ORM; all SQL is explicit.
+    "sqlalchemy>=2.0.0",
+    # Scientific computing for the bandit engine
+    "numpy>=1.26.0",
+    "matplotlib>=3.9.0",
+    # PDF certificate generation.
+    # WeasyPrint renders HTML/CSS to PDF and handles RTL Arabic layout via
+    # Pango. It is the correct choice for a bilingual certificate because
+    # the certificate template reuses the same CSS design tokens as the web
+    # layer. System prerequisites: pango, cairo, gobject-introspection.
+    # See docs/DECISIONS.md item D-005.
+    "weasyprint>=61.0",
+    # Cryptographic signing (signature stub in Wave 0, wired in Wave 3)
+    "cryptography>=42.0.0",
+    # HTTP client used by the evaluation harness and test suite
+    "httpx>=0.27.0",
+    # Async database driver used by the SQLAlchemy engine under asyncio
+    "aiosqlite>=0.20.0",
+    "greenlet>=3.5.5",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "ruff>=0.4.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["mizan"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"

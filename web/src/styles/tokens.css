@@ -1,0 +1,515 @@
+/* =============================================================================
+   MIZAN Design Token System
+   Sovereign AI Model Registry — TDRA UAE Hackathon 2026
+   Author: ATELIER, Design Director, Sovereign Digital Products
+   Register: British English throughout; CSS property names remain as per spec
+   =============================================================================
+
+   ARCHITECTURE
+   ─────────────
+   1. Google Fonts import
+   2. Raw colour scales  (navy · gold · neutral · state primitives)
+   3. Semantic colour tokens  (surface · text · border · adjudication states)
+   4. Contrast audit  (measured ratios stated per pairing, inline)
+   5. Typography tokens  (families · scale · line-heights · script variants)
+   6. Spacing scale  (8 px base, generous annual-report rhythm)
+   7. Radius scale  (restrained; no uniform-corner disease)
+   8. Elevation scale  (shadows that communicate hierarchy, never decoration)
+   9. Motion tokens  (durations and easings with semantic meaning)
+  10. Z-index scale
+
+   DESIGN COMMITMENT
+   ─────────────────
+   MIZAN commits to a single dark (navy) foundation.  The product is a
+   mission-control console and a central-bank annual report in one surface.
+   Bright or light themes are NOT provided for the main application shell;
+   the `[data-theme="inverse"]` block is provided solely for the printable
+   certificate view.  This is a deliberate, stated decision, not an oversight.
+
+   Gold on light surfaces fails WCAG AA (measured: 2.06:1 on --surface-inverse).
+   Gold is therefore reserved for dark (navy) surfaces exclusively.
+   Certificate text uses --text-inverse (navy) on --surface-inverse only.
+
+   RTL RULE (enforced here, detailed in base.css)
+   ───────────────────────────────────────────────
+   No physical directional properties (left, right, padding-left, etc.) are
+   permitted in this system.  All directional tokens use CSS logical properties:
+   inline-start, inline-end, block-start, block-end.  Arabic RTL layout is
+   achieved by setting dir="rtl" on the document root; no separate RTL
+   stylesheet is required because logical properties resolve correctly.
+   ============================================================================= */
+
+
+/* =============================================================================
+   1. GOOGLE FONTS IMPORT
+   Playfair Display — Latin editorial serif for headings
+   Amiri             — Arabic classical Naskh serif for headings (Gulf
+                       governmental register; matches optical weight of
+                       Playfair Display; preferred over Cairo or Noto Naskh
+                       for the authoritative formal register the CHARTER
+                       requires; Amiri is based on the Bulaq Press type and
+                       is widely used in Gulf federal documentation)
+   IBM Plex Sans         — Latin body, UI, and data (has tabular-figures
+                           variant; designed for information-dense interfaces)
+   IBM Plex Sans Arabic  — Arabic body and UI (same family; weight-matched;
+                           avoids the script-switching optical disruption that
+                           mixing unrelated families produces)
+   ============================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&display=swap');
+
+
+/* =============================================================================
+   2. RAW COLOUR SCALES
+   These are primitive values.  Components and semantic tokens reference the
+   semantic layer below; they must never hard-code a raw scale value directly.
+   ============================================================================= */
+
+:root {
+
+  /* Navy — primary foundation
+     A sovereign deep navy, desaturated just enough to read as ink not electric.
+     ─────────────────────────────────────────────────────────────────────── */
+  --colour-navy-950: #040D1A;   /* near-black anchor                          */
+  --colour-navy-900: #0A1628;   /* PRIMARY background                          */
+  --colour-navy-850: #0D1F37;   /* raised surfaces                            */
+  --colour-navy-800: #102745;   /* elevated surfaces                          */
+  --colour-navy-750: #142F52;   /* overlay surfaces                           */
+  --colour-navy-700: #1A3A62;   /* strong borders, hover wells                */
+  --colour-navy-600: #224E83;   /* interactive hover fill                     */
+  --colour-navy-500: #2E6AA8;   /* interactive idle fill                      */
+  --colour-navy-400: #4A8CC5;   /* interactive light state                    */
+  --colour-navy-300: #76ACD9;
+  --colour-navy-200: #A8CDE8;
+  --colour-navy-100: #D3E6F4;
+  --colour-navy-50:  #EAF2F9;
+
+  /* Gold — adjudication accent
+     Warm governmental gold, not neon chrome.  PRIMARY adjudication colour and
+     the In-Evaluation state signal.  Must only be used on navy surfaces.
+     ─────────────────────────────────────────────────────────────────────── */
+  --colour-gold-900: #4A3000;
+  --colour-gold-800: #6B4400;
+  --colour-gold-700: #8F5C00;
+  --colour-gold-600: #B37500;
+  --colour-gold-500: #E6A000;   /* PRIMARY accent                             */
+  --colour-gold-400: #F0B52A;   /* lighter accent text                        */
+  --colour-gold-300: #F5C94D;
+  --colour-gold-200: #F9DC88;
+  --colour-gold-100: #FCEEBB;
+  --colour-gold-50:  #FEF7E4;   /* certificate tint                           */
+
+  /* Neutral — text, borders, structural chrome
+     Cool grey with a slight blue cast to harmonise with navy.
+     ─────────────────────────────────────────────────────────────────────── */
+  --colour-neutral-950: #0E1117;
+  --colour-neutral-900: #1A1F2E;
+  --colour-neutral-800: #2A3142;
+  --colour-neutral-700: #3D4866;
+  --colour-neutral-600: #5A6585;
+  --colour-neutral-500: #7D8BA8;
+  --colour-neutral-400: #A1ADBF;
+  --colour-neutral-300: #BEC6D3;
+  --colour-neutral-200: #D6DBE4;
+  --colour-neutral-100: #EBEDF2;
+  --colour-neutral-50:  #F5F6F8;  /* certificate background                   */
+
+  /* State: Certified — deep teal-green, not neon, not RGB gaming green
+     ─────────────────────────────────────────────────────────────────────── */
+  --colour-certified-600: #0A7058;
+  --colour-certified-500: #12A880;  /* primary certified colour               */
+  --colour-certified-400: #22C99B;
+  --colour-certified-100: rgba(18, 168, 128, 0.12);
+
+  /* State: Rejected — controlled crimson, not neon alarm red
+     ─────────────────────────────────────────────────────────────────────── */
+  --colour-rejected-600: #B83040;
+  --colour-rejected-500: #E05560;   /* primary rejected colour                */
+  --colour-rejected-400: #EA7882;
+  --colour-rejected-100: rgba(224, 85, 96, 0.12);
+
+
+/* =============================================================================
+   3a. SEMANTIC COLOUR TOKENS — SURFACE
+   Surface levels create depth through value, not through blur or glow.
+   ============================================================================= */
+
+  --surface-base:     var(--colour-navy-900); /* page background               */
+  --surface-raised:   var(--colour-navy-850); /* cards, registry rows          */
+  --surface-elevated: var(--colour-navy-800); /* side panels, drawers          */
+  --surface-overlay:  var(--colour-navy-750); /* dropdowns, popovers           */
+  --surface-sunken:   var(--colour-navy-950); /* inset data wells, code blocks */
+  --surface-hover:    var(--colour-navy-700); /* interactive hover fill        */
+
+  /* Light inverse (certificate print only — not used in application shell)   */
+  --surface-inverse:         var(--colour-neutral-50);  /* certificate page    */
+  --surface-inverse-raised:  #FFFFFF;                   /* certificate card    */
+  --surface-inverse-accent:  var(--colour-gold-50);     /* certificate tint    */
+
+
+/* =============================================================================
+   3b. SEMANTIC COLOUR TOKENS — TEXT
+   CONTRAST AUDIT (WCAG 2.1 §1.4.3 relative luminance formula)
+   All ratios measured against --surface-base (#0A1628, L=0.00791).
+   Formula: (L_lighter + 0.05) / (L_darker + 0.05)
+   AA body text minimum: 4.5:1.  AA large text: 3:1.  AAA: 7:1.
+   ============================================================================= */
+
+  /* Primary text on surface-base:
+     #E8EDF5 / #0A1628  →  L=0.8425 / L=0.00791
+     (0.8425+0.05)/(0.00791+0.05) = 15.41:1  ✓ AAA                           */
+  --text-primary: #E8EDF5;
+
+  /* Secondary text on surface-base:
+     #BEC6D3 / #0A1628  →  L=0.5595 / L=0.00791
+     (0.5595+0.05)/(0.00791+0.05) = 10.52:1  ✓ AAA                           */
+  --text-secondary: #BEC6D3;
+
+  /* Tertiary text (labels, metadata) on surface-base:
+     #A1ADBF / #0A1628  →  L=0.4128 / L=0.00791
+     (0.4128+0.05)/(0.00791+0.05) = 7.99:1   ✓ AAA                           */
+  --text-tertiary: #A1ADBF;
+
+  /* Disabled text — intentionally non-compliant; signals non-interactive state
+     #5A6585 / #0A1628  →  2.67:1  (intentional; must NOT pass AA)            */
+  --text-disabled: var(--colour-neutral-600);
+
+  /* Gold accent text on surface-base:
+     #F0B52A / #0A1628  →  L=0.5173 / L=0.00791
+     (0.5173+0.05)/(0.00791+0.05) = 9.79:1   ✓ AAA                           */
+  --text-accent: var(--colour-gold-400);
+
+  /* Gold primary on surface-base:
+     #E6A000 / #0A1628  →  L=0.4198 / L=0.00791
+     (0.4198+0.05)/(0.00791+0.05) = 8.11:1   ✓ AAA                           */
+  --text-accent-strong: var(--colour-gold-500);
+
+  /* Gold accent text on surface-raised (#0D1F37, L=0.01339):
+     #F0B52A / #0D1F37  →  (0.5173+0.05)/(0.01339+0.05) = 8.95:1  ✓ AAA     */
+  --text-accent-on-raised: var(--colour-gold-400); /* same value; documented   */
+
+  /* Inverse text (certificate surface): navy on light
+     #0A1628 / #F5F6F8  →  L(light)=0.9173
+     (0.9173+0.05)/(0.00791+0.05) = 16.70:1  ✓ AAA                           */
+  --text-inverse:           var(--colour-navy-900);
+  --text-inverse-secondary: var(--colour-navy-750);
+
+  /* !! DOCUMENTED CONTRAST FAILURE — not a token !!
+     Gold-500 (#E6A000) on --surface-inverse (#F5F6F8):
+     L=0.4198 / L=0.9173  →  (0.9173+0.05)/(0.4198+0.05) = 2.06:1  FAILS AA
+     Gold must NEVER be used as text on light surfaces.  Use --text-inverse.   */
+
+
+/* =============================================================================
+   3c. SEMANTIC COLOUR TOKENS — BORDER
+   ============================================================================= */
+
+  --border-hairline:       rgba(255, 255, 255, 0.06);  /* table dividers       */
+  --border-subtle:         rgba(255, 255, 255, 0.10);  /* section separators   */
+  --border-default:        rgba(255, 255, 255, 0.16);  /* card borders, inputs */
+  --border-emphasis:       rgba(255, 255, 255, 0.30);  /* interactive focus    */
+  --border-accent:         rgba(230, 160, 0,   0.50);  /* gold accent border   */
+  --border-accent-strong:  var(--colour-gold-500);     /* full gold border     */
+  --border-inverse:        rgba(10, 22, 40,    0.16);  /* on certificate       */
+
+
+/* =============================================================================
+   4. ADJUDICATION STATE TOKENS
+   State colours are used as text/icons/borders on navy surfaces.
+   Each has a surface tint (low-opacity fill for status chips) and a border.
+   Contrast ratios measured against --surface-base (#0A1628).
+   ============================================================================= */
+
+  /* CERTIFIED
+     #12A880 on #0A1628: L=0.2975
+     (0.2975+0.05)/(0.00791+0.05) = 6.00:1  ✓ AA                             */
+  --state-certified:         var(--colour-certified-500);
+  --state-certified-muted:   var(--colour-certified-400);
+  --state-certified-surface: var(--colour-certified-100);
+  --state-certified-border:  rgba(18, 168, 128, 0.40);
+  --state-certified-text:    var(--colour-certified-500);
+
+  /* REJECTED
+     #E05560 on #0A1628: L=0.2319
+     (0.2319+0.05)/(0.00791+0.05) = 4.87:1  ✓ AA                             */
+  --state-rejected:         var(--colour-rejected-500);
+  --state-rejected-muted:   var(--colour-rejected-400);
+  --state-rejected-surface: var(--colour-rejected-100);
+  --state-rejected-border:  rgba(224, 85, 96, 0.40);
+  --state-rejected-text:    var(--colour-rejected-500);
+
+  /* IN EVALUATION — gold; this IS the adjudication accent
+     #E6A000 on #0A1628: 8.11:1  ✓ AAA (see --text-accent-strong above)       */
+  --state-in-evaluation:         var(--colour-gold-500);
+  --state-in-evaluation-muted:   var(--colour-gold-400);
+  --state-in-evaluation-surface: rgba(230, 160, 0, 0.10);
+  --state-in-evaluation-border:  rgba(230, 160, 0, 0.45);
+  --state-in-evaluation-text:    var(--colour-gold-500);
+
+  /* PENDING — muted blue-grey; lower visual weight than active states
+     #7D8BA8 on #0A1628: L=0.2566
+     (0.2566+0.05)/(0.00791+0.05) = 5.29:1  ✓ AA                             */
+  --state-pending:         var(--colour-neutral-500);
+  --state-pending-muted:   var(--colour-neutral-400);
+  --state-pending-surface: rgba(125, 139, 168, 0.10);
+  --state-pending-border:  rgba(125, 139, 168, 0.35);
+  --state-pending-text:    var(--colour-neutral-500);
+
+  /* Focus and selection */
+  --focus-ring-colour: var(--colour-gold-500);
+  --focus-ring-width:  2px;
+  --focus-ring-offset: 3px;
+  --selection-bg:      rgba(230, 160, 0, 0.28);
+  --selection-colour:  var(--text-primary);
+
+
+/* =============================================================================
+   5. TYPOGRAPHY TOKENS
+
+   FAMILY DECISIONS
+   ─────────────────
+   Latin headings:  Playfair Display — high-contrast thick/thin strokes;
+     genuine editorial gravitas.  Inter, Geist, and Space Grotesk are banned
+     as display faces (design doctrine §2 items 13).
+
+   Arabic headings: Amiri — based on the Bulaq Press typeface; the standard
+     for Gulf federal government documentation; optical weight compatible with
+     Playfair Display; preferred over Cairo (Egyptian register, not Gulf),
+     Noto Naskh (neutral-corporate), and Noto Kufi (decorative).
+
+   Latin UI/data:   IBM Plex Sans — built for information density; tabular
+     lining numerals available via font-variant-numeric; correct in body
+     position under Playfair Display (the doctrine bans Inter et al. as
+     HEADLINE faces, not as body faces).
+
+   Arabic UI/data:  IBM Plex Sans Arabic — same superfamily; matched weights;
+     avoids optical weight clash across scripts.
+
+   TWO FAMILIES, HARD CAP:
+     Display/heading: Playfair Display (Latin) + Amiri (Arabic)
+     Body/UI/data:    IBM Plex Sans (Latin) + IBM Plex Sans Arabic
+
+   ARABIC LEADING NOTE:
+     Arabic requires 15-20% more leading than Latin at equivalent sizes due to
+     taller ascenders, descenders, and diacritical marks.  Separate
+     --leading-ar-* tokens are provided and applied in base.css.
+
+   NUMBER DIRECTIONALITY IN ARABIC TEXT:
+     Western numerals (0-9) are strong LTR characters under the Unicode
+     Bidirectional Algorithm (UBA).  Within dir="rtl" paragraphs they render
+     LTR automatically, which is correct for evaluation scores, model IDs,
+     and hash strings.  Do NOT override UBA with unicode-bidi on numeric
+     strings; it will break date ranges, score sequences, and hashes.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+  --font-heading:    'Playfair Display', 'Georgia', 'Times New Roman', serif;
+  --font-heading-ar: 'Amiri', 'Traditional Arabic', 'Al Bayan', serif;
+  --font-body:       'IBM Plex Sans', 'Helvetica Neue', 'Arial', sans-serif;
+  --font-body-ar:    'IBM Plex Sans Arabic', 'Tahoma', 'Arial', sans-serif;
+  --font-mono:       'IBM Plex Mono', 'Courier New', monospace;
+
+  /* Type scale — 1.25 ratio (product UI register).  Deliberately skips the
+     20-28 px dead zone that makes everything read at uniform medium weight.   */
+  --text-xs:   0.6875rem;  /* 11px — micro labels, legal footnotes            */
+  --text-sm:   0.8125rem;  /* 13px — secondary metadata                       */
+  --text-base: 1rem;       /* 16px — body copy minimum                        */
+  --text-md:   1.125rem;   /* 18px — lead body, Arabic body                   */
+  --text-lg:   1.25rem;    /* 20px — subheadings, card titles                 */
+  --text-xl:   1.5rem;     /* 24px — section headings                         */
+  --text-2xl:  2rem;       /* 32px — page headings                            */
+  --text-3xl:  2.625rem;   /* 42px — hero headings                            */
+  --text-4xl:  3.5rem;     /* 56px — display titles                           */
+  --text-hero: 4.5rem;     /* 72px — single-word landmark                     */
+
+  /* Line heights — Latin */
+  --leading-tight:   1.10;  /* display titles (Playfair Display)               */
+  --leading-heading: 1.20;  /* section headings                               */
+  --leading-snug:    1.40;  /* subheadings, large labels                      */
+  --leading-normal:  1.60;  /* body copy (target 60-80ch measure)             */
+  --leading-loose:   1.75;  /* small labels, captions                         */
+
+  /* Line heights — Arabic (15-20% more than Latin equivalents) */
+  --leading-ar-tight:   1.30;
+  --leading-ar-heading: 1.45;
+  --leading-ar-snug:    1.60;
+  --leading-ar-normal:  1.85;
+  --leading-ar-loose:   2.00;
+
+  /* Font weights */
+  --weight-light:    300;
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+
+  /* Prose measure */
+  --measure-prose:  72ch;
+  --measure-narrow: 44ch;
+  --measure-wide:   90ch;
+
+
+/* =============================================================================
+   6. SPACING SCALE
+   Base unit: 8px.  Half-step: 4px (--space-1 only).
+   Section padding must be varied; sections must not all read at equal weight.
+   Components: --space-2 through --space-8.
+   Sections: --space-12 through --space-32.  Page margins: --space-20 and above.
+   ============================================================================= */
+
+  --space-1:  0.25rem;  /*  4px */
+  --space-2:  0.5rem;   /*  8px */
+  --space-3:  0.75rem;  /* 12px */
+  --space-4:  1rem;     /* 16px */
+  --space-5:  1.25rem;  /* 20px */
+  --space-6:  1.5rem;   /* 24px */
+  --space-8:  2rem;     /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+  --space-20: 5rem;     /* 80px */
+  --space-24: 6rem;     /* 96px */
+  --space-32: 8rem;     /* 128px */
+  --space-40: 10rem;    /* 160px */
+
+
+/* =============================================================================
+   7. RADIUS SCALE
+   Restraint is law.  Uniform rounded-2xl on every surface is design doctrine
+   §2 item 12.  Radii are assigned by element role.
+   ============================================================================= */
+
+  --radius-none: 0;          /* data tables, formal rule lines                */
+  --radius-sm:   2px;        /* input fields, registry rows                   */
+  --radius-md:   4px;        /* cards, panels (default)                       */
+  --radius-lg:   6px;        /* modals, drawers                               */
+  --radius-full: 9999px;     /* status pills, avatars (these roles only)      */
+
+
+/* =============================================================================
+   8. ELEVATION — SHADOW SCALE
+
+   On dark navy surfaces, dark-on-dark shadows alone are invisible against
+   --surface-base and therefore constitute decoration, not hierarchy (design
+   doctrine §3, Depth rule: "If a shadow is invisible on the background, it is
+   decoration, not hierarchy").  The approach here uses a top highlight edge
+   (inset, physically plausible light source from above) combined with a cast
+   shadow.  The highlight IS visible.  The combination communicates elevation.
+
+   No glassmorphism.  No backdrop-filter blur.  No coloured drop shadows.
+   ============================================================================= */
+
+  --shadow-none: none;
+
+  /* sm — barely lifted: row hovers, inactive chips */
+  --shadow-sm:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 1px 3px     rgba(4, 13, 26, 0.70);
+
+  /* md — card elevation: registry cards, evaluation panels */
+  --shadow-md:
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    0 4px 14px    rgba(4, 13, 26, 0.60),
+    0 1px 4px     rgba(4, 13, 26, 0.40);
+
+  /* lg — modal and drawer */
+  --shadow-lg:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 12px 36px   rgba(4, 13, 26, 0.70),
+    0 4px  12px   rgba(4, 13, 26, 0.45);
+
+  /* xl — full-page overlay: confirmation dialogs */
+  --shadow-xl:
+    inset 0 1px 0 rgba(255, 255, 255, 0.11),
+    0 24px 60px   rgba(4, 13, 26, 0.80),
+    0 8px  22px   rgba(4, 13, 26, 0.50);
+
+  /* focus — gold ring (not an ambient glow; it is a ring) */
+  --shadow-focus: 0 0 0 var(--focus-ring-width) var(--focus-ring-colour);
+
+  /* inset — sunken data wells */
+  --shadow-inset: inset 0 1px 3px rgba(4, 13, 26, 0.60);
+
+
+/* =============================================================================
+   9. MOTION TOKENS
+
+   Every duration and easing carries semantic meaning.  Decorative animation
+   is prohibited (design doctrine §3, Motion: "Physical, never decorative").
+
+   DURATION SEMANTICS
+   ──────────────────
+   instant     — state change must feel synchronous (checkbox, radio, toggle)
+   fast        — micro-feedback: button press, tab underline slide, row highlight
+   normal      — standard UI: panel expand, tab switch, dropdown open
+   deliberate  — data movement: confidence bound update, budget reallocation
+                 between bandit arms; must be readable as data, not decoration
+   narrative   — significant event: early-stop, certification; demo moment
+   print       — certificate generation; signals cryptographic operation
+
+   EASING SEMANTICS
+   ─────────────────
+   standard    — most UI motion; physically plausible ease-in-out
+   decelerate  — elements entering viewport (arrive, then settle)
+   accelerate  — elements leaving (pick up speed before disappearing)
+   spring      — confidence bound tightening and budget bar width changes;
+                 slight overshoot communicates live data, not a static bar
+                 sliding; must NOT be used on layout-affecting properties
+                 such as height or max-height (overshoot causes reflow)
+   ============================================================================= */
+
+  --duration-instant:    80ms;
+  --duration-fast:      150ms;
+  --duration-normal:    250ms;
+  --duration-deliberate: 400ms;
+  --duration-narrative:  600ms;
+  --duration-print:     1200ms;
+
+  --ease-standard:   cubic-bezier(0.40, 0.00, 0.20, 1.00);
+  --ease-decelerate: cubic-bezier(0.00, 0.00, 0.20, 1.00);
+  --ease-accelerate: cubic-bezier(0.40, 0.00, 1.00, 1.00);
+  --ease-spring:     cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  --transition-standard: var(--duration-normal)     var(--ease-standard);
+  --transition-enter:    var(--duration-normal)     var(--ease-decelerate);
+  --transition-exit:     var(--duration-fast)       var(--ease-accelerate);
+  --transition-data:     var(--duration-deliberate) var(--ease-spring);
+
+
+/* =============================================================================
+  10. Z-INDEX SCALE
+   Named layers prevent stacking context conflicts on the dashboard and
+   the evaluation theatre overlay.
+   ============================================================================= */
+
+  --z-base:      0;
+  --z-raised:   10;   /* cards, panels within a section                       */
+  --z-sticky:  100;   /* sticky registry header, side navigation              */
+  --z-dropdown: 200;  /* dropdowns, popovers, tooltips                        */
+  --z-modal:    300;  /* modal overlays, drawers                              */
+  --z-toast:    400;  /* notification toasts                                  */
+  --z-tooltip:  500;  /* data tooltips (always topmost)                      */
+
+} /* end :root */
+
+
+/* =============================================================================
+   LIGHT INVERSE — CERTIFICATE PRINT ONLY
+   Applied via [data-theme="inverse"] on the certificate view wrapper.
+   NOT used in the application shell.  See design commitment at file head.
+   Gold fails on this surface (2.06:1); use --text-inverse (navy) throughout.
+   ============================================================================= */
+
+[data-theme="inverse"] {
+  --surface-base:    var(--colour-neutral-50);
+  --surface-raised:  #FFFFFF;
+  --surface-elevated: var(--colour-gold-50);
+
+  --text-primary:       var(--colour-navy-900);
+  --text-secondary:     var(--colour-navy-750);
+  --text-tertiary:      var(--colour-neutral-600);
+  --text-accent:        var(--colour-navy-800); /* gold fails on light         */
+  --text-accent-strong: var(--colour-navy-700);
+
+  --border-default: rgba(10, 22, 40, 0.14);
+  --border-accent:  rgba(10, 22, 40, 0.30);
+}

@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Node
+web/node_modules/
+web/dist/
+
+# Database (generated at runtime; not committed except for demo artefacts)
+data/mizan.db
+
+# pytest
+.pytest_cache/
+
+# macOS
+.DS_Store
