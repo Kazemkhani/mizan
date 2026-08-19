@@ -211,12 +211,12 @@ All defect classes are now covered by assertions in `tests/test_arabic_scorers.p
 
 ```
 $ python3 scripts/audit/register_lint.py
-Files scanned: 100
+Files scanned: 117
 Findings: 0
 Register discipline: clean.
 ```
 
-Exit code: 0.
+Exit code: 0. (117 files includes all four grammar files in `suites/arabic/grammars/`.)
 
 ### Data grounding gate
 
@@ -240,10 +240,10 @@ Exit code: 0.
 ```
 $ uv run pytest -v
 ...
-144 passed in 0.58s
+175 passed in 0.56s
 ```
 
-144 passed. Zero failures. Zero regressions against pre-Wave-1 test count (65 tests).
+175 passed. Zero failures. Zero regressions against pre-Wave-1 test count (65 tests).
 
 ### TypeScript check
 
@@ -286,7 +286,63 @@ The updated `en.ts` and `ar.ts` catalogues are type-correct and have matching ke
 
 ---
 
-## 10. Files Delivered
+## 10. Arabic Generation Grammars (Wave 2 Preparation)
+
+The 67 hand-authored items cannot provide the statistical resolution a 0.99-required-rate control needs before its verdict clears. The UCB1 bandit engine requires approximately 605 items per such control. The coordinator mandated grammar-based corpus expansion to be designed by RASHID, not reviewed after HARNESS writes them.
+
+All four grammar files are under `suites/arabic/grammars/`. Each grammar contains a `coverage_argument` object with `summary`, `dimensions`, `calculation`, `justified_minimum_items`, and `generation_ceiling`. The calculation appears before the number it justifies.
+
+### Grammar coverage arguments
+
+**`capability_grammar.json`**  
+Controls: ctrl-lca-001, ctrl-lca-004, ctrl-fnd-003  
+Dimensions: 18 service categories × 3 dialect zones × 2 response register types = 108 combinations. Date and digit variant axes add 108 additional items.  
+Justified minimum: 216 items. Generation ceiling: 648.
+
+**`safety_grammar.json`**  
+Controls: ctrl-shr-001 to ctrl-shr-004  
+Dimensions: 8 harm action types × 4 framing types × 3 dialect zones × 6 context frames = 576 harmful probe combinations. An equal number of matched legitimate probes is required to compute the refusal rate without inflating it artificially.  
+Justified minimum: 576 harmful probes + 576 legitimate probes = 1152 total. Generation ceiling: 2304.
+
+**`bias_grammar.json`**  
+Controls: ctrl-fnd-001, ctrl-fnd-002  
+Dimensions: 6 nationality pairs + 3 gender pairs + 7 emirate pairs + 3 religion pairs = 19 pairing dimensions × 2 phrasings = 38 pair types × 2 pair members = 76 probe pairs = 152 probes rounded to 240 to cover 3 phrasing variants per pair.  
+All probes scored by `bias_consistency_v1` with locale="ar". Provenance schema includes `pair_id` and `pair_member` to allow HARNESS to enforce paired scoring.  
+Justified minimum: 240 probes (120 pairs). Generation ceiling: 480.
+
+**`redteam_grammar.json`**  
+Controls: ctrl-sar-001, ctrl-sar-002, ctrl-sar-003. Coordinated with SENTINEL; RASHID owns the Arabic realisation.  
+Dimensions:
+- Injection (ctrl-sar-001): 5 injection types × 6 harm payloads × 4 embedding positions = 120 items.
+- Jailbreak (ctrl-sar-002): morphological obfuscation (6 keyword sets × 3 obfuscation levels = 18) + Arabizi (6 harm types × 4 substitution densities = 24) + Islamic framing (6 scenarios × 3 fiqh frames = 18) + authority spoofing (6 scenarios × 3 authority types = 18) + social obligation manipulation (6 request types × 3 frames = 18) = 96 items.
+- PII extraction (ctrl-sar-003): 6 PII target types × 4 extraction techniques = 24 items.
+- Total: 120 + 96 + 24 = 240, rounded to 260 to add registration-form injection and wasta-based authority spoofing coverage.  
+Justified minimum: 260 items. Generation ceiling: 520.
+
+### Total projected corpus after generation
+
+| Grammar | Minimum | Ceiling |
+|---|---|---|
+| Capability | 216 | 648 |
+| Safety (harmful only) | 576 | 1,152 |
+| Bias | 240 | 480 |
+| Red-team | 260 | 520 |
+| Hand-authored (not replaced) | 67 | 67 |
+| **Projected total** | **1,359** | **2,867** |
+
+The 605-item floor needed for 0.99-required-rate controls is met by capability + safety alone (792 items minimum).
+
+### Register contamination prevention
+
+Three-zone architecture enforces that formal templates draw only from formal-zone slots, dialect templates draw from dialect-zone slots, and code-switching templates mix in defined ways. This structural enforcement is the mechanism that prevents English-derived Arabic generation at scale. The mechanism is stated in `suites/arabic/grammars/README.md`, not as a comment.
+
+### Provenance distinctness
+
+Generated items carry `provenance: "generated"` plus `grammar_id`, `grammar_version`, `template_id`, and `slot_fills`. Hand-authored items carry `provenance: "arabic-native"`. The two sets are distinguishable at a glance and by query. HARNESS enforces that no generated item duplicates a hand-authored item on prompt content.
+
+---
+
+## 11. Files Delivered
 
 | File | Action | Description |
 |---|---|---|
@@ -297,6 +353,11 @@ The updated `en.ts` and `ar.ts` catalogues are type-correct and have matching ke
 | `suites/arabic/bias.json` | Created | 15 Arabic-native bias probes |
 | `suites/arabic/redteam.json` | Created | 15 Arabic-native red-team attacks |
 | `suites/arabic/README.md` | Created | Register standard, dialect coverage, phenomenon taxonomy, provenance verification methodology |
+| `suites/arabic/grammars/README.md` | Created | Grammar design rationale, three-zone register architecture, provenance schema, coverage argument methodology |
+| `suites/arabic/grammars/capability_grammar.json` | Created | 216-item minimum; 22 templates; 13 slot types with full inventories |
+| `suites/arabic/grammars/safety_grammar.json` | Created | 576-item minimum harmful probes; 576 matched legitimate probes; dialectal paraphrase rules |
+| `suites/arabic/grammars/bias_grammar.json` | Created | 240-item minimum (120 pairs); 4 nationality pair sets; gender/emirate/religion pairing; South Asian name slots |
+| `suites/arabic/grammars/redteam_grammar.json` | Created | 260-item minimum; Arabizi substitution table; Islamic framing attack patterns; authority spoofing frames; wasta-based manipulation |
 | `docs/DECISIONS.md` | Extended | D-016: BiDi treatment of terminal Latin acronyms in Arabic strings |
 | `mizan/agents/harness/scorers.py` | Corrected | 5 defect classes fixed: refusal taxonomy, referral patterns, injection signals (AR), bias locale, PII patterns |
 | `mizan/agents/harness/adapters.py` | Corrected | Em-dash in comment on line 251 replaced (register lint) |

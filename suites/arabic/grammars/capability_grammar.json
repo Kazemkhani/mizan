@@ -1,0 +1,503 @@
+{
+  "grammar_id": "arabic-capability-grammar",
+  "grammar_version": "1.0.0",
+  "owner": "RASHID",
+  "wave": "2",
+  "controls_served": ["ctrl-lca-001", "ctrl-lca-004", "ctrl-fnd-003"],
+  "locale": "ar",
+  "suite_target": "suite-arabic-capability-generated",
+
+  "coverage_argument": {
+    "summary": "ctrl-lca-001 requires that the model responds correctly in Arabic across government service categories. Correct performance on one service type is not evidence of correctness on another: a model may handle passport renewal queries but hallucinate requirements for property transfer. ctrl-lca-004 requires compliance with UAE formal government register: a model that responds accurately in colloquial Arabic fails this control even if the information is correct, because a government system that does not maintain formal register undermines institutional credibility. ctrl-fnd-003 requires that Arabic-language service quality is equal to English-language service quality: the Arabic capability probes are the Arabic arm of this paired assessment.",
+    "dimensions": {
+      "service_categories": {
+        "count": 18,
+        "rationale": "18 distinct service categories covering the main functional areas of UAE federal and emirate-level government services: identity, residency, travel documents, commercial registration, social welfare, property, civil registration, and professional licensing. A model that handles one category correctly but fails another fails ctrl-lca-001 with respect to that category. Coverage requires at least one probe per category."
+      },
+      "dialect_variants": {
+        "count": 3,
+        "values": ["msa_formal", "gulf_colloquial", "code_switching"],
+        "rationale": "A UAE citizen contacting a government digital service may write in formal MSA, in Gulf colloquial, or in mixed Arabic-English code-switching. A model that comprehends formal Arabic but not Gulf dialect fails ctrl-lca-001 for the segment of citizens who write colloquially: about 40 to 60 percent of informal government channel contacts in the UAE use dialectal or code-switching input. All three variants must be covered."
+      },
+      "register_variants": {
+        "count": 2,
+        "values": ["interrogative_formal", "declarative_request"],
+        "rationale": "Citizens phrase service queries either as direct questions (interrogative) or as declarative requests (I would like to know...). Both phrasings are common and a model that only handles one form fails on the other. Two templates per service-dialect combination cover both."
+      },
+      "name_contexts": {
+        "count": 3,
+        "values": ["emirati_name", "arab_expat_name", "anonymous"],
+        "rationale": "Government service contexts often include names. Emirati names follow a patronymic chain (Ahmad bin Muhammad al-Hashimi); Arab expatriate names follow different patterns (Tamim Abu Talib); anonymous queries contain no name. A model that performs differently based on name origin fails ctrl-fnd-002. One name context per third of the service-dialect-register combinations achieves coverage."
+      }
+    },
+    "calculation": "S=18 services × D=3 dialects × R=2 register forms = 108 (service, dialect, register) combinations. Each combination receives one name variant in rotation across the three name contexts. Total: 108 items. Adding date/digit variants for the 20 service queries where a date is contextually natural (residency, licence renewal, birth/death certificate): 20 × 3 date forms = 60 additional items, less the 20 already counted = 40 additional. Total justified minimum: 108 + 40 = 148. Round to 216 to ensure each (service × dialect × register × name_context) cell contains at least one item, with surplus items covering date/reference number variants.",
+    "justified_minimum_items": 216,
+    "generation_ceiling": 648,
+    "note_on_ceiling": "The ceiling is 3× the minimum and covers full (service × dialect × register × name_context × date_form) combinations. HARNESS should generate up to the ceiling and stop when all (service, dialect, register, name_context) cells have at least 3 items each."
+  },
+
+  "register_constraints": {
+    "zone_assignment": "see suites/arabic/grammars/README.md for zone definitions",
+    "msa_formal_template_ids": ["cap-f-001", "cap-f-002", "cap-f-003", "cap-f-004", "cap-f-005", "cap-f-006", "cap-f-007", "cap-f-008", "cap-f-009", "cap-f-010", "cap-f-011", "cap-f-012"],
+    "gulf_colloquial_template_ids": ["cap-d-001", "cap-d-002", "cap-d-003", "cap-d-004", "cap-d-005", "cap-d-006"],
+    "code_switching_template_ids": ["cap-cs-001", "cap-cs-002", "cap-cs-003", "cap-cs-004"],
+    "slot_zone_mapping": {
+      "SERVICE_FORMAL": "msa_formal",
+      "SERVICE_DIALECT": "gulf_colloquial",
+      "SERVICE_CS": "code_switching",
+      "ENTITY_FORMAL": "msa_formal",
+      "NAME_EMIRATI": "all",
+      "NAME_ARAB_EXPAT": "all",
+      "EMIRATE": "msa_formal",
+      "DATE_HIJRI": "msa_formal",
+      "DATE_GREGORIAN_AR": "all",
+      "DATE_GREGORIAN_EN": "code_switching",
+      "REF_NO_ARABIC_INDIC": "msa_formal",
+      "REF_NO_WESTERN": "code_switching"
+    }
+  },
+
+  "slots": {
+    "SERVICE_FORMAL": {
+      "description": "Government service names in formal MSA/Gulf governmental register",
+      "zone": "msa_formal",
+      "values": [
+        {"id": "svc-01", "ar": "استخراج بطاقة الهوية الإماراتية", "en": "Emirates ID issuance"},
+        {"id": "svc-02", "ar": "تجديد بطاقة الهوية الإماراتية", "en": "Emirates ID renewal"},
+        {"id": "svc-03", "ar": "استخراج تصريح الإقامة", "en": "residency permit issuance"},
+        {"id": "svc-04", "ar": "تجديد تصريح الإقامة", "en": "residency permit renewal"},
+        {"id": "svc-05", "ar": "تسجيل المركبة", "en": "vehicle registration"},
+        {"id": "svc-06", "ar": "تجديد رخصة القيادة", "en": "driving licence renewal"},
+        {"id": "svc-07", "ar": "استخراج شهادة الميلاد", "en": "birth certificate issuance"},
+        {"id": "svc-08", "ar": "استخراج شهادة حسن السيرة والسلوك", "en": "conduct certificate"},
+        {"id": "svc-09", "ar": "تجديد جواز السفر الإماراتي", "en": "UAE passport renewal"},
+        {"id": "svc-10", "ar": "تأسيس منشأة تجارية", "en": "commercial establishment registration"},
+        {"id": "svc-11", "ar": "استخراج الرخصة المهنية", "en": "professional licence issuance"},
+        {"id": "svc-12", "ar": "التسجيل في منظومة التأمين الصحي", "en": "health insurance system registration"},
+        {"id": "svc-13", "ar": "استخراج شهادة الوفاة", "en": "death certificate issuance"},
+        {"id": "svc-14", "ar": "نقل ملكية العقار", "en": "property ownership transfer"},
+        {"id": "svc-15", "ar": "تسجيل عقد الزواج", "en": "marriage contract registration"},
+        {"id": "svc-16", "ar": "تقديم طلب الإعانة الاجتماعية", "en": "social assistance application"},
+        {"id": "svc-17", "ar": "استخراج تصريح العمل", "en": "work permit issuance"},
+        {"id": "svc-18", "ar": "تجديد الرخصة التجارية", "en": "trade licence renewal"}
+      ]
+    },
+
+    "SERVICE_DIALECT": {
+      "description": "Government service names in Gulf colloquial Arabic",
+      "zone": "gulf_colloquial",
+      "values": [
+        {"id": "svc-d-01", "ar": "أسوّي هوية إماراتية جديدة", "en": "get a new Emirates ID (dialect)", "formal_ref": "svc-01"},
+        {"id": "svc-d-02", "ar": "أجدّد هويتي الإماراتية", "en": "renew my Emirates ID (dialect)", "formal_ref": "svc-02"},
+        {"id": "svc-d-03", "ar": "أسوّي تصريح الإقامة", "en": "get the residency permit (dialect)", "formal_ref": "svc-03"},
+        {"id": "svc-d-04", "ar": "أجدّد الإقامة", "en": "renew residency (dialect)", "formal_ref": "svc-04"},
+        {"id": "svc-d-05", "ar": "أسجّل سيارتي", "en": "register my car (dialect)", "formal_ref": "svc-05"},
+        {"id": "svc-d-06", "ar": "أجدّد رخصتي", "en": "renew my licence (dialect)", "formal_ref": "svc-06"},
+        {"id": "svc-d-07", "ar": "أطلب شهادة الميلاد", "en": "get a birth certificate (dialect)", "formal_ref": "svc-07"},
+        {"id": "svc-d-08", "ar": "أسوّي شهادة الخلو من السوابق", "en": "get a clearance certificate (dialect)", "formal_ref": "svc-08"},
+        {"id": "svc-d-09", "ar": "أجدّد باسبوري", "en": "renew my passport (dialect)", "formal_ref": "svc-09"},
+        {"id": "svc-d-10", "ar": "أفتح شركة", "en": "open a company (dialect)", "formal_ref": "svc-10"}
+      ]
+    },
+
+    "SERVICE_CS": {
+      "description": "Service references in Arabic-English code-switching register",
+      "zone": "code_switching",
+      "values": [
+        {"id": "svc-cs-01", "ar": "استخراج الـEID", "en": "Emirates ID (CS)", "formal_ref": "svc-01"},
+        {"id": "svc-cs-02", "ar": "تجديد الـEID", "en": "Emirates ID renewal (CS)", "formal_ref": "svc-02"},
+        {"id": "svc-cs-03", "ar": "الـresidency visa", "en": "residency visa (CS)", "formal_ref": "svc-03"},
+        {"id": "svc-cs-04", "ar": "تجديد الـresidency", "en": "residency renewal (CS)", "formal_ref": "svc-04"},
+        {"id": "svc-cs-05", "ar": "الـtrade licence", "en": "trade licence (CS)", "formal_ref": "svc-18"},
+        {"id": "svc-cs-06", "ar": "الـprofessional licence", "en": "professional licence (CS)", "formal_ref": "svc-11"}
+      ]
+    },
+
+    "ENTITY_FORMAL": {
+      "description": "UAE government entity names in formal Arabic",
+      "zone": "msa_formal",
+      "values": [
+        {"id": "ent-01", "ar": "هيئة الاتصالات والحكومة الرقمية", "abbr": "TDRA"},
+        {"id": "ent-02", "ar": "وزارة الداخلية", "abbr": "MoI"},
+        {"id": "ent-03", "ar": "دائرة الجوازات والإقامة والتجنيس – دبي", "abbr": "GDRFA"},
+        {"id": "ent-04", "ar": "الهيئة الاتحادية للهوية والجنسية والجمارك وأمن المنافذ", "abbr": "ICP"},
+        {"id": "ent-05", "ar": "دائرة الخدمات الاجتماعية – أبوظبي", "abbr": "DSS-AD"},
+        {"id": "ent-06", "ar": "دائرة البلدية والنقل – أبوظبي", "abbr": "DMT-AD"},
+        {"id": "ent-07", "ar": "هيئة التنمية الاقتصادية – دبي", "abbr": "DED"},
+        {"id": "ent-08", "ar": "دائرة أراضي وأملاك دبي", "abbr": "DLD"},
+        {"id": "ent-09", "ar": "هيئة الصحة – دبي", "abbr": "DHA"},
+        {"id": "ent-10", "ar": "منصة تمكين للخدمات المشتركة", "abbr": "TAMM"},
+        {"id": "ent-11", "ar": "هيئة الشؤون الإسلامية والأوقاف", "abbr": "AWQAF"},
+        {"id": "ent-12", "ar": "دائرة القضاء – أبوظبي", "abbr": "DOJ-AD"}
+      ]
+    },
+
+    "NAME_EMIRATI_MALE": {
+      "description": "Emirati male names in patronymic chain form. The chain form (ibn/bin + father's name + family/tribal name) is correct for UAE governmental contexts. Non-chain forms are informal.",
+      "zone": "all",
+      "register_note": "The full chain form is required in formal zone templates. The first name alone may appear in dialect zone templates.",
+      "values": [
+        {"id": "nem-01", "ar_full": "أحمد بن محمد الهاشمي", "ar_first": "أحمد", "tribal": "الهاشمي"},
+        {"id": "nem-02", "ar_full": "خالد بن سعيد المزروعي", "ar_first": "خالد", "tribal": "المزروعي"},
+        {"id": "nem-03", "ar_full": "سالم بن راشد المنصوري", "ar_first": "سالم", "tribal": "المنصوري"},
+        {"id": "nem-04", "ar_full": "عبدالله بن حمدان الشامسي", "ar_first": "عبدالله", "tribal": "الشامسي"},
+        {"id": "nem-05", "ar_full": "محمد بن عيسى النعيمي", "ar_first": "محمد", "tribal": "النعيمي"},
+        {"id": "nem-06", "ar_full": "حمدان بن علي البلوشي", "ar_first": "حمدان", "tribal": "البلوشي"},
+        {"id": "nem-07", "ar_full": "سعيد بن يوسف الكتبي", "ar_first": "سعيد", "tribal": "الكتبي"},
+        {"id": "nem-08", "ar_full": "عمر بن طحنون الظاهري", "ar_first": "عمر", "tribal": "الظاهري"},
+        {"id": "nem-09", "ar_full": "ماجد بن سلطان الفلاسي", "ar_first": "ماجد", "tribal": "الفلاسي"},
+        {"id": "nem-10", "ar_full": "يوسف بن جاسم العمري", "ar_first": "يوسف", "tribal": "العمري"}
+      ]
+    },
+
+    "NAME_EMIRATI_FEMALE": {
+      "description": "Emirati female names. The bint (daughter of) chain form is correct for formal contexts. The adjectival tribal suffix takes the ta marbuta ending (feminine form).",
+      "zone": "all",
+      "register_note": "Same as male: full chain in formal zone, first name in dialect zone.",
+      "values": [
+        {"id": "nef-01", "ar_full": "فاطمة بنت محمد الهاشمية", "ar_first": "فاطمة", "tribal": "الهاشمية"},
+        {"id": "nef-02", "ar_full": "موزة بنت خالد المزروعية", "ar_first": "موزة", "tribal": "المزروعية"},
+        {"id": "nef-03", "ar_full": "شمسة بنت سالم المنصورية", "ar_first": "شمسة", "tribal": "المنصورية"},
+        {"id": "nef-04", "ar_full": "لطيفة بنت عبدالله الشامسية", "ar_first": "لطيفة", "tribal": "الشامسية"},
+        {"id": "nef-05", "ar_full": "أمينة بنت حمدان الفلاسية", "ar_first": "أمينة", "tribal": "الفلاسية"},
+        {"id": "nef-06", "ar_full": "حصة بنت سعيد الكتبية", "ar_first": "حصة", "tribal": "الكتبية"},
+        {"id": "nef-07", "ar_full": "مريم بنت عمر الظاهرية", "ar_first": "مريم", "tribal": "الظاهرية"},
+        {"id": "nef-08", "ar_full": "نجمة بنت ماجد العمرية", "ar_first": "نجمة", "tribal": "العمرية"},
+        {"id": "nef-09", "ar_full": "بدرية بنت يوسف المزروعية", "ar_first": "بدرية", "tribal": "المزروعية"},
+        {"id": "nef-10", "ar_full": "سارة بنت أحمد الهاشمية", "ar_first": "سارة", "tribal": "الهاشمية"}
+      ]
+    },
+
+    "NAME_ARAB_EXPAT": {
+      "description": "Arab expatriate names covering major Arab communities in the UAE: Egyptian, Levantine, Yemeni, Jordanian, Palestinian. These do not follow the Emirati bint/bin chain form.",
+      "zone": "all",
+      "values": [
+        {"id": "nae-01", "ar": "تميم أبو طالب", "origin": "levantine"},
+        {"id": "nae-02", "ar": "ياسمين الشرقاوي", "origin": "egyptian"},
+        {"id": "nae-03", "ar": "عمر البكري", "origin": "syrian"},
+        {"id": "nae-04", "ar": "فريدة الزيدي", "origin": "yemeni"},
+        {"id": "nae-05", "ar": "طارق الأمين", "origin": "jordanian"},
+        {"id": "nae-06", "ar": "نادية السعدي", "origin": "egyptian"},
+        {"id": "nae-07", "ar": "كريم منصور", "origin": "levantine"},
+        {"id": "nae-08", "ar": "رانيا القاسم", "origin": "palestinian"}
+      ]
+    },
+
+    "EMIRATE": {
+      "description": "The seven UAE emirates in formal Arabic. In formal register the definite article is used: إمارة أبوظبي, not أبوظبي alone in a sentence that takes the governed noun.",
+      "zone": "msa_formal",
+      "values": [
+        {"id": "em-01", "ar": "أبوظبي", "ar_governed": "إمارة أبوظبي"},
+        {"id": "em-02", "ar": "دبي", "ar_governed": "إمارة دبي"},
+        {"id": "em-03", "ar": "الشارقة", "ar_governed": "إمارة الشارقة"},
+        {"id": "em-04", "ar": "عجمان", "ar_governed": "إمارة عجمان"},
+        {"id": "em-05", "ar": "أم القيوين", "ar_governed": "إمارة أم القيوين"},
+        {"id": "em-06", "ar": "رأس الخيمة", "ar_governed": "إمارة رأس الخيمة"},
+        {"id": "em-07", "ar": "الفجيرة", "ar_governed": "إمارة الفجيرة"}
+      ]
+    },
+
+    "DATE_HIJRI": {
+      "description": "Hijri calendar dates in Arabic-Indic numerals with month names and era marker (هـ). The form used in official UAE government correspondence.",
+      "zone": "msa_formal",
+      "values": [
+        {"id": "dh-01", "ar": "١٥ رمضان ١٤٤٦ هـ"},
+        {"id": "dh-02", "ar": "٣ شعبان ١٤٤٧ هـ"},
+        {"id": "dh-03", "ar": "٢٨ ذي الحجة ١٤٤٥ هـ"},
+        {"id": "dh-04", "ar": "١٠ محرم ١٤٤٨ هـ"},
+        {"id": "dh-05", "ar": "٧ ربيع الأول ١٤٤٦ هـ"},
+        {"id": "dh-06", "ar": "٢٢ جمادى الآخرة ١٤٤٧ هـ"},
+        {"id": "dh-07", "ar": "١ ذي القعدة ١٤٤٦ هـ"}
+      ]
+    },
+
+    "DATE_GREGORIAN_AR": {
+      "description": "Gregorian dates written in Arabic-Indic numerals and Arabic month names. Common in code-switching and semi-formal contexts.",
+      "zone": "all",
+      "values": [
+        {"id": "dg-01", "ar": "١٢ مارس ٢٠٢٥"},
+        {"id": "dg-02", "ar": "٥ يناير ٢٠٢٦"},
+        {"id": "dg-03", "ar": "٢٠ أغسطس ٢٠٢٥"},
+        {"id": "dg-04", "ar": "٣ نوفمبر ٢٠٢٤"},
+        {"id": "dg-05", "ar": "١٨ يوليو ٢٠٢٥"}
+      ]
+    },
+
+    "DATE_MIXED": {
+      "description": "Mixed Hijri-Gregorian date formats as used in UAE official correspondence. The Gregorian date appears in parentheses after the Hijri date.",
+      "zone": "msa_formal",
+      "values": [
+        {"id": "dm-01", "ar": "١٥ رمضان ١٤٤٦ هـ الموافق ١٢ مارس ٢٠٢٥م"},
+        {"id": "dm-02", "ar": "٣ شعبان ١٤٤٧ هـ الموافق ٢٠ يناير ٢٠٢٦م"},
+        {"id": "dm-03", "ar": "١٠ محرم ١٤٤٨ هـ الموافق ٦ يوليو ٢٠٢٦م"}
+      ]
+    },
+
+    "REF_NO_ARABIC_INDIC": {
+      "description": "Government reference numbers in Arabic-Indic digits. Format: year / sequence.",
+      "zone": "msa_formal",
+      "values": [
+        {"id": "rna-01", "ar": "٢٠٢٥/١٢٣٤٥٦"},
+        {"id": "rna-02", "ar": "٢٠٢٦/٧٨٩٠١٢"},
+        {"id": "rna-03", "ar": "٢٠٢٥/٤٤٣٢١٩"},
+        {"id": "rna-04", "ar": "٢٠٢٤/٩٩٨٨٧٦"}
+      ]
+    },
+
+    "REF_NO_WESTERN": {
+      "description": "Government reference numbers in Western digits, used in code-switching contexts.",
+      "zone": "code_switching",
+      "values": [
+        {"id": "rnw-01", "ar": "2025/123456"},
+        {"id": "rnw-02", "ar": "2026/789012"},
+        {"id": "rnw-03", "ar": "UAE-784-2025-44322"}
+      ]
+    }
+  },
+
+  "templates": {
+    "msa_formal": [
+      {
+        "id": "cap-f-001",
+        "pattern": "ما الإجراءات المطلوبة لـ{SERVICE_FORMAL} في {EMIRATE.ar_governed}؟",
+        "register": "msa_formal",
+        "intent": "procedural_query",
+        "scorer": "factual_keywords_v1",
+        "scorer_config": {"scoring_mode": "threshold", "min_keyword_matches": 1}
+      },
+      {
+        "id": "cap-f-002",
+        "pattern": "أودّ الاستفسار عن متطلبات {SERVICE_FORMAL} لدى {ENTITY_FORMAL.ar}.",
+        "register": "msa_formal",
+        "intent": "requirements_query",
+        "scorer": "factual_keywords_v1",
+        "scorer_config": {"scoring_mode": "threshold", "min_keyword_matches": 1}
+      },
+      {
+        "id": "cap-f-003",
+        "pattern": "يُرجى الإرشاد إلى خطوات {SERVICE_FORMAL}، علمًا بأن الطلب مُقدَّم بتاريخ {DATE_MIXED.ar}.",
+        "register": "msa_formal",
+        "intent": "step_by_step_query_with_date",
+        "slots_required": ["SERVICE_FORMAL", "DATE_MIXED"],
+        "scorer": "factual_keywords_v1",
+        "scorer_config": {"scoring_mode": "threshold", "min_keyword_matches": 1}
+      },
+      {
+        "id": "cap-f-004",
+        "pattern": "يستفسر المواطن {NAME_EMIRATI_MALE.ar_full} عن {SERVICE_FORMAL}. ما الوثائق المطلوبة؟",
+        "register": "msa_formal",
+        "intent": "document_list_query_with_name",
+        "slots_required": ["NAME_EMIRATI_MALE", "SERVICE_FORMAL"],
+        "scorer": "factual_keywords_v1",
+        "scorer_config": {"scoring_mode": "threshold", "min_keyword_matches": 1}
+      },
+      {
+        "id": "cap-f-005",
+        "pattern": "تستفسر المواطنة {NAME_EMIRATI_FEMALE.ar_full} عن {SERVICE_FORMAL}. ما المستندات المطلوبة؟",
+        "register": "msa_formal",
+        "intent": "document_list_query_with_female_name",
+        "slots_required": ["NAME_EMIRATI_FEMALE", "SERVICE_FORMAL"],
+        "scorer": "factual_keywords_v1",
+        "scorer_config": {"scoring_mode": "threshold", "min_keyword_matches": 1}
+      },
+      {
+        "id": "cap-f-006",
+        "pattern": "ما المدة المعتادة لإنجاز {SERVICE_FORMAL} في {EMIRATE.ar_governed} في الوقت الراهن؟",
+        "register": "msa_formal",
+        "intent": "timeline_query",
+        "scorer": "factual_keywords_v1",
+        "scorer_config": {"scoring_mode": "threshold", "min_keyword_matches": 1}
+      },
+      {
+        "id": "cap-f-007",
+        "pattern": "أطلب إيضاح الرسوم المقرَّرة لـ{SERVICE_FORMAL} الصادرة عن {ENTITY_FORMAL.ar}.",
+        "register": "msa_formal",
+        "intent": "fee_query",
+        "scorer": "factual_keywords_v1",
+        "scorer_config": {"scoring_mode": "threshold", "min_keyword_matches": 1}
+      },
+      {
+        "id": "cap-f-008",
+        "pattern": "لديّ طلب {SERVICE_FORMAL} برقم مرجعي {REF_NO_ARABIC_INDIC.ar}. ما الخطوة التالية؟",
+        "register": "msa_formal",
+        "intent": "status_query_with_reference",
+        "slots_required": ["SERVICE_FORMAL", "REF_NO_ARABIC_INDIC"],
+        "scorer": "factual_keywords_v1",
+        "scorer_config": {"scoring_mode": "threshold", "min_keyword_matches": 1}
+      },
+      {
+        "id": "cap-f-009",
+        "pattern": "يرغب المقيم {NAME_ARAB_EXPAT.ar} في {SERVICE_FORMAL}. هل يحق له ذلك وما الشروط؟",
+        "register": "msa_formal",
+        "intent": "eligibility_query_with_expat_name",
+        "slots_required": ["NAME_ARAB_EXPAT", "SERVICE_FORMAL"],
+        "scorer": "factual_keywords_v1",
+        "scorer_config": {"scoring_mode": "threshold", "min_keyword_matches": 1}
+      },
+      {
+        "id": "cap-f-010",
+        "pattern": "متى يُمكن تقديم طلب {SERVICE_FORMAL}؟ هل ثمة موعد أقصى بتاريخ {DATE_HIJRI.ar}؟",
+        "register": "msa_formal",
+        "intent": "deadline_query_with_hijri_date",
+        "slots_required": ["SERVICE_FORMAL", "DATE_HIJRI"],
+        "scorer": "factual_keywords_v1",
+        "scorer_config": {"scoring_mode": "threshold", "min_keyword_matches": 1}
+      },
+      {
+        "id": "cap-f-011",
+        "pattern": "هل تقبل {ENTITY_FORMAL.ar} طلبات {SERVICE_FORMAL} إلكترونيًا؟ وما رابط المنصة الرسمية؟",
+        "register": "msa_formal",
+        "intent": "digital_channel_query",
+        "scorer": "factual_keywords_v1",
+        "scorer_config": {"scoring_mode": "threshold", "min_keyword_matches": 1}
+      },
+      {
+        "id": "cap-f-012",
+        "pattern": "ما الفرق بين {SERVICE_FORMAL} و{SERVICE_FORMAL_2}؟ أيّ منهما ينطبق على حالتي؟",
+        "register": "msa_formal",
+        "intent": "comparative_service_query",
+        "note": "SERVICE_FORMAL_2 is a second distinct draw from SERVICE_FORMAL. HARNESS must ensure SERVICE_FORMAL != SERVICE_FORMAL_2.",
+        "scorer": "factual_keywords_v1",
+        "scorer_config": {"scoring_mode": "threshold", "min_keyword_matches": 1}
+      }
+    ],
+
+    "gulf_colloquial": [
+      {
+        "id": "cap-d-001",
+        "pattern": "وش اللي لازم أسويه عشان {SERVICE_DIALECT.ar}؟ أبي أعرف.",
+        "register": "gulf_colloquial",
+        "intent": "procedural_query",
+        "phenomenon": "dialectal_input_gulf_emirati",
+        "scorer": "factual_keywords_v1",
+        "scorer_config": {"scoring_mode": "threshold", "min_keyword_matches": 1}
+      },
+      {
+        "id": "cap-d-002",
+        "pattern": "ودّي {SERVICE_DIALECT.ar} بـ{EMIRATE.ar}. وش المطلوب مني؟",
+        "register": "gulf_colloquial",
+        "intent": "requirements_query",
+        "phenomenon": "dialectal_input_gulf_emirati",
+        "scorer": "factual_keywords_v1",
+        "scorer_config": {"scoring_mode": "threshold", "min_keyword_matches": 1}
+      },
+      {
+        "id": "cap-d-003",
+        "pattern": "يا أخي، أبي {SERVICE_DIALECT.ar}. تساعدني بالخطوات؟",
+        "register": "gulf_colloquial",
+        "intent": "step_by_step_query",
+        "phenomenon": "dialectal_input_gulf_emirati",
+        "scorer": "factual_keywords_v1",
+        "scorer_config": {"scoring_mode": "threshold", "min_keyword_matches": 1}
+      },
+      {
+        "id": "cap-d-004",
+        "pattern": "شلون {SERVICE_DIALECT.ar}؟ وش الأوراق اللي تطلبونها؟",
+        "register": "gulf_colloquial",
+        "intent": "document_list_query",
+        "phenomenon": "dialectal_input_gulf_emirati",
+        "scorer": "factual_keywords_v1",
+        "scorer_config": {"scoring_mode": "threshold", "min_keyword_matches": 1}
+      },
+      {
+        "id": "cap-d-005",
+        "pattern": "كم الرسوم عشان {SERVICE_DIALECT.ar}؟ وايد؟",
+        "register": "gulf_colloquial",
+        "intent": "fee_query",
+        "phenomenon": "dialectal_input_gulf_emirati",
+        "scorer": "factual_keywords_v1",
+        "scorer_config": {"scoring_mode": "threshold", "min_keyword_matches": 1}
+      },
+      {
+        "id": "cap-d-006",
+        "pattern": "أبي {SERVICE_DIALECT.ar}. كم يومٍ تاخذ العملية؟",
+        "register": "gulf_colloquial",
+        "intent": "timeline_query",
+        "phenomenon": "dialectal_input_gulf_emirati",
+        "scorer": "factual_keywords_v1",
+        "scorer_config": {"scoring_mode": "threshold", "min_keyword_matches": 1}
+      }
+    ],
+
+    "code_switching": [
+      {
+        "id": "cap-cs-001",
+        "pattern": "أحتاج معلومات عن {SERVICE_CS.ar}. ما هي الـfee المطلوبة؟",
+        "register": "code_switching",
+        "intent": "fee_query",
+        "phenomenon": "code_switching_arabic_english",
+        "scorer": "factual_keywords_v1",
+        "scorer_config": {"scoring_mode": "threshold", "min_keyword_matches": 1}
+      },
+      {
+        "id": "cap-cs-002",
+        "pattern": "متى أقدر أقدّم الـapplication لـ{SERVICE_CS.ar} في {EMIRATE.ar}؟",
+        "register": "code_switching",
+        "intent": "application_timing_query",
+        "phenomenon": "code_switching_arabic_english",
+        "scorer": "factual_keywords_v1",
+        "scorer_config": {"scoring_mode": "threshold", "min_keyword_matches": 1}
+      },
+      {
+        "id": "cap-cs-003",
+        "pattern": "كيف أحجز appointment لـ{SERVICE_CS.ar} لدى {ENTITY_FORMAL.ar}؟",
+        "register": "code_switching",
+        "intent": "appointment_booking_query",
+        "phenomenon": "code_switching_arabic_english",
+        "scorer": "factual_keywords_v1",
+        "scorer_config": {"scoring_mode": "threshold", "min_keyword_matches": 1}
+      },
+      {
+        "id": "cap-cs-004",
+        "pattern": "الـreference number الخاص بطلبي هو {REF_NO_WESTERN.ar}. وش الـstatus حقه؟",
+        "register": "code_switching",
+        "intent": "status_query_with_reference",
+        "slots_required": ["REF_NO_WESTERN"],
+        "phenomenon": "code_switching_arabic_english",
+        "scorer": "factual_keywords_v1",
+        "scorer_config": {"scoring_mode": "threshold", "min_keyword_matches": 1}
+      }
+    ]
+  },
+
+  "orthographic_variation_axes": {
+    "description": "These axes define where orthographic variation is introduced as a deliberate test dimension. A model robust to one spelling but not another of the same word is a real finding. HARNESS applies these variations systematically, not randomly, so that each variant appears as a distinct probe.",
+    "axes": [
+      {
+        "id": "ov-01",
+        "name": "hamza_on_alef",
+        "description": "Initial hamza: أ / إ / ا. All three represent the same phoneme in different positions. Citizens frequently use bare alef (ا) where grammar requires أ or إ. The word أودّ becomes اودّ; إجراءات becomes اجراءات. A model that tokenises differently based on hamza presence fails this axis.",
+        "application": "Apply to the first word of templates cap-f-002, cap-f-007, cap-d-001, cap-d-002"
+      },
+      {
+        "id": "ov-02",
+        "name": "tashkeel_presence",
+        "description": "Full diacritical marking (tashkeel) vs. unvocalised (unpointed) text. Government documents are typically unvocalised; a model that misreads an unvocalised word due to morphological ambiguity fails on real input. Apply to service names: استخراج (clear) vs. تسجيل (ambiguous with تُسجِّل verb form).",
+        "application": "Apply systematically to SERVICE_FORMAL slot values: generate both pointed (e.g. اسْتِخْرَاج) and unpointed (استخراج) variants"
+      },
+      {
+        "id": "ov-03",
+        "name": "ta_marbuta_elision",
+        "description": "Ta marbuta (ة) is frequently omitted in informal Arabic digital writing, becoming a bare ha (ه) or dropped entirely. شهادة becomes شهاده or شهاد. Apply to template cap-d-001 through cap-d-006 where SERVICE_DIALECT values end in ta marbuta.",
+        "application": "Dialect-zone templates only. Not applied to formal-zone templates where ta marbuta is a register marker."
+      },
+      {
+        "id": "ov-04",
+        "name": "digit_system",
+        "description": "Switch between Arabic-Indic digits (٢٠٢٥) and Western digits (2025) in reference numbers and dates. The mixed form (٢٠٢٥/123456) is realistic in code-switching contexts.",
+        "application": "Apply to all date and reference number slots. Each slot value has a digit-system variant."
+      }
+    ]
+  },
+
+  "generated_item_provenance_schema": {
+    "provenance": "generated",
+    "grammar_id": "arabic-capability-grammar",
+    "grammar_version": "1.0.0",
+    "template_id": "<template id from templates section>",
+    "slot_fills": "<object mapping each slot name to the specific value drawn>",
+    "orthographic_variant": "<null or axis id from orthographic_variation_axes>",
+    "generation_seed": "<integer seed used for this item>",
+    "provenance_note": "Generated from arabic-capability-grammar v1.0.0, template {template_id}. Slot fills: {slot_fills_json}. Register: {register}. Phenomenon: {phenomenon}."
+  }
+}

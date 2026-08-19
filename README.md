@@ -1,122 +1,180 @@
 <div align="center">
 
-# MIZAN · ميزان
+# MIZAN &nbsp;·&nbsp; ميزان
 
-**A sovereign registry, an adaptive evaluation engine, and a signed certificate for AI models entering government service.**
+### A sovereign registry, an adaptive evaluation engine, and a signed bilingual certificate for AI models entering government service
 
-*Nations certify aircraft before they fly and medicines before they ship. No equivalent authority exists for AI models entering government service. MIZAN is that authority, rendered as infrastructure.*
+[![gates](https://github.com/Kazemkhani/mizan/actions/workflows/gates.yml/badge.svg)](https://github.com/Kazemkhani/mizan/actions/workflows/gates.yml)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Kazemkhani/mizan)
+
+**Nations certify aircraft before they fly and medicines before they ship.**
+**No equivalent authority exists for AI models entering government service.**
 
 </div>
 
 ---
 
-## The question this answers
+## The question
 
 > How might government entities select, evaluate and deploy compliant AI models by intended use case, performance, security and regulatory requirement, aligned to the UAE National Strategy for Artificial Intelligence 2031 and the UAE AI Governance Framework?
 
-Every artefact in this repository traces back to a clause of that question. Anything that does not serve it is not built.
+Every artefact here traces back to a clause of that question. Anything that does not serve it is not built.
 
-## What MIZAN does
+## How it works
 
-A model enters the registry. An adaptive engine adjudicates it against the exact controls its intended use case demands, buying evidence in the order that resolves the certification decision fastest. It exits with a bilingual certificate mapped control by control, where every verdict links down to the individual probe that produced it and every probe carries a `SHA-256` hash.
+A model enters the registry. An adaptive engine buys evidence in the order that settles the certification decision fastest, and **stops testing a control the moment the evidence settles it, instead of running every test in the book.** It exits with a bilingual certificate mapped control by control, where every verdict links down to the probe that produced it and every probe carries a SHA-256 hash.
 
-Three principles govern the build.
+```mermaid
+flowchart LR
+    A[Model submitted] --> B[Use case selected]
+    B --> C{Adaptive engine}
+    C -->|UCB1 picks the arm<br/>with most information<br/>per probe spent| D[Test suites]
+    D -->|probe result| E[(Evidence<br/>append-only<br/>hash chain)]
+    E --> C
+    C -->|bound clears| F[Control decided]
+    F --> G{All mandatory<br/>controls decided?}
+    G -->|no| C
+    G -->|yes| H[Signed certificate<br/>bilingual, per control,<br/>with dataset GUIDs]
+    E -.every score links back.-> H
+```
 
-**Arabic is a first-class citizen, not a translation pass.** Evaluation suites, red-team attacks, certificates and the interface exist natively in Arabic with correct right-to-left behaviour. A model that is safe in English and unsafe in Arabic fails. This is enforced in the evidence: every Arabic suite item records `provenance: arabic-native`, and a translated item presented as native is a blocking audit finding.
+## Three principles
 
-**Evidence over assertion.** Every score links to the raw evidence that produced it. Evidence rows are append-only, enforced by database triggers and a per-evaluation hash chain rather than by convention, so any edit or excision is detectable by traversal. See [`docs/DECISIONS.md`](docs/DECISIONS.md) `D-011` through `D-014`.
+<table>
+<tr>
+<td width="33%" valign="top">
 
-**The system compounds.** Every completed evaluation teaches the strategy-search layer faster test orderings for that use-case class. The registry gets quicker the more it is used.
+### Arabic is first-class
+
+Not a translation pass. Suites, attacks, certificates and the interface exist natively in Arabic with correct RTL. A model safe in English and unsafe in Arabic fails.
+
+Every Arabic item records `provenance: arabic-native`. A translated item presented as native is a blocking finding.
+
+</td>
+<td width="33%" valign="top">
+
+### Evidence over assertion
+
+Evidence is append-only, enforced by database triggers and a per-evaluation hash chain rather than by convention, so any edit or excision is detectable by traversal.
+
+`append_evidence()` computes hashes itself, so a caller cannot supply one.
+
+</td>
+<td width="33%" valign="top">
+
+### The instrument states its limits
+
+Certificates distinguish a control decided by a confidence bound from one decided at budget exhaustion, and print the bound each control actually earned.
+
+A pass that was not statistically demonstrated says so on its face.
+
+</td>
+</tr>
+</table>
 
 ## The journey
 
-The demonstration is one named journey, shown rather than described.
+One named journey, demonstrated rather than described. Fatima leads AI adoption at a federal entity.
 
-Fatima leads AI adoption at a federal entity. She submits a candidate model against the Arabic citizen-chatbot use case. She watches evaluation budget reallocate live between test suites as confidence bounds tighten. An Arabic-native safety probe fails, and she opens the exact failing exchange from the certificate trail in one click. The compliant model is then adjudicated and carries a signed certificate citing both its evidence hashes and the government datasets consulted.
-
-## Repository structure
-
+```mermaid
+sequenceDiagram
+    autonumber
+    participant F as Fatima
+    participant R as Registry
+    participant E as Engine
+    participant C as Certificate
+    F->>R: Submits a candidate model
+    F->>R: Selects the Arabic citizen-chatbot use case
+    R->>E: Adjudicate against the controls this use case demands
+    E-->>F: Budget reallocates live between suites
+    E-->>F: Confidence bounds tighten, early stops fire with a reason
+    E->>F: An Arabic-native safety probe fails
+    F->>E: Opens the exact failing exchange in one click
+    Note over F,E: The model answered an Arabic religious question<br/>in English, and never refused
+    F->>R: Submits the compliant model
+    R->>C: Signed certificate, per control, with evidence hashes<br/>and the datasets consulted
 ```
-engine/db/schema.sql      Postgres-ready DDL. Immutability triggers, hash chain.
-mizan/
-  engine/bandit/          UCB1 allocator over test suites; sequential stopping rules
-  engine/mcss/            Monte Carlo strategy search; per-use-case-class memory
-  engine/db/              Data access. append_evidence() is the only sanctioned write path
-  agents/harness/         Suite runners, scorers, model endpoint adapters
-  agents/redteam/         Adversarial probe engine
-  api/                    FastAPI service and websocket evaluation stream
-agents/data/              Open-data fetch and hash verification against committed caches
-suites/
-  controls/               Control register, five government use cases, certificate content
-  arabic/                 Arabic-native suite items and attack sets
-  redteam/                Bilingual jailbreak, injection and bias probes
-  data/                   Verbatim cached government datasets with manifests
-web/                      React and Vite interface, bilingual with true RTL mirroring
-scripts/
-  audit/                  The gates. Register discipline, contrast, grounding
-  prove_reduction.py      The measured proof
-  verify_evidence.py      Recomputes every hash and traverses the chain
-docs/
-  audit/                  Wave signoffs. Adversarial, and record their own false positives
-  evidence/               Every number that appears anywhere, with the run that produced it
-  reports/                Per-agent completion reports
+
+## Open it in one click
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Kazemkhani/mizan)
+
+The Codespace installs the toolchain, seeds the registry, and **runs every gate before handing you a prompt**, so a fresh environment proves itself rather than assuming.
+
+Locally instead:
+
+```bash
+uv sync && (cd web && npm install)
+make seed     # populate the registry
+make dev      # API on 8000, interface on 5173
+make test     # the full suite
 ```
+
+The evaluation path runs offline by design. Model endpoints resolve to deterministic mocks and typefaces are self-hosted, so nothing leaves the machine during a demonstration.
 
 ## Verification
 
-Claims in this repository are executable. An exit code is a claim; the command is the evidence.
+An exit code is a claim. The command is the evidence. All of these run in CI on every push.
 
-| Gate | Command | What it enforces |
+| Gate | Command | Enforces |
 |---|---|---|
 | Tests | `make test` | Engine, evidence immutability, harness determinism |
-| Register discipline | `python3 scripts/audit/register_lint.py` | British English, no em-dashes, no emojis, precise language |
+| Register | `python3 scripts/audit/register_lint.py` | British English, no em-dashes, no emojis, precise language |
 | Contrast | `python3 scripts/audit/verify_contrast.py` | WCAG AA on every text pairing, alpha composited |
-| Evidence integrity | `uv run python scripts/verify_evidence.py` | Recomputes every payload hash, traverses the chain |
-| Grounding and honesty | `python3 scripts/audit/verify_grounding.py` | Risks are named with mitigations; every use case is bound to a real dataset; every pitch-facing figure is sourced |
-| The proof | `uv run python scripts/prove_reduction.py` | Adaptive against exhaustive evaluation, verdict parity |
+| Evidence | `uv run python scripts/verify_evidence.py` | Recomputes every hash, traverses the chain |
+| Grounding | `python3 scripts/audit/verify_grounding.py` | Risks carry mitigations; use cases carry real datasets; figures carry sources |
+| The proof | `make prove` | Adaptive against exhaustive, with parity asserted per control |
 
-The grounding gate treats an unsourced number as a defect equal to a fabricated benchmark. A figure must be produced by a committed script, attributed to a named official source with the date it was read, or labelled an assumption on the surface where it appears.
+The grounding gate treats an unsourced number as a defect equal to a fabricated benchmark. A figure must be script-produced, attributed to a named official source with the date it was read, or labelled an assumption where it appears.
 
 ## Data grounding
 
-Use cases are bound to real UAE government open data rather than to invented context. Each binding records the dataset name as published, the publishing entity, the portal URL, the resource identifier and the date it was read, in [`docs/evidence/data_sources.md`](docs/evidence/data_sources.md).
+Use cases are bound to real UAE government open data, not invented context. Each binding records the dataset as published, the publishing entity, the portal, the resource identifier and the read date, in [`docs/evidence/data_sources.md`](docs/evidence/data_sources.md).
 
-Each binding is fetched live and compared by hash against a committed offline cache, so the demonstration cannot fail on venue connectivity and a reviewer can tell staleness from tampering. A hash divergence raises `HASH_MISMATCH` and exits non-zero; there is no silent fallback that would make a dead source look alive.
+Every binding is fetched live and compared by hash against a committed offline cache, so a demonstration cannot fail on venue connectivity and a reviewer can tell staleness from tampering. A divergence raises `HASH_MISMATCH` and exits non-zero. There is no silent fallback that would make a dead source look alive.
 
-Where a dataset cannot be reached from the build environment, it is never invented. The request is recorded in [`docs/DATA_REQUESTS.md`](docs/DATA_REQUESTS.md) with the exact steps to retrieve it by hand.
+Where a dataset cannot be reached, it is never invented. The request is recorded in [`docs/DATA_REQUESTS.md`](docs/DATA_REQUESTS.md) with the steps to retrieve it by hand.
 
-## Getting started
+## Repository
 
-Requires Python managed by `uv`, and Node for the interface.
-
-```bash
-uv sync                 # Python toolchain
-cd web && npm install   # interface dependencies
-make seed               # populate the registry
-make dev                # API and interface together
-make test               # the full suite
 ```
-
-The evaluation path runs offline by design. Model endpoints resolve to deterministic mocks, and typefaces are self-hosted, so no request leaves the machine during a demonstration.
+engine/db/schema.sql   Postgres-ready DDL, immutability triggers, hash chain
+mizan/engine/bandit    UCB1 allocator, sequential stopping, exact binomial bounds
+mizan/engine/mcss      strategy search, per-use-case-class memory
+mizan/engine/db        data access; append_evidence is the only write path
+mizan/agents/harness   suite runners, scorers, endpoint adapters
+mizan/agents/redteam   adversarial probe engine
+mizan/api              FastAPI service and the websocket evaluation stream
+agents/data            open-data fetch and hash verification
+suites/controls        control register, five use cases, certificate content
+suites/arabic          Arabic-native items, attacks, generation grammars
+suites/data            verbatim cached government datasets with manifests
+web                    React and Vite, bilingual, true RTL mirroring
+scripts/audit          the gates
+docs/audit             adversarial wave signoffs, including their own false positives
+docs/evidence          every number, with the run that produced it
+```
 
 ## Documentation
 
-| Document | Purpose |
+| | |
 |---|---|
 | [`docs/CHARTER.md`](docs/CHARTER.md) | The engagement charter and its addendum |
-| [`docs/DELIVERY_PLAN.md`](docs/DELIVERY_PLAN.md) | Build order, dependency graph, acceptance criteria per wave |
+| [`docs/DELIVERY_PLAN.md`](docs/DELIVERY_PLAN.md) | Build order, dependency graph, acceptance criteria |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Schema, module boundaries, interface contracts |
-| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Every consequential choice with its rationale |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Every consequential choice, with the alternatives rejected |
 | [`docs/RISKS.md`](docs/RISKS.md) | Implementation risks, each with a named mitigation |
-| [`docs/audit/`](docs/audit/) | Adversarial wave signoffs |
-| [`CONTRIBUTING.md`](CONTRIBUTING.md) | How to work in this repository |
+| [`docs/evidence/reduction_report.md`](docs/evidence/reduction_report.md) | The measured proof |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | How to work here, and what will be rejected |
 
 ## Status and honest limits
 
-This is pilot-scale work. Present-tense claims describe one entity, one use case, and a ninety-day pilot. National figures appear only as labelled assumptions or as the question a pilot exists to answer. [`docs/RISKS.md`](docs/RISKS.md) states the known limits, including the point at which the evidence guarantee stops holding and what would extend it.
+Pilot-scale work. Present-tense claims describe one entity, one use case, and a ninety-day pilot. National figures appear only as labelled assumptions.
 
-Controls whose provenance is a MIZAN reading of a published principle are labelled as such and are distinguished in the register from controls citing a named framework principle. That distinction is deliberate and is not smoothed over.
+The corpus is smaller than full statistical backing requires, so most passing controls are currently decided at budget rather than by a confidence bound. The certificate says so per control, and the arithmetic is in [`docs/RISKS.md`](docs/RISKS.md) under R6 with corpus expansion sized as the pilot's principal engineering milestone.
+
+Controls whose provenance is a MIZAN reading of a published principle are labelled as such, and distinguished in the register from controls citing a named framework principle. That distinction is deliberate and is not smoothed over.
 
 ## Licence
 
-Proprietary. All rights reserved. See [`LICENSE`](LICENSE), which also records the terms governing the redistributed typefaces and the cached government datasets.
+Proprietary, all rights reserved. See [`LICENSE`](LICENSE), which also records the terms governing the redistributed typefaces and the cached government datasets.

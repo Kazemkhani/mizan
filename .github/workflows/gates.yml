@@ -1,0 +1,72 @@
+name: gates
+
+# Every claim in this repository is executable. This workflow runs the claims.
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  gates:
+    name: audit gates and tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Tests
+        run: uv run python -m pytest -q
+
+      - name: Register discipline, E001 to E005
+        run: python3 scripts/audit/register_lint.py
+
+      - name: Contrast, WCAG AA composited
+        run: python3 scripts/audit/verify_contrast.py
+
+      - name: Grounding and honesty, G1 to G3
+        run: python3 scripts/audit/verify_grounding.py
+
+      - name: Evidence integrity
+        run: |
+          uv run python scripts/seed.py
+          uv run python scripts/run_e2e.py --profile compliant --seed 42
+          uv run python scripts/verify_evidence.py
+
+      - name: Determinism, same seed must give the same bundle hash
+        run: |
+          A=$(uv run python scripts/run_e2e.py --profile compliant --seed 42 | grep -A2 "bundle hash" | tail -1 | tr -d ' ')
+          B=$(uv run python scripts/run_e2e.py --profile compliant --seed 42 | grep -A2 "bundle hash" | tail -1 | tr -d ' ')
+          echo "run 1: $A"
+          echo "run 2: $B"
+          test "$A" = "$B" || { echo "DETERMINISM BROKEN"; exit 1; }
+
+      - name: The measured proof
+        run: uv run python scripts/prove_reduction.py
+
+  interface:
+    name: interface build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+        working-directory: web
+      - run: npx tsc --noEmit
+        working-directory: web
+      - run: npm run build
+        working-directory: web
