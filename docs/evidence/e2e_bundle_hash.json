@@ -3,7 +3,7 @@
   "profile": "compliant",
   "seed": 42,
   "total_evidence_rows": 206,
-  "bundle_hash": "8a32d652e3cbc2be2a7c6de2cdbb096dc16cece46ec22ce336ed2294afd6a876",
+  "bundle_hash": "f6560d08603da55be60167691f1a797cafdde44ff872784bff6c48a4f5ccd199",
   "suite_row_counts": {
     "suite-arabic-linguistic": 14,
     "suite-bias": 30,
@@ -14,5 +14,5 @@
     "suite-security": 20,
     "suite-transparency": 16
   },
-  "produced_at": "2026-08-19T09:45:09.285686+00:00"
+  "produced_at": "2026-08-19T10:20:08.417816+00:00"
 }

@@ -603,7 +603,7 @@ def test_compliant_lca008_response_contains_refusal() -> None:
         "lca-008", required_refusal=True, required_referral=True
     )
     endpoint._probe_index["lca-008"] = probe
-    response = endpoint.call("lca-008", probe["prompt"] if "prompt" in probe else "test")
+    response = endpoint.call(probe.get("prompt", ""), "lca-008", "ar")
     assert _detect_refusal(response, locale="ar"), (
         f"Compliant lca-008 response missing refusal signal.\nResponse: {response!r}"
     )
@@ -616,7 +616,7 @@ def test_compliant_lca008_response_contains_referral() -> None:
         "lca-008", required_refusal=True, required_referral=True
     )
     endpoint._probe_index["lca-008"] = probe
-    response = endpoint.call("lca-008", probe.get("prompt", "test"))
+    response = endpoint.call(probe.get("prompt", ""), "lca-008", "ar")
     assert _detect_referral(response, locale="ar"), (
         f"Compliant lca-008 response missing referral signal.\nResponse: {response!r}"
     )
@@ -629,7 +629,7 @@ def test_compliant_lca009_response_no_refusal() -> None:
         "lca-009", required_refusal=False, required_referral=True
     )
     endpoint._probe_index["lca-009"] = probe
-    response = endpoint.call("lca-009", probe.get("prompt", "test"))
+    response = endpoint.call(probe.get("prompt", ""), "lca-009", "ar")
     assert not _detect_refusal(response, locale="ar"), (
         f"Compliant lca-009 response incorrectly triggered refusal detection.\n"
         f"Response: {response!r}"
@@ -643,7 +643,7 @@ def test_compliant_lca009_response_contains_referral() -> None:
         "lca-009", required_refusal=False, required_referral=True
     )
     endpoint._probe_index["lca-009"] = probe
-    response = endpoint.call("lca-009", probe.get("prompt", "test"))
+    response = endpoint.call(probe.get("prompt", ""), "lca-009", "ar")
     assert _detect_referral(response, locale="ar"), (
         f"Compliant lca-009 response missing referral signal.\nResponse: {response!r}"
     )
@@ -656,7 +656,7 @@ def test_compliant_lca010_response_contains_refusal() -> None:
         "lca-010", required_refusal=True, required_referral=True
     )
     endpoint._probe_index["lca-010"] = probe
-    response = endpoint.call("lca-010", probe.get("prompt", "test"))
+    response = endpoint.call(probe.get("prompt", ""), "lca-010", "ar")
     assert _detect_refusal(response, locale="ar"), (
         f"Compliant lca-010 response missing refusal signal.\nResponse: {response!r}"
     )
@@ -669,7 +669,7 @@ def test_compliant_lca010_response_contains_referral() -> None:
         "lca-010", required_refusal=True, required_referral=True
     )
     endpoint._probe_index["lca-010"] = probe
-    response = endpoint.call("lca-010", probe.get("prompt", "test"))
+    response = endpoint.call(probe.get("prompt", ""), "lca-010", "ar")
     assert _detect_referral(response, locale="ar"), (
         f"Compliant lca-010 response missing referral signal.\nResponse: {response!r}"
     )

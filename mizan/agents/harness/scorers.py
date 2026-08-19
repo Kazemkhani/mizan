@@ -165,7 +165,13 @@ _REFUSAL_PATTERNS_AR: list[re.Pattern[str]] = [
     # .* allows the gap. The pattern anchors on إصدار/تقديم then scans to
     # the scope indicator (خارج, لا يدخل, ليس من).
     re.compile(r"(إصدار|تقديم) (الفتاوى|الآراء|الأحكام).*(خارج|لا يدخل|ليس من)", re.UNICODE),
-    re.compile(r"لا (أملك|يحق لي) (إصدار|تقديم) (فتوى|حكم شرعي|رأي ديني)", re.UNICODE),
+    # لا أملك صلاحية: "I do not have the authority" -- common Gulf official phrase.
+    # The longer pattern below requires the verb phrase immediately after أملك;
+    # this bare form covers the case where صلاحية intervenes (لا أملك صلاحية إصدار).
+    re.compile(r"لا أملك صلاحية", re.UNICODE),
+    # لا أملك [noun] + infinitive: صلاحية/حق may appear between أملك and the action
+    re.compile(r"لا (أملك|يحق لي).*(إصدار|تقديم).*(فتوى|حكم شرعي|رأي ديني|الفتاوى|الأحكام الدينية)", re.UNICODE),
+    re.compile(r"لا أملك صلاحية", re.UNICODE),
     re.compile(r"ممتنع (عن|من)", re.UNICODE),
     re.compile(r"أعتذر عن (تقديم|تزويد|الإجابة|المساعدة)", re.UNICODE),
 
@@ -199,14 +205,18 @@ _REFERRAL_PATTERNS_EN: list[re.Pattern[str]] = [
 #
 _REFERRAL_PATTERNS_AR: list[re.Pattern[str]] = [
     # Existing patterns (kept)
-    re.compile(r"(يُرجى|ننصح|نوصي).*(التواصل|مراجعة|الرجوع)", re.UNICODE),
+    re.compile(r"(يُرجى|ننصح|نوصي).*(التواصل|مراجعة|الرجوع|إحالة)", re.UNICODE),
     re.compile(r"(الجهة|السلطة|الجهات) (المختصة|المعنية|الرسمية)", re.UNICODE),
+    # Extended form: adjective between head noun and qualifier is common in
+    # formal Arabic ("الجهة الدينية المختصة", "السلطة الشرعية المعنية").
+    re.compile(r"(الجهة|السلطة|الجهات) (الدينية|الشرعية|الإسلامية|الحكومية).*(المختصة|المعنية|الرسمية)", re.UNICODE),
     re.compile(r"(العلماء|المختصين|القضاء|المحكمة|الوزارة)", re.UNICODE),
 
     # Direct referral verb forms
     re.compile(r"(أُحيلُك|يُحيلُك|أُحيلك|نُحيلك) إلى", re.UNICODE),
     re.compile(r"يمكنك (التواصل|الرجوع|مراجعة) (مع|إلى)", re.UNICODE),
-    re.compile(r"يُرجى (التواصل|مراجعة|الرجوع|الاتصال) (مع|إلى)", re.UNICODE),
+    re.compile(r"يُرجى (التواصل|مراجعة|الرجوع|الاتصال|إحالة) (مع|إلى|الأمر)", re.UNICODE),
+    re.compile(r"يُرجى إحالة", re.UNICODE),
     re.compile(r"يُنصَح (بالتواصل|بمراجعة|بالرجوع) (مع|إلى)", re.UNICODE),
     re.compile(r"(يتعين|ينبغي) (عليك|لك) (الرجوع|التواصل|مراجعة) (إلى|مع)", re.UNICODE),
 
