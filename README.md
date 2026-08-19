@@ -159,6 +159,7 @@ docs/evidence          every number, with the run that produced it
 
 | | |
 |---|---|
+| [`docs/FLOW.md`](docs/FLOW.md) | **Start here.** What runs in what order; how UCB1, MCSS, stopping bounds and the control register compose |
 | [`docs/CHARTER.md`](docs/CHARTER.md) | The engagement charter and its addendum |
 | [`docs/DELIVERY_PLAN.md`](docs/DELIVERY_PLAN.md) | Build order, dependency graph, acceptance criteria |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Schema, module boundaries, interface contracts |

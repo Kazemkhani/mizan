@@ -3,6 +3,12 @@
 Sovereign AI Model Registry and Adaptive Compliance Engine.
 Version 0.1.0, Wave 0 Foundation.
 
+> **Read [`docs/FLOW.md`](FLOW.md) first** if you want to understand what
+> runs in what order. This document covers the schema, module boundaries,
+> and interface contracts. FLOW.md covers the evaluation sequence, how
+> UCB1 and MCSS compose, and the integration gap at the suite-runner
+> boundary.
+
 ---
 
 ## 1. System overview
