@@ -292,3 +292,96 @@ evaluations.
 An answer that claims the hash is unbreakable is a lie that gets found out.
 An answer that explains the actual boundary and names the next step is the
 answer that builds institutional trust, which is MIZAN's entire product claim.
+
+---
+
+## D-011 BiDi treatment of terminal Latin acronyms in Arabic strings
+
+**Decision.** Arabic UI strings containing terminal Latin acronyms (specifically `certificate.download_pdf`: 'تنزيل الشهادة بصيغة PDF') are left to the Unicode Bidirectional Algorithm (UBA) without any `unicode-bidi` or `direction` override.
+
+**Context.** The DESIGN_SYSTEM.md section 4 prohibits `unicode-bidi: bidi-override` and `direction: ltr` on numeric or Latin sequences within Arabic paragraphs. The string 'تنزيل الشهادة بصيغة PDF' contains 'PDF' as a strong LTR sequence at the end of an RTL string. Under UBA, in an RTL paragraph, the visual rendering order is [PDF] [بصيغة] [الشهادة] [تنزيل], which an Arabic reader processes right to left as: 'تنزيل الشهادة بصيغة PDF', meaning 'download the certificate in PDF format'. This is the correct Arabic typographic convention for a terminal acronym.
+
+**Options considered.**
+- Apply `dir="ltr"` span wrapper around 'PDF': would fix visual order but is inconsistent with DESIGN_SYSTEM.md prohibition and is unnecessary given UBA behaviour.
+- Spell out 'بصيغة PDF': adopted. The original Wave 0 string 'تنزيل شهادة PDF' used bare juxtaposition, which is press register. 'تنزيل الشهادة بصيغة PDF' is grammatically complete formal Arabic.
+- Use Arabic abbreviation: no established Arabic abbreviation for PDF exists in UAE government usage.
+
+**Rationale.** UBA handles this case correctly without intervention. The grammatically expanded form 'بصيغة PDF' resolves the register issue and reduces the visual ambiguity at the Arabic-Latin boundary. ATELIER must verify rendering in Wave 3. No override is applied.
+
+**Owner.** RASHID (string authorship); ATELIER (visual verification, Wave 3).
+
+---
+
+## D-015 append_evidence(): mandated write path and concurrent-fork serialisation
+
+**Decision.** A single async function `append_evidence()` in
+`mizan/engine/db/database.py` is the only authorised write path for the
+evidence table. HARNESS is explicitly prohibited from issuing raw INSERT
+statements against evidence. The function computes `payload_hash` and
+`chain_prev_hash` internally; callers supply only the structured payload
+dict and probe metadata. Concurrent-fork protection is provided by a
+UNIQUE index on `(evaluation_id, chain_prev_hash)`; `append_evidence()`
+retries automatically on a UNIQUE collision.
+
+**Context.** The F0-01 audit finding noted that Attack 4 -- inserting a row
+whose `payload_hash` does not match its payload -- succeeds under SQLite
+because the database cannot compute SHA-256 in a trigger. The AUDITOR's
+closure note extended this finding: even with the verify script detecting
+the mismatch, the advisory contract ("HARNESS must call sha256_of before
+passing the hash") is prose that every future caller must remember to
+honour. An interface where the wrong thing is not expressible is worth
+more than a convention that is documented.
+
+The concurrency question: HARNESS runs suites in parallel with asyncio.
+Two coroutines racing on the same evaluation_id may both read the same
+chain tail hash and both attempt INSERT. Without a constraint, the second
+INSERT succeeds, and the chain forks. The verify script detects the fork,
+but detection after the fact is not prevention.
+
+**Options considered.**
+
+1. asyncio.Lock per evaluation_id. Prevents the race in-process. Breaks
+   under multi-process deployment; requires a lock registry that must be
+   managed for the lifetime of each evaluation.
+
+2. Database advisory lock (SELECT ... FOR UPDATE). Not available in
+   SQLite; available in Postgres. Deferred.
+
+3. UNIQUE index on (evaluation_id, chain_prev_hash). Works in SQLite and
+   Postgres. The database rejects the second INSERT with a constraint
+   error; the application retries with a fresh tail-hash read. The chain
+   can never fork because the constraint is enforced by the engine, not
+   the application. Adopted.
+
+**Implementation.**
+
+- `engine/db/schema.sql`: `CREATE UNIQUE INDEX idx_evidence_chain ON
+  evidence(evaluation_id, chain_prev_hash)`.
+- `mizan/engine/db/database.py`: `canonical_payload(d)` is the single
+  serialisation function. `_append_evidence_sync()` runs the SELECT-then-
+  INSERT in a stdlib sqlite3 connection (same engine as the triggers).
+  `append_evidence()` wraps it via `asyncio.to_thread()` and retries on
+  UNIQUE collisions up to `max_retries` times (default 3).
+- The UNIQUE index also enforces the genesis invariant (only one row with
+  `chain_prev_hash = ''` per evaluation), making it a redundant but
+  independent check alongside the `trg_evidence_insert_validate` trigger.
+
+**Serialisation canon.** `canonical_payload(d)` returns
+`json.dumps(d, sort_keys=True, ensure_ascii=False)`. This is the only
+authorised serialisation. `scripts/verify_evidence.py` verifies by
+computing `sha256(stored_payload_string)`, not by re-serialising the
+dict; there is therefore no copy of the serialisation format in the
+verify script that can drift. Any future re-serialisation in any tool
+must import and call `canonical_payload` from `mizan.engine.db.database`.
+
+**Postgres path.** The retry logic is identical. Replace
+`sqlite3.IntegrityError` with `asyncpg.UniqueViolationError` and the
+raw sqlite3 connection with an asyncpg transaction. SOVEREIGN-TODO: Wave 3.
+
+**Rationale.** The blast radius of a wrong hash is a certificate that the
+verify script reports as COMPROMISED. Removing the hash from the caller
+interface removes the blast radius entirely. The UNIQUE index raises the
+cost of a concurrent fork from "silently accepted, detected later" to
+"immediately rejected with an actionable error and retried automatically".
+
+**Owner.** ARCHITECT (interface definition). HARNESS (call site compliance).

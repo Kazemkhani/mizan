@@ -383,3 +383,137 @@ evaluations.
 
 This is the answer that builds institutional trust. It is what D-014
 records and what the Wave 4 pitch script must use verbatim.
+
+---
+
+## append_evidence() -- AUDITOR post-F0-01 requirement (2026-08-19)
+
+### Requirement
+
+The AUDITOR's F0-01 closure note directed ARCHITECT to implement
+`append_evidence()` as the sole sanctioned write path for the evidence
+table, eliminating Attack 4 at the interface level rather than relying on
+the verify script for detection. Requirements verbatim:
+
+- Serialise canonically; callers supply no hash.
+- Share one serialisation function between write path and any future
+  re-verification code.
+- Handle concurrent appends to the same evaluation without forking the chain.
+- Provide a test that a caller cannot supply a forged hash through this path.
+- Provide a test for the concurrent-append case.
+
+### Implementation
+
+**`mizan/engine/db/database.py`** -- three additions:
+
+1. `canonical_payload(payload: dict) -> str` -- single authorised
+   serialisation: `json.dumps(payload, sort_keys=True, ensure_ascii=False)`.
+   This is the only place the format is defined. The verify script hashes
+   the stored payload string directly (not re-serialising), so there is
+   no second copy of the format that can drift.
+
+2. `_append_evidence_sync(db_path, *, ev_id, evaluation_id, ..., payload, ...)
+   -> tuple[str, str]` -- synchronous core. Serialises via
+   `canonical_payload()`, computes `sha256_of()`, looks up the current
+   chain tail with `SELECT payload_hash ... ORDER BY rowid DESC LIMIT 1`,
+   and inserts. Runs in a `asyncio.to_thread()` call from the async wrapper
+   so the event loop is not blocked.
+
+3. `append_evidence(*, evaluation_id, ..., payload, ..., max_retries=3)
+   -> tuple[str, str]` -- async public interface. Retries up to
+   `max_retries` times on `UNIQUE constraint failed` (the concurrent-fork
+   signal); re-raises immediately on any other `sqlite3.IntegrityError`.
+
+**`engine/db/schema.sql`** -- one addition:
+
+```sql
+CREATE UNIQUE INDEX IF NOT EXISTS idx_evidence_chain
+    ON evidence(evaluation_id, chain_prev_hash);
+```
+
+This is the database-level fork lock. Two concurrent callers who both read
+the same tail hash and both attempt INSERT receive the constraint on the
+second attempt. The loser retries. The chain cannot fork because the
+constraint is enforced by the engine.
+
+**Concurrency decision (D-015).** asyncio.Lock was rejected (breaks under
+multi-process deployment). Database advisory lock was rejected (not
+available in SQLite). UNIQUE index was adopted: works in both SQLite and
+Postgres, is enforced by the database engine not the application, and
+makes the retry path explicit and auditable.
+
+### Verification commands (real output)
+
+```
+$ make test
+============================= test session starts ==============================
+collected 24 items
+
+tests/test_evidence_immutability.py::test_legitimate_evidence_insert_succeeds PASSED
+tests/test_evidence_immutability.py::test_chained_evidence_inserts_succeed PASSED
+tests/test_evidence_immutability.py::test_attack_1_update_passed_blocked PASSED
+tests/test_evidence_immutability.py::test_attack_2_update_payload_and_hash_blocked PASSED
+tests/test_evidence_immutability.py::test_attack_3_delete_evidence_blocked PASSED
+tests/test_evidence_immutability.py::test_payload_hash_too_short_rejected PASSED
+tests/test_evidence_immutability.py::test_payload_hash_too_long_rejected PASSED
+tests/test_evidence_immutability.py::test_second_genesis_row_blocked PASSED
+tests/test_evidence_immutability.py::test_orphan_chain_prev_hash_blocked PASSED
+tests/test_evidence_immutability.py::test_certificate_delete_blocked PASSED
+tests/test_evidence_immutability.py::test_certificate_verdict_immutable PASSED
+tests/test_evidence_immutability.py::test_certificate_evidence_bundle_hash_immutable PASSED
+tests/test_evidence_immutability.py::test_certificate_pdf_path_update_allowed PASSED
+tests/test_evidence_immutability.py::test_certificate_signature_update_allowed PASSED
+tests/test_evidence_immutability.py::test_append_evidence_computes_hash_itself PASSED
+tests/test_evidence_immutability.py::test_concurrent_fork_blocked_by_unique_index PASSED
+tests/test_health.py::test_package_importable PASSED
+tests/test_health.py::test_health_endpoint_returns_200 PASSED
+tests/test_health.py::test_health_response_schema PASSED
+tests/test_health.py::test_use_cases_list_returns_five PASSED
+tests/test_health.py::test_model_registration_round_trip PASSED
+tests/test_health.py::test_evaluation_start_returns_202 PASSED
+tests/test_health.py::test_evidence_not_found_returns_404 PASSED
+tests/test_health.py::test_certificate_not_found_returns_404 PASSED
+
+============================== 24 passed in 0.36s ==============================
+```
+
+```
+$ uv run python scripts/audit/register_lint.py mizan/ tests/ scripts/seed.py \
+    scripts/reset.py scripts/verify_evidence.py Makefile pyproject.toml \
+    engine/db/schema.sql docs/DECISIONS.md
+Files scanned: 27
+Findings: 0
+Register discipline: clean.
+```
+
+```
+$ uv run python scripts/verify_evidence.py; echo "Exit: $?"
+MIZAN Evidence Integrity Audit
+============================================================
+Database : .../data/mizan.db
+
+No evidence rows found. Nothing to audit.
+Exit: 0
+```
+
+### HARNESS contract (for AUDITOR to forward)
+
+HARNESS must call `append_evidence()` exclusively. Raw INSERT statements
+against the evidence table are prohibited. The function signature is:
+
+```python
+from mizan.engine.db.database import append_evidence
+
+ev_id, payload_hash = await append_evidence(
+    evaluation_id=evaluation_id,
+    suite_id=suite_id,
+    control_id=control_id,
+    probe_id=probe_id,
+    payload=probe_result_dict,   # structured dict; never a pre-serialised string
+    score=score,                 # float in [0.0, 1.0]
+    passed=1 if passed else 0,   # int: 1 or 0
+)
+```
+
+`payload_hash` in the return value is the hash recorded in the database.
+Use it to build `evidence_bundle_hash` when issuing the certificate.

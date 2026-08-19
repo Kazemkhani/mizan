@@ -255,6 +255,15 @@ CREATE TABLE IF NOT EXISTS evidence (
 CREATE UNIQUE INDEX IF NOT EXISTS idx_evidence_hash         ON evidence(payload_hash);
 CREATE        INDEX IF NOT EXISTS idx_evidence_evaluation   ON evidence(evaluation_id);
 CREATE        INDEX IF NOT EXISTS idx_evidence_control      ON evidence(control_id);
+-- CONCURRENT-FORK GUARD: each (evaluation_id, chain_prev_hash) pair may appear
+-- only once. This prevents two concurrent append_evidence() callers from both
+-- reading the same tail hash and inserting two successor rows (forking the chain).
+-- The first INSERT wins; the second receives a UNIQUE constraint error and must
+-- retry. The genesis invariant (chain_prev_hash = '') is enforced by the same
+-- index: there can be at most one genesis row per evaluation.
+-- POSTGRES: CREATE UNIQUE INDEX idx_evidence_chain ON evidence(evaluation_id, chain_prev_hash);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_evidence_chain
+    ON evidence(evaluation_id, chain_prev_hash);
 
 -- ------------------------------------------------------------
 -- evidence BEFORE INSERT: validate payload_hash format and hash chain.

@@ -21,6 +21,9 @@ Acceptance criteria:
   - Certificate pdf_path UPDATE succeeds (allowed post-issuance field).
   - Hash chain genesis rules are enforced.
   - Hash chain linking rules are enforced.
+  - append_evidence() computes payload_hash itself; caller cannot supply a hash.
+  - Concurrent fork attempt (two rows with same chain_prev_hash) is blocked
+    by the UNIQUE index on (evaluation_id, chain_prev_hash).
 """
 
 from __future__ import annotations
@@ -31,6 +34,12 @@ import sqlite3
 from pathlib import Path
 
 import pytest
+
+from mizan.engine.db.database import (
+    _append_evidence_sync,
+    canonical_payload,
+    sha256_of,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = REPO_ROOT / "engine" / "db" / "schema.sql"
@@ -321,3 +330,99 @@ def test_certificate_signature_update_allowed(db):
             "SELECT signature FROM certificates WHERE id = 'cert-s'"
         ).fetchone()[0]
     assert sig == "hmac-stub-value"
+
+
+# ---------------------------------------------------------------------------
+# append_evidence() write path: forged hash prevention
+# ---------------------------------------------------------------------------
+
+def test_append_evidence_computes_hash_itself(db):
+    """append_evidence() must compute payload_hash from the payload; the caller
+    supplies no hash and cannot forge one.
+
+    We call _append_evidence_sync (the synchronous core) directly with a
+    payload dict and then read the stored row back. The stored payload_hash
+    must equal sha256_of(canonical_payload(payload_dict)), which is the
+    value the function computed internally. The caller had no opportunity
+    to supply a different hash.
+    """
+    payload_dict = {"probe_id": "p-forge", "result": "fail", "score": 0.0}
+    expected_text = canonical_payload(payload_dict)
+    expected_hash = sha256_of(expected_text)
+
+    with _open(db) as conn:
+        _seed(conn)
+
+    _append_evidence_sync(
+        str(db),
+        ev_id="ev-forge",
+        evaluation_id="eval-t",
+        suite_id="suite-t",
+        control_id="ctrl-t",
+        probe_id="p-forge",
+        payload=payload_dict,
+        score=0.0,
+        passed=0,
+        collected_at=_NOW,
+    )
+
+    with _open(db) as conn:
+        row = conn.execute(
+            "SELECT payload, payload_hash, chain_prev_hash FROM evidence WHERE id = 'ev-forge'"
+        ).fetchone()
+
+    assert row is not None, "evidence row was not inserted"
+    stored_payload, stored_hash, chain_prev = row
+
+    # The stored payload must be the canonical serialisation.
+    assert stored_payload == expected_text, (
+        "stored payload does not match canonical_payload() output"
+    )
+    # The stored hash must equal sha256 of the stored payload.
+    assert stored_hash == expected_hash, (
+        "stored payload_hash does not equal sha256_of(canonical_payload(payload_dict))"
+    )
+    # verify_evidence.py recomputes sha256(stored_payload) and compares;
+    # confirm the round-trip is consistent.
+    assert sha256_of(stored_payload) == stored_hash, (
+        "sha256_of(stored_payload) != stored_hash: verify script would report COMPROMISED"
+    )
+    # Genesis row: chain_prev_hash must be empty string.
+    assert chain_prev == "", "first row for evaluation must be a genesis row"
+
+
+# ---------------------------------------------------------------------------
+# Concurrent fork prevention via UNIQUE index on (evaluation_id, chain_prev_hash)
+# ---------------------------------------------------------------------------
+
+def test_concurrent_fork_blocked_by_unique_index(db):
+    """Two rows claiming the same chain_prev_hash in the same evaluation must be
+    rejected by the UNIQUE index on (evaluation_id, chain_prev_hash).
+
+    This is the database-level guard against concurrent-append forks. When two
+    append_evidence() callers race and both read the same tail hash, only the
+    first INSERT succeeds. The second raises sqlite3.IntegrityError with
+    'UNIQUE constraint failed'. append_evidence() catches that specific error
+    and retries with a fresh tail-hash read.
+    """
+    with _open(db) as conn:
+        _seed(conn)
+        # Row 1: genesis.
+        _insert_evidence(conn, ev_id="ev-fork-1", payload_hash=_HASH_A, chain_prev_hash="")
+        # Row 2: first successor, chain_prev_hash = _HASH_A.
+        _insert_evidence(conn, ev_id="ev-fork-2", payload_hash=_HASH_B, chain_prev_hash=_HASH_A)
+
+    with _open(db) as conn:
+        # Simulate a second caller that also read _HASH_A as the tail (a race).
+        # It tries to insert a third row with chain_prev_hash = _HASH_A.
+        # This would fork the chain: both ev-fork-2 and this row would claim
+        # chain_prev_hash = _HASH_A. The UNIQUE index must reject it.
+        with pytest.raises(sqlite3.IntegrityError, match="UNIQUE"):
+            _insert_evidence(
+                conn, ev_id="ev-fork-3", payload_hash=_HASH_C, chain_prev_hash=_HASH_A
+            )
+
+    # Confirm the database is still intact: only two evidence rows exist.
+    with _open(db) as conn:
+        count = conn.execute("SELECT COUNT(*) FROM evidence").fetchone()[0]
+    assert count == 2, "fork attempt must not have inserted a third row"
