@@ -1,51 +1,148 @@
 /**
- * MIZAN application root component.
+ * MIZAN application root.
  *
- * Provides the i18n context and renders the top-level shell.
- * Visual structure is intentionally minimal at Wave 0; ATELIER
- * applies the full design system in Wave 3.
+ * Two views: the introduction and the platform. The transition between them
+ * is a circle that expands from the control that was pressed until it covers
+ * the viewport, so the platform is revealed from the point of the decision
+ * rather than replacing the page abruptly. Under a reduced-motion
+ * preference the circle is skipped and the views cross-fade.
  *
- * The html[lang] and html[dir] attributes are managed by the
- * I18nProvider; no manual dir-setting is needed here.
+ * The i18n provider owns html[lang] and html[dir]; nothing here sets them.
  */
 
 import React from 'react'
 import { I18nProvider, useTranslation } from './i18n'
-import { LanguageToggle } from './components/LanguageToggle'
+import { Landing } from './landing/Landing'
+import { Platform, type Stage } from './platform/Platform'
+import { Walkthrough, TOUR_STEPS } from './walkthrough/Walkthrough'
+import { detectMode, fetchDatasets, fetchUseCases, recordedDocument } from './lib/api'
+import type { DatasetBinding, Mode, UseCase } from './lib/types'
+import './styles/app.css'
+
+const TRANSITION_MS = 780
+
+function prefersReducedMotion(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  )
+}
 
 function Shell(): React.ReactElement {
   const { t } = useTranslation()
+  const [view, setView] = React.useState<'landing' | 'platform'>('landing')
+  const [transition, setTransition] = React.useState<{ x: number; y: number } | null>(null)
+  const [mode, setMode] = React.useState<Mode>('recorded')
+  const [useCases, setUseCases] = React.useState<UseCase[]>(recordedDocument().use_cases)
+  const [datasets, setDatasets] = React.useState<DatasetBinding[]>(recordedDocument().datasets)
+  const [stage, setStage] = React.useState<Stage>(1)
+  const [tourIndex, setTourIndex] = React.useState<number | null>(null)
+
+  React.useEffect(() => {
+    let active = true
+    void (async () => {
+      const detected = await detectMode()
+      if (!active) return
+      setMode(detected)
+      const [cases, bindings] = await Promise.all([
+        fetchUseCases(detected),
+        fetchDatasets(detected),
+      ])
+      if (!active) return
+      // The recorded catalogue carries the control list per use case; the
+      // API's list endpoint does not, so the two are merged rather than
+      // replaced, and the interface keeps showing control counts either way.
+      setUseCases(
+        cases.map((useCase) => ({
+          ...useCase,
+          controls:
+            useCase.controls ??
+            recordedDocument().use_cases.find((u) => u.id === useCase.id)?.controls,
+        })),
+      )
+      setDatasets(bindings)
+    })()
+    return () => {
+      active = false
+    }
+  }, [])
+
+  // The walkthrough drives the stage, so a step about the certificate is
+  // never explained while the submission panel is on screen.
+  React.useEffect(() => {
+    if (tourIndex === null) return
+    const step = TOUR_STEPS[tourIndex]
+    if (step !== undefined) setStage(step.stage)
+  }, [tourIndex])
+
+  const enter = (origin: { x: number; y: number }) => {
+    if (prefersReducedMotion()) {
+      setView('platform')
+      setTourIndex(0)
+      return
+    }
+    setTransition(origin)
+    window.setTimeout(() => {
+      setView('platform')
+      window.scrollTo({ top: 0 })
+    }, TRANSITION_MS * 0.55)
+    window.setTimeout(() => {
+      setTransition(null)
+      setTourIndex(0)
+    }, TRANSITION_MS + 120)
+  }
+
+  const exit = () => {
+    setView('landing')
+    setTourIndex(null)
+  }
+
+  const controlCount = recordedDocument().controls.length
 
   return (
-    <div className="mizan-shell">
-      <header className="mizan-header">
-        <div className="mizan-header__brand">
-          <span className="mizan-header__name">{t('app.name')}</span>
-          <span className="mizan-header__tagline">{t('app.tagline')}</span>
+    <>
+      <a className="skip-link" href="#main-content">
+        {t('common.continue')}
+      </a>
+
+      {view === 'landing' ? (
+        <Landing
+          useCases={useCases}
+          datasets={datasets}
+          controlCount={controlCount}
+          onEnter={enter}
+        />
+      ) : (
+        <div id="main-content">
+          <Platform
+            mode={mode}
+            useCases={useCases}
+            datasets={datasets}
+            stage={stage}
+            onStage={setStage}
+            onExit={exit}
+            onStartTour={() => setTourIndex(0)}
+          />
         </div>
-        <nav className="mizan-header__nav" aria-label={t('nav.registry')}>
-          <a href="#registry">{t('nav.registry')}</a>
-          <a href="#evaluate">{t('nav.evaluate')}</a>
-          <a href="#certificates">{t('nav.certificates')}</a>
-        </nav>
-        <LanguageToggle />
-      </header>
+      )}
 
-      <main className="mizan-main" id="main-content">
-        <section id="registry" aria-labelledby="registry-heading">
-          <h1 id="registry-heading">{t('registry.title')}</h1>
-          <p>{t('registry.subtitle')}</p>
-          <p className="mizan-placeholder">
-            {/* Wave 3: ATELIER wires the live registry table here. */}
-            {t('common.loading')}
-          </p>
-        </section>
-      </main>
+      {transition === null ? null : (
+        <div className="curtain" aria-hidden="true">
+          <span
+            className="curtain__circle"
+            style={{ left: transition.x, top: transition.y }}
+          />
+        </div>
+      )}
 
-      <footer className="mizan-footer">
-        <small>{t('app.name')} v0.1.0</small>
-      </footer>
-    </div>
+      {tourIndex === null ? null : (
+        <Walkthrough
+          index={tourIndex}
+          onIndex={setTourIndex}
+          onClose={() => setTourIndex(null)}
+        />
+      )}
+    </>
   )
 }
 

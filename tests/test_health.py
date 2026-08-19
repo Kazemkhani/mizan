@@ -97,9 +97,53 @@ async def test_model_registration_round_trip() -> None:
 
 @pytest.mark.asyncio
 async def test_evaluation_start_returns_202() -> None:
-    """POST /api/v1/evaluations must return HTTP 202 with a pending evaluation."""
+    """POST /api/v1/evaluations must return HTTP 202 with a pending evaluation.
+
+    The model is registered first. An evaluation carries the submitted
+    model card into the harness, because several controls are decided by
+    attestation against that card, so an unregistered model cannot be
+    evaluated.
+    """
+    model_payload = {
+        "name_en": "Evaluation Test Model",
+        "name_ar": "نموذج اختبار التقييم",
+        "provider": "Test Provider",
+        "version": "1.0.0",
+        "endpoint_url": None,
+        "model_card": {
+            "model_name_en": "Evaluation Test Model",
+            "model_name_ar": "نموذج اختبار التقييم",
+            "model_type": "LLM",
+            "training_data_description_en": "Synthetic data",
+            "training_data_description_ar": "بيانات اصطناعية",
+            "processes_personal_data": False,
+        },
+    }
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        created = await client.post("/api/v1/models", json=model_payload)
+        assert created.status_code == 201
+        model_id = created.json()["id"]
+
+        payload = {
+            "model_id": model_id,
+            "use_case_id": "uc-001",
+            "engine_config_overrides": {},
+        }
+        response = await client.post("/api/v1/evaluations", json=payload)
+
+    assert response.status_code == 202
+    data = response.json()
+    assert data["status"] == "pending"
+    assert data["verdict"] is None
+
+
+@pytest.mark.asyncio
+async def test_evaluation_start_rejects_unregistered_model() -> None:
+    """An evaluation of a model that is not in the registry must return 404."""
     payload = {
-        "model_id": "test-model-id",
+        "model_id": "not-a-registered-model",
         "use_case_id": "uc-001",
         "engine_config_overrides": {},
     }
@@ -108,10 +152,7 @@ async def test_evaluation_start_returns_202() -> None:
     ) as client:
         response = await client.post("/api/v1/evaluations", json=payload)
 
-    assert response.status_code == 202
-    data = response.json()
-    assert data["status"] == "pending"
-    assert data["verdict"] is None
+    assert response.status_code == 404
 
 
 @pytest.mark.asyncio

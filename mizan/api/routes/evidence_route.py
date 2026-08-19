@@ -1,34 +1,76 @@
 """Evidence retrieval routes.
 
-GET /api/v1/evidence/{hash}            -- retrieve one evidence record by payload hash
-GET /api/v1/evidence                   -- list evidence for an evaluation
+GET /api/v1/evidence?evaluation_id=...   -- list evidence for an evaluation
+GET /api/v1/evidence/{hash}              -- retrieve one record by payload hash
 
 Evidence records are append-only and content-addressed. Every record carries
 a SHA-256 hash of its payload; a caller can re-hash the returned payload and
-compare to payload_hash to verify the record has not been altered.
+compare it to payload_hash to verify the record has not been altered.
 
-Handlers return fixture data in Wave 0. Wave 1 (HARNESS) wires real DB calls.
+Reads go to the evidence table, which is where append_evidence() writes. The
+interface uses the list endpoint to open the exact probe and response behind
+a control decision, which is only possible because the payload is stored
+whole rather than summarised.
+
+British English throughout.
 """
 
 from __future__ import annotations
 
+import json
+from typing import Any
+
 from fastapi import APIRouter, HTTPException, Query
 
+from mizan.api import store
 from mizan.api.schemas import EvidenceRow
 
 router = APIRouter(prefix="/evidence", tags=["evidence"])
 
-# Wave 0 fixture store. Wave 1 replaces with DB calls.
-_FIXTURE_STORE: dict[str, dict] = {}
+
+def _to_row(record: dict[str, Any]) -> EvidenceRow:
+    try:
+        payload = json.loads(record.get("payload") or "{}")
+    except (json.JSONDecodeError, TypeError):
+        payload = {}
+    return EvidenceRow(
+        id=record["id"],
+        evaluation_id=record["evaluation_id"],
+        suite_id=record["suite_id"],
+        control_id=record["control_id"],
+        probe_id=record["probe_id"],
+        payload=payload,
+        payload_hash=record["payload_hash"],
+        score=record["score"],
+        passed=bool(record["passed"]),
+        collected_at=record["collected_at"],
+    )
 
 
-def _register_evidence(record: dict) -> None:
-    """Register an evidence record in the Wave 0 fixture store.
+@router.get(
+    "",
+    response_model=list[EvidenceRow],
+    summary="List evidence records for an evaluation",
+)
+async def list_evidence(
+    evaluation_id: str = Query(..., description="Evaluation ID to filter evidence by"),
+    control_id: str | None = Query(default=None, description="Filter to one control"),
+    passed: bool | None = Query(default=None, description="Filter by probe outcome"),
+    limit: int = Query(default=500, ge=1, le=5000),
+) -> list[EvidenceRow]:
+    """Return evidence records for the evaluation, oldest first."""
+    sql = "SELECT * FROM evidence WHERE evaluation_id = ?"
+    params: list[Any] = [evaluation_id]
+    if control_id:
+        sql += " AND control_id = ?"
+        params.append(control_id)
+    if passed is not None:
+        sql += " AND passed = ?"
+        params.append(1 if passed else 0)
+    sql += " ORDER BY collected_at ASC, rowid ASC LIMIT ?"
+    params.append(limit)
 
-    Called by the evaluation harness (Wave 1) when it writes evidence.
-    In Wave 1 this function is removed and DB writes happen directly.
-    """
-    _FIXTURE_STORE[record["payload_hash"]] = record
+    return [_to_row(r) for r in store.query(sql, tuple(params))]
 
 
 @router.get(
@@ -43,26 +85,12 @@ def _register_evidence(record: dict) -> None:
 )
 async def get_evidence_by_hash(payload_hash: str) -> EvidenceRow:
     """Return the evidence record identified by the given SHA-256 hex digest."""
-    record = _FIXTURE_STORE.get(payload_hash)
+    record = store.query_one(
+        "SELECT * FROM evidence WHERE payload_hash = ?", (payload_hash,)
+    )
     if record is None:
         raise HTTPException(
             status_code=404,
             detail=f"No evidence record found for hash '{payload_hash}'.",
         )
-    return EvidenceRow(**record)
-
-
-@router.get(
-    "",
-    response_model=list[EvidenceRow],
-    summary="List evidence records for an evaluation",
-)
-async def list_evidence(
-    evaluation_id: str = Query(..., description="Evaluation ID to filter evidence by"),
-) -> list[EvidenceRow]:
-    """Return all evidence records for the given evaluation, sorted by collection time."""
-    records = [
-        r for r in _FIXTURE_STORE.values() if r["evaluation_id"] == evaluation_id
-    ]
-    records.sort(key=lambda r: r["collected_at"])
-    return [EvidenceRow(**r) for r in records]
+    return _to_row(record)

@@ -18,12 +18,15 @@ from __future__ import annotations
 import json
 import sqlite3
 import uuid
+from contextlib import closing
 from datetime import datetime, timezone
 import os
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Query, status
 
+from mizan.api import catalogue
+from mizan.api.routes import models_route
 from mizan.api.schemas import EvaluationIn, EvaluationOut, EvaluationRow
 
 router = APIRouter(prefix="/evaluations", tags=["evaluations"])
@@ -62,37 +65,46 @@ def _seed_evaluation_rows(
     use_case_id: str,
     engine_config: dict,
 ) -> None:
-    """Insert use_case, controls, model, and evaluation rows using stdlib sqlite3.
+    """Insert the use-case, control, and evaluation rows this run needs.
 
-    Uses OR IGNORE so repeated POST calls for the same model/use_case are
-    idempotent. A new evaluation_id is always inserted fresh.
+    Uses OR IGNORE for the catalogue rows so repeated POST calls are
+    idempotent. The use case is written from the published register in
+    suites/controls/use_cases.json rather than from a hardcoded citizen
+    chatbot record, so the row in the database says what was actually
+    adjudicated. A new evaluation row is always inserted fresh.
     """
     now = _now_iso()
-    catalogue = json.loads(_CONTROLS_JSON.read_text(encoding="utf-8"))
-    control_rows = catalogue.get("controls", [])
+    catalogue_rows = json.loads(_CONTROLS_JSON.read_text(encoding="utf-8"))
+    control_rows = catalogue_rows.get("controls", [])
 
-    with sqlite3.connect(str(_db_path())) as conn:
+    use_case = catalogue.use_case(use_case_id)
+
+    with closing(sqlite3.connect(str(_db_path()))) as conn:
         conn.execute("PRAGMA foreign_keys = ON")
 
-        conn.execute(
-            """
-            INSERT OR IGNORE INTO use_cases
-                (id, name_en, name_ar, description_en, description_ar,
-                 use_case_class, confidence_threshold, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                use_case_id,
-                "Arabic Citizen Chatbot",
-                "روبوت المحادثة العربي للمواطنين",
-                "AI chatbot for government citizen services in Arabic and English.",
-                "روبوت ذكاء اصطناعي لخدمات المواطنين الحكومية باللغتين العربية والإنجليزية.",
-                "citizen_chatbot",
-                0.97,
-                now,
-            ),
-        )
+        if use_case is not None:
+            conn.execute(
+                """
+                INSERT OR IGNORE INTO use_cases
+                    (id, name_en, name_ar, description_en, description_ar,
+                     use_case_class, confidence_threshold, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    use_case["id"],
+                    use_case["name_en"],
+                    use_case["name_ar"],
+                    use_case["description_en"],
+                    use_case["description_ar"],
+                    use_case["use_case_class"],
+                    float(use_case["confidence_threshold"]),
+                    now,
+                ),
+            )
 
+        # Every control in the register is inserted, not only those this use
+        # case demands: the evidence table carries a foreign key to controls,
+        # and a control row must exist before any probe against it is written.
         for ctrl in control_rows:
             conn.execute(
                 """
@@ -119,26 +131,6 @@ def _seed_evaluation_rows(
 
         conn.execute(
             """
-            INSERT OR IGNORE INTO models
-                (id, name_en, name_ar, provider, version, model_card, status,
-                 submitted_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                model_id,
-                "Demo Model",
-                "نموذج توضيحي",
-                "MIZAN API Demo",
-                "1.0.0",
-                json.dumps({"model_id": model_id}),
-                "in_evaluation",
-                now,
-                now,
-            ),
-        )
-
-        conn.execute(
-            """
             INSERT INTO evaluations
                 (id, model_id, use_case_id, status, arm_pulls, engine_config,
                  started_at)
@@ -159,7 +151,7 @@ def _seed_evaluation_rows(
 
 def _read_evaluation_from_db(evaluation_id: str) -> dict | None:
     """Read one evaluation row from the DB. Returns None if not found."""
-    with sqlite3.connect(str(_db_path())) as conn:
+    with closing(sqlite3.connect(str(_db_path()))) as conn:
         conn.row_factory = sqlite3.Row
         row = conn.execute(
             "SELECT * FROM evaluations WHERE id = ?", (evaluation_id,)
@@ -171,7 +163,7 @@ def _read_evaluation_from_db(evaluation_id: str) -> dict | None:
 
 def _list_evaluations_from_db(model_id: str | None) -> list[dict]:
     """List evaluation rows from DB, optionally filtered by model_id."""
-    with sqlite3.connect(str(_db_path())) as conn:
+    with closing(sqlite3.connect(str(_db_path()))) as conn:
         conn.row_factory = sqlite3.Row
         if model_id:
             rows = conn.execute(
@@ -198,13 +190,33 @@ def _list_evaluations_from_db(model_id: str | None) -> list[dict]:
     ),
 )
 async def start_evaluation(body: EvaluationIn) -> EvaluationOut:
-    """Create evaluation, use_case, and controls rows; return the initial record."""
+    """Create the evaluation and catalogue rows; return the initial record.
+
+    The model must already be registered. Its card is carried into the
+    in-process record because the harness needs it: several controls are
+    decided by attestation against the card, and an evaluation started
+    without one fails part-way through with a card-missing error.
+    """
     now = _now_iso()
     eval_id = str(uuid.uuid4())
+
+    model_row = models_route.read_model(body.model_id)
+    if model_row is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Model '{body.model_id}' is not registered. Register it first.",
+        )
+
+    if catalogue.use_case(body.use_case_id) is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Use case '{body.use_case_id}' is not in the register.",
+        )
 
     engine_config = body.engine_config_overrides or {}
 
     _seed_evaluation_rows(eval_id, body.model_id, body.use_case_id, engine_config)
+    models_route.set_status(body.model_id, "in_evaluation")
 
     record: dict = {
         "id": eval_id,
@@ -219,9 +231,13 @@ async def start_evaluation(body: EvaluationIn) -> EvaluationOut:
         "started_at": now,
         "completed_at": None,
         "control_decisions": {},
+        # Consumed by the websocket handler; not part of the response schema.
+        "model_card": models_route.read_model_card(body.model_id),
+        "evaluation_profile": models_route.read_profile(body.model_id),
+        "endpoint_url": model_row.get("endpoint_url"),
     }
     _EVAL_STATE[eval_id] = record
-    return EvaluationOut(**record)
+    return EvaluationOut(**{k: v for k, v in record.items() if k in EvaluationOut.model_fields})
 
 
 @router.get(
@@ -259,7 +275,7 @@ async def get_evaluation(evaluation_id: str) -> EvaluationOut:
     # Prefer in-process state (has live arm_pulls list) over DB.
     if evaluation_id in _EVAL_STATE:
         record = _EVAL_STATE[evaluation_id]
-        return EvaluationOut(**record)
+        return EvaluationOut(**{k: v for k, v in record.items() if k in EvaluationOut.model_fields})
 
     row = _read_evaluation_from_db(evaluation_id)
     if row is None:

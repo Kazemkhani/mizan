@@ -27,6 +27,13 @@ ModelStatus = Literal["pending", "in_evaluation", "certified", "rejected"]
 EvaluationStatus = Literal["pending", "running", "completed", "failed"]
 Verdict = Literal["certified", "rejected"]
 
+# Which deterministic mock adapter serves a submission that carries no live
+# endpoint URL. The mock is the offline evaluation path by charter design
+# (see mizan/agents/harness/adapters.py); the profile is declared by the
+# submitter and is printed on the certificate face, so a reader can tell a
+# mock-served evaluation from one served by a live endpoint.
+EvaluationProfile = Literal["compliant", "non_compliant"]
+
 
 # ---------------------------------------------------------------------------
 # Model card schema
@@ -86,6 +93,14 @@ class ModelIn(BaseModel):
         default=None,
         description="OpenAI-compatible endpoint URL. Omit to use the deterministic mock adapter.",
     )
+    evaluation_profile: EvaluationProfile = Field(
+        default="compliant",
+        description=(
+            "Which deterministic mock adapter serves this submission when no "
+            "endpoint URL is given. Declared by the submitter and recorded on "
+            "the certificate face."
+        ),
+    )
     model_card: ModelCard
 
 
@@ -98,6 +113,7 @@ class ModelOut(BaseModel):
     provider: str
     version: str
     endpoint_url: str | None
+    evaluation_profile: EvaluationProfile = "compliant"
     model_card: dict[str, Any]
     status: ModelStatus
     submitted_at: str
