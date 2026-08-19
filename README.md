@@ -112,6 +112,38 @@ make test     # the full suite
 
 The evaluation path runs offline by design. Model endpoints resolve to deterministic mocks and typefaces are self-hosted, so nothing leaves the machine during a demonstration.
 
+## The interface
+
+`make dev` serves an introduction page and a four-stage console: submit a
+model, choose the use case it is intended for, watch the engine adjudicate it
+probe by probe, read the certificate. Any probe in the trace opens to show the
+prompt, the response it drew, the scorer and the evidence hash. A guided
+walkthrough runs on first entry and can be replayed at any point. English and
+Arabic, mirroring on `dir` alone.
+
+Three prepared submissions are offered in the submit panel: one that certifies,
+one that is rejected after nineteen probes on Arabic language accuracy, and one
+whose thin model card fails the controls decided on documents. They live in
+[`web/public/samples/`](web/public/samples/) and can be loaded in one click or
+downloaded and dropped back in.
+
+Deployed as a static build with no engine behind it, the console replays
+evaluations the engine recorded earlier against the real probe corpus, and says
+so in its header. The recorded runs are produced by
+`uv run python scripts/export_demo_runs.py`; nothing in them is written by hand.
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/import?s=https%3A%2F%2Fgithub.com%2FKazemkhani%2Fmizan)
+
+The Vercel import needs no settings: [`vercel.json`](vercel.json) at the root
+builds `web` and publishes `web/dist`. From a shell instead:
+
+```bash
+cd web && npx vercel deploy --prod
+```
+
+[`web/README.md`](web/README.md) covers the interface in full, including the
+GitHub Pages workflow and the single-file build.
+
 ## Verification
 
 An exit code is a claim. The command is the evidence. All of these run in CI on every push.

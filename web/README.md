@@ -57,8 +57,13 @@ uv run python scripts/export_demo_runs.py
 The build is static, so any static host serves it. The deployed interface runs
 in replay mode unless it can reach a MIZAN API on the same origin.
 
-**Vercel.** Import the repository and set the root directory to `web`.
-`vercel.json` supplies the rest. From a shell:
+**Vercel.** Import the repository; no settings are needed. The `vercel.json`
+at the repository root builds this directory and publishes `web/dist`, and the
+one here does the same for an import rooted at `web`.
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/import?s=https%3A%2F%2Fgithub.com%2FKazemkhani%2Fmizan)
+
+From a shell instead:
 
 ```bash
 cd web && npx vercel deploy --prod
