@@ -17,7 +17,7 @@ export interface TourStep {
   /** data-tour value of the element to spotlight, or null to centre. */
   anchor: string | null
   /** Stage the interface should be showing for this step. */
-  stage: 1 | 2 | 3 | 4
+  stage: 1 | 2 | 3 | 4 | 5
 }
 
 export const TOUR_STEPS: TourStep[] = [
@@ -28,6 +28,7 @@ export const TOUR_STEPS: TourStep[] = [
   { key: 'evaluate', anchor: 'start', stage: 3 },
   { key: 'evidence', anchor: 'evidence', stage: 3 },
   { key: 'certificate', anchor: 'certificate', stage: 4 },
+  { key: 'remediation', anchor: 'remediation', stage: 5 },
 ]
 
 interface Rect {

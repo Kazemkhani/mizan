@@ -100,6 +100,8 @@ export interface ControlDecision {
   decision_basis: string | null
   achieved_pass_rate_lower_bound: number | null
   violation_rate_bound: number | null
+  /** Probes this control needs at the declared confidence, from the engine. */
+  n_max?: number
 }
 
 export interface CertificateControlResult {

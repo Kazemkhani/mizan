@@ -19,6 +19,8 @@ import { UseCasePicker } from './UseCasePicker'
 import { Evaluate, type RunStatus } from './Evaluate'
 import { EvidenceView } from './EvidenceView'
 import { CertificateView } from './CertificateView'
+import { Remediation } from './Remediation'
+import { SAMPLE_SUBMISSIONS } from '../data/samples'
 import { controlRecord, fetchModels, registerModel, startEvaluation, type EvaluationOutcome, type RunHandle } from '../lib/api'
 import type { DatasetBinding, Mode, ModelRow, ProbeStep, Submission, UseCase } from '../lib/types'
 
@@ -27,9 +29,16 @@ const STAGES = [
   { stage: 2, key: 'console.step.usecase' },
   { stage: 3, key: 'console.step.evaluate' },
   { stage: 4, key: 'console.step.certificate' },
+  { stage: 5, key: 'console.step.remediate' },
 ] as const
 
-export type Stage = 1 | 2 | 3 | 4
+export type Stage = 1 | 2 | 3 | 4 | 5
+
+// The submission that carries the fixes a remediation plan sets out. A
+// retrained model does not exist to be evaluated, so the re-evaluation runs
+// this one, and the interface says so rather than implying the upload itself
+// was retrained.
+const REMEDIATED_REFERENCE = 'agent-compliant-arabic-assistant'
 
 interface PlatformProps {
   mode: Mode
@@ -64,6 +73,7 @@ export function Platform({
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
   const [selected, setSelected] = React.useState<ProbeStep | null>(null)
   const [fast, setFast] = React.useState(false)
+  const [remediated, setRemediated] = React.useState(false)
   const handleRef = React.useRef<RunHandle | null>(null)
 
   React.useEffect(() => {
@@ -83,6 +93,7 @@ export function Platform({
   const acceptSubmission = (next: Submission, id: string | null) => {
     setSubmission(next)
     setSubmissionId(id)
+    setRemediated(false)
     setModelId(null)
     setSteps([])
     setOutcome(null)
@@ -113,7 +124,7 @@ export function Platform({
     }
   }
 
-  const start = () => {
+  const start = (override?: { modelId: string; submissionId: string | null; profile: 'compliant' | 'non_compliant' }) => {
     if (useCaseId === null) return
     handleRef.current?.cancel()
     setSteps([])
@@ -124,10 +135,10 @@ export function Platform({
     handleRef.current = startEvaluation(
       mode,
       {
-        modelId: modelId ?? '',
+        modelId: override?.modelId ?? modelId ?? '',
         useCaseId,
-        profile: submission?.evaluation_profile ?? 'compliant',
-        submissionId,
+        profile: override?.profile ?? submission?.evaluation_profile ?? 'compliant',
+        submissionId: override === undefined ? submissionId : override.submissionId,
         stepDelayMs: fast ? 24 : 110,
       },
       {
@@ -140,7 +151,7 @@ export function Platform({
           setStatus('done')
           setModels((current) =>
             current.map((m) =>
-              m.id === modelId
+              m.id === (override?.modelId ?? modelId)
                 ? { ...m, status: result.verdict === 'certified' ? 'certified' : 'rejected' }
                 : m,
             ),
@@ -154,6 +165,57 @@ export function Platform({
     )
   }
 
+  /**
+   * Submit the retrained version.
+   *
+   * A certificate is valid for the version assessed, so a retrained model is
+   * a new submission rather than an amendment. The version is bumped, the
+   * name records what happened to it, and the engine adjudicates it from
+   * nothing: no result from the previous run carries over.
+   */
+  const resubmitRemediated = () => {
+    if (submission === null) return
+    const reference = SAMPLE_SUBMISSIONS[REMEDIATED_REFERENCE]
+    const [major] = submission.version.split('.')
+    const nextVersion = `${Number.isNaN(Number(major)) ? 2 : Number(major) + 1}.0.0`
+    const retrained: Submission = {
+      ...submission,
+      name_en: `${submission.name_en} (remediated)`,
+      name_ar: `${submission.name_ar} (بعد المعالجة)`,
+      version: nextVersion,
+      evaluation_profile: 'compliant',
+      model_card: reference?.model_card ?? submission.model_card,
+    }
+
+    setSubmission(retrained)
+    setSubmissionId(REMEDIATED_REFERENCE)
+    setRemediated(true)
+    onStage(3)
+
+    void (async () => {
+      let id = modelId ?? ''
+      try {
+        id = await registerModel(mode, retrained)
+      } catch {
+        id = `local-${Date.now().toString(36)}`
+      }
+      setModelId(id)
+      setModels((current) => [
+        {
+          id,
+          name_en: retrained.name_en,
+          name_ar: retrained.name_ar,
+          provider: retrained.provider,
+          version: retrained.version,
+          status: 'in_evaluation',
+          submitted_at: new Date().toISOString(),
+        },
+        ...current,
+      ])
+      start({ modelId: id, submissionId: REMEDIATED_REFERENCE, profile: 'compliant' })
+    })()
+  }
+
   const controlName = (controlId: string): string | null => {
     const record = controlRecord(controlId)
     if (record === undefined) return null
@@ -164,7 +226,8 @@ export function Platform({
     if (target === 1) return true
     if (target === 2) return submission !== null
     if (target === 3) return useCaseId !== null && submission !== null
-    return outcome?.certificate != null
+    if (target === 4) return outcome?.certificate != null
+    return outcome !== null
   }
 
   return (
@@ -233,6 +296,7 @@ export function Platform({
 
         {stage === 3 ? (
           <div className="evaluate-layout">
+            {remediated ? <p className="rerun-note">{t('remediate.rerun.note')}</p> : null}
             <Evaluate
               useCase={useCase}
               status={status}
@@ -245,6 +309,7 @@ export function Platform({
               onStart={start}
               onSelect={setSelected}
               onOpenCertificate={() => onStage(4)}
+              onOpenRemediation={() => onStage(5)}
             />
             <EvidenceView
               step={selected}
@@ -255,6 +320,25 @@ export function Platform({
         ) : null}
 
         {stage === 4 ? <CertificateView certificate={outcome?.certificate ?? null} /> : null}
+
+        {stage === 5 ? (
+          <div className="evaluate-layout">
+            <Remediation
+              outcome={outcome}
+              steps={steps}
+              useCase={useCase}
+              modelName={locale === 'ar' ? (submission?.name_ar ?? '') : (submission?.name_en ?? '')}
+              fast={fast}
+              onOpenProbe={setSelected}
+              onResubmit={resubmitRemediated}
+            />
+            <EvidenceView
+              step={selected}
+              controlName={selected === null ? null : controlName(selected.control_id)}
+              onClose={() => setSelected(null)}
+            />
+          </div>
+        ) : null}
       </main>
     </div>
   )

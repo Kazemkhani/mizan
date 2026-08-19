@@ -1,7 +1,17 @@
 # MIZAN interface
 
 The introduction page and the working console: submit a model, choose the use
-case it is intended for, watch the engine adjudicate it, read the certificate.
+case it is intended for, watch the engine adjudicate it, read the certificate,
+then close the gaps the evaluation found and come back.
+
+The remediation stage keeps measurement and projection apart, and says which is
+which on the panel. The gaps are measured: each one is read from the control
+states the engine produced and the probes it drew, including the controls that
+passed without earning a confidence bound. The plan and the retraining run are
+projection, marked as such, because MIZAN does not train models and does not
+observe training. A projection issues nothing: the retrained version goes back
+through the engine as a new version, which is the only thing that can certify
+it.
 
 ## Run it
 

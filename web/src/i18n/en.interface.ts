@@ -93,7 +93,8 @@ export const enInterface: Record<string, string> = {
   'console.step.usecase': 'Use case',
   'console.step.evaluate': 'Evaluate',
   'console.step.certificate': 'Certificate',
-  'console.step.of': 'Step {n} of 4',
+  'console.step.remediate': 'Remediation',
+  'console.step.of': 'Step {n} of 5',
 
   'submit.title': 'Submit a model for evaluation',
   'submit.lede':
@@ -156,6 +157,7 @@ export const enInterface: Record<string, string> = {
   'evaluate.verdict.certified': 'Certified',
   'evaluate.verdict.rejected': 'Not certified',
   'evaluate.view.certificate': 'Open the certificate',
+  'evaluate.view.remediation': 'Close the gaps',
 
   'evidence.title': 'The exchange behind this score',
   'evidence.prompt': 'Probe',
@@ -190,6 +192,110 @@ export const enInterface: Record<string, string> = {
   'cert.print': 'Print',
   'cert.served': 'Evaluation served by',
 
+  // -------------------------------------------------------- remediation
+  'remediate.eyebrow': 'After the verdict',
+  'remediate.title': 'Close the gaps and come back',
+  'remediate.lede':
+    'Every model arrives with gaps, including one that certifies: at the present corpus size most controls are settled when the probes run out rather than by a confidence bound. This stage reads those gaps out of the run, sets out the work that would close them, rehearses that work, and hands the retrained version back to the engine.',
+  'remediate.none': 'Run an evaluation first. The gaps are read out of its result.',
+  'remediate.phase.gaps': 'Gaps found',
+  'remediate.phase.plan': 'Work required',
+  'remediate.phase.training': 'Retraining',
+  'remediate.phase.ready': 'Back to the engine',
+  'remediate.projection': 'Projection. Nothing on this panel is evidence, and none of it can issue a certificate.',
+  'remediate.simulated': 'Simulated run. MIZAN does not train models and does not observe training. This rehearses the sequence a remediation cycle follows.',
+  'remediate.gaps.measured': 'Measured. Every figure below was read from the control states the engine produced and the probes it drew.',
+  'remediate.gaps.total': 'Gaps found',
+  'remediate.gaps.failing': 'Failing behaviour',
+  'remediate.gaps.unproven': 'Unproven controls',
+  'remediate.gaps.mandatory': 'Mandatory among them',
+  'remediate.gaps.next': 'See the work required',
+  'remediate.gap.needs': 'Probes needed',
+  'remediate.gap.open': 'Open the exchange',
+  'remediate.kind.failing': 'Failed',
+  'remediate.kind.intermittent': 'Intermittent',
+  'remediate.kind.unproven': 'Not demonstrated',
+  'remediate.kind.untested': 'Never probed',
+  'remediate.reading.failing':
+    'The model was decided against on this control. The behaviour has to change before a certificate is possible.',
+  'remediate.reading.intermittent':
+    'The model passed most probes and failed some. An intermittent failure on a mandatory control is a failure.',
+  'remediate.reading.unproven':
+    'No violation was observed, but the corpus ran out before the required rate could be demonstrated at the declared confidence. The behaviour may be sound; the evidence is not yet there.',
+  'remediate.reading.untested':
+    'This control drew no probe in this evaluation. Nothing is known about it either way.',
+  'remediate.severity.critical': 'Critical',
+  'remediate.severity.high': 'High',
+  'remediate.severity.moderate': 'Moderate',
+  'remediate.plan.lede':
+    'One piece of work per control domain, because that is the unit a fix is bought in: a model does not acquire Arabic refusal behaviour one control at a time. Corpus sizes are planning estimates at {ratio} items per probe the register requires, {items} items in total.',
+  'remediate.plan.next': 'Run the retraining',
+  'remediate.fix.controls': 'Controls it would settle',
+  'remediate.fix.probes': 'Probes required',
+  'remediate.fix.corpus': 'Corpus proposed',
+  'remediate.fix.target': 'Rate it must clear',
+  'remediate.fix.source':
+    'Drawn from the government data bound to {useCase}, so the vocabulary and register match what the model will meet in service.',
+  'remediate.uplift.title': 'Where the work would land',
+  'remediate.uplift.lede':
+    'Observed rate against the rate the register requires. The second figure is the requirement, not a result: only a fresh evaluation can say what the retrained version achieves.',
+  'remediate.handback.title': 'Back to the engine',
+  'remediate.handback.body':
+    'A projection cannot certify anything. Submit the retrained version as a new version and let the engine adjudicate it: a certificate is valid for the exact version assessed, so a retrained model is a new submission, not an amendment to the old one.',
+  'remediate.handback.action': 'Submit the retrained version',
+  'remediate.rerun.note':
+    'Re-evaluating the retrained version. It carries the fixes set out in the remediation plan.',
+
+  'retrain.progress': 'Stage {n} of {total}, {percent}% complete',
+  'retrain.stage.corpus.title': 'Assemble the corpus',
+  'retrain.stage.corpus.body':
+    'Author {items} items across the domains that failed, in Arabic natively where the control is Arabic, and hold back a fifth of them so the regression run is not scored on what was trained on.',
+  'retrain.stage.corpus.done': 'corpus assembled, held-out split reserved',
+  'retrain.stage.alignment.title': 'Alignment passes',
+  'retrain.stage.alignment.body':
+    'Fine-tune {model} on the assembled corpus, checking after each pass that behaviour outside the targeted domains has not moved.',
+  'retrain.stage.alignment.done': 'alignment passes complete, no regression outside the targets',
+  'retrain.stage.guardrails.title': 'Guard rails and system prompt',
+  'retrain.stage.guardrails.body':
+    'Wire the changes that do not belong in weights: refusal routing, the escalation path to a human agent, personal data redaction, and identity disclosure at the opening of a session.',
+  'retrain.stage.guardrails.done': 'guard rails wired, escalation path tested',
+  'retrain.stage.documentation.title': 'Model card',
+  'retrain.stage.documentation.body':
+    'Complete the fields the documentary controls read. A control decided on the model card fails on an empty field however the model behaves.',
+  'retrain.stage.documentation.done': 'model card completed against the documentary controls',
+  'retrain.stage.regression.title': 'The owner\u2019s own regression run',
+  'retrain.stage.regression.body':
+    'Run the {fixes} pieces of work against the held-out split before submitting anything, so MIZAN is not the first party to see a failure.',
+  'retrain.stage.regression.done': 'regression clean on the held-out split, ready to submit',
+
+  'fix.safety.action': 'Harmful request refusal, in both languages',
+  'fix.safety.method':
+    'Refusal training on an adversarial set authored natively in Arabic and English, with the refusal required to hold under rephrasing and role play.',
+  'fix.arabic_linguistic.action': 'Arabic answered in Arabic, in the government register',
+  'fix.arabic_linguistic.method':
+    'Instruction data written natively in Modern Standard Arabic using published government vocabulary. Translated items are excluded: a translated refusal set is what produced this gap.',
+  'fix.privacy.action': 'Personal data never echoed or retained',
+  'fix.privacy.method':
+    'Redaction guard on input and output for identifiers under the Personal Data Protection Law, plus the compliance fields on the model card.',
+  'fix.security.action': 'Instructions in content are not instructions',
+  'fix.security.method':
+    'Prompt injection resistance training with system prompt isolation, so text inside a document cannot redirect the model.',
+  'fix.bias.action': 'The same question answered the same way',
+  'fix.bias.method':
+    'Paired prompt consistency training across the protected attributes the register names, scored on the difference between the two answers rather than on either alone.',
+  'fix.oversight.action': 'A route to a human, and a reason to take it',
+  'fix.oversight.method':
+    'Escalation triggers wired to a human agent, offered without being asked for when a citizen is in distress, and declared on the model card.',
+  'fix.transparency.action': 'Says what it is and what it does not know',
+  'fix.transparency.method':
+    'Identity disclosure at the opening of a session, and uncertainty stated in the answer rather than implied by hedging.',
+  'fix.capability.action': 'Answers grounded in the published record',
+  'fix.capability.method':
+    'Retrieval grounding on the bound government dataset, with the answer required to carry what it was drawn from.',
+  'fix.redteam.action': 'Hardening against the adversarial set',
+  'fix.redteam.method':
+    'Adversarial training on the attack families the red team suite covers, with the held-out attacks kept back for the regression run.',
+
   // ------------------------------------------------------------ walkthrough
   'tour.next': 'Next',
   'tour.back': 'Back',
@@ -214,6 +320,9 @@ export const enInterface: Record<string, string> = {
   'tour.evidence.title': 'Open any probe',
   'tour.evidence.body':
     'Select a probe in the stream, or a control on the board, to read the exact prompt, the answer the model gave and the hash of the record.',
+  'tour.remediation.title': 'Then close the gaps',
+  'tour.remediation.body':
+    'A verdict is not the end. The remediation stage reads the gaps out of the run, sets out the work that would close them, rehearses it, and sends the retrained version back through the engine. The gaps are measured; the plan and the retraining are marked as projection, because MIZAN does not train models.',
   'tour.certificate.title': 'The certificate',
   'tour.certificate.body':
     'When the verdict lands, the certificate is issued in both languages, control by control, with the statistical strength each control actually earned.',

@@ -28,6 +28,7 @@ interface EvaluateProps {
   onStart: () => void
   onSelect: (step: ProbeStep) => void
   onOpenCertificate: () => void
+  onOpenRemediation: () => void
 }
 
 interface Tally {
@@ -84,6 +85,7 @@ export function Evaluate({
   onStart,
   onSelect,
   onOpenCertificate,
+  onOpenRemediation,
 }: EvaluateProps): React.ReactElement {
   const { t, locale } = useTranslation()
   const streamRef = React.useRef<HTMLOListElement>(null)
@@ -175,11 +177,24 @@ export function Evaluate({
             {t(`evaluate.stopped.${outcome.stopping_reason}`) ||
               outcome.stopping_reason}
           </p>
-          {outcome.certificate === null ? null : (
-            <button type="button" className="button button--primary button--small" onClick={onOpenCertificate}>
-              {t('evaluate.view.certificate')}
+          <span className="outcome-bar__actions">
+            <button
+              type="button"
+              className="button button--quiet button--small"
+              onClick={onOpenRemediation}
+            >
+              {t('evaluate.view.remediation')}
             </button>
-          )}
+            {outcome.certificate === null ? null : (
+              <button
+                type="button"
+                className="button button--primary button--small"
+                onClick={onOpenCertificate}
+              >
+                {t('evaluate.view.certificate')}
+              </button>
+            )}
+          </span>
         </div>
       )}
 

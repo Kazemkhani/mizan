@@ -114,12 +114,21 @@ The evaluation path runs offline by design. Model endpoints resolve to determini
 
 ## The interface
 
-`make dev` serves an introduction page and a four-stage console: submit a
+`make dev` serves an introduction page and a five-stage console: submit a
 model, choose the use case it is intended for, watch the engine adjudicate it
-probe by probe, read the certificate. Any probe in the trace opens to show the
-prompt, the response it drew, the scorer and the evidence hash. A guided
-walkthrough runs on first entry and can be replayed at any point. English and
-Arabic, mirroring on `dir` alone.
+probe by probe, read the certificate, then work the gaps it found. Any probe in
+the trace opens to show the prompt, the response it drew, the scorer and the
+evidence hash. A guided walkthrough runs on first entry and can be replayed at
+any point. English and Arabic, mirroring on `dir` alone.
+
+The remediation stage reads the gaps out of the completed run: the controls
+that failed, the controls that were never probed, and the controls that passed
+without earning a confidence bound, which at the present corpus size is most of
+them. It then sets out the work each control domain would need, rehearses that
+work, and hands the retrained version back to the engine as a new version.
+The gap analysis is measurement and is labelled so. The plan and the retraining
+are projection and are labelled so: MIZAN does not train models, and no
+projection can issue a certificate.
 
 Three prepared submissions are offered in the submit panel: one that certifies,
 one that is rejected after nineteen probes on Arabic language accuracy, and one
