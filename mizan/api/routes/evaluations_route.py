@@ -19,6 +19,7 @@ import json
 import sqlite3
 import uuid
 from datetime import datetime, timezone
+import os
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Query, status
@@ -29,7 +30,21 @@ router = APIRouter(prefix="/evaluations", tags=["evaluations"])
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _CONTROLS_JSON = _REPO_ROOT / "suites" / "controls" / "controls.json"
-_DB_PATH = _REPO_ROOT / "data" / "mizan.db"
+
+
+def _db_path() -> Path:
+    """Resolve the database file, honouring MIZAN_DATABASE_URL.
+
+    Read per call rather than captured at import, and read from the same
+    environment variable the data-access layer uses. A hardcoded path here made
+    the route untestable in isolation: the API tests passed locally against a
+    seeded working copy and failed on a clean checkout, which is the same
+    non-hermetic defect the corpus determinism test showed.
+    """
+    url = os.environ.get("MIZAN_DATABASE_URL", "")
+    if url.startswith("sqlite") and "///" in url:
+        return Path(url.split("///", 1)[1])
+    return _REPO_ROOT / "data" / "mizan.db"
 
 # In-process evaluation state. Keyed by evaluation_id.
 # Updated by the websocket handler as the engine runs.
@@ -56,7 +71,7 @@ def _seed_evaluation_rows(
     catalogue = json.loads(_CONTROLS_JSON.read_text(encoding="utf-8"))
     control_rows = catalogue.get("controls", [])
 
-    with sqlite3.connect(str(_DB_PATH)) as conn:
+    with sqlite3.connect(str(_db_path())) as conn:
         conn.execute("PRAGMA foreign_keys = ON")
 
         conn.execute(
@@ -144,7 +159,7 @@ def _seed_evaluation_rows(
 
 def _read_evaluation_from_db(evaluation_id: str) -> dict | None:
     """Read one evaluation row from the DB. Returns None if not found."""
-    with sqlite3.connect(str(_DB_PATH)) as conn:
+    with sqlite3.connect(str(_db_path())) as conn:
         conn.row_factory = sqlite3.Row
         row = conn.execute(
             "SELECT * FROM evaluations WHERE id = ?", (evaluation_id,)
@@ -156,7 +171,7 @@ def _read_evaluation_from_db(evaluation_id: str) -> dict | None:
 
 def _list_evaluations_from_db(model_id: str | None) -> list[dict]:
     """List evaluation rows from DB, optionally filtered by model_id."""
-    with sqlite3.connect(str(_DB_PATH)) as conn:
+    with sqlite3.connect(str(_db_path())) as conn:
         conn.row_factory = sqlite3.Row
         if model_id:
             rows = conn.execute(
