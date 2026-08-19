@@ -1,0 +1,121 @@
+{
+  "visibility": "domain",
+  "fields": [
+    {
+      "name": "m",
+      "description": null,
+      "annotations": {},
+      "label": "Number",
+      "type": "double",
+      "label_en": "Number",
+      "label_ar": "رقم",
+      "description_en": null,
+      "description_ar": null
+    },
+    {
+      "name": "sm_lnzm_ldlyl",
+      "description": null,
+      "annotations": {},
+      "label": "System / Manual Name",
+      "type": "text",
+      "label_en": "System / Manual Name",
+      "label_ar": "اسم النظام/ الدليل",
+      "description_en": null,
+      "description_ar": null
+    },
+    {
+      "name": "sn_lsdr",
+      "description": null,
+      "annotations": {
+        "facetsort": "-count",
+        "timeserie_precision": "day"
+      },
+      "label": "Year Of Issue",
+      "type": "text",
+      "label_en": "Year Of Issue",
+      "label_ar": "سنة الاصدار",
+      "description_en": null,
+      "description_ar": null
+    }
+  ],
+  "dataset_id": "byanat-alanzmh-walsyasat-bdaerh-almward-albshryh",
+  "dataset_uid": "da_f8z46q",
+  "has_records": true,
+  "features": [
+    "analyze"
+  ],
+  "attachments": [],
+  "alternative_exports": [],
+  "data_visible": true,
+  "metas": {
+    "default": {
+      "title": "Human Resources Department Systems and Policies Data",
+      "title_en": "Human Resources Department Systems and Policies Data",
+      "title_ar": "بيانات الانظمة والسياسات بدائرة الموارد البشرية",
+      "description": "<p>An inventory of the systems and policies prepared by the Human Resources Department up to the year 2023.</p>",
+      "description_en": "<p>An inventory of the systems and policies prepared by the Human Resources Department up to the year 2023.</p>",
+      "description_ar": "<p>حصر الأنظمة والسياسات التي تم اعدادها من قبل دائرة الموارد البشرية حتى عام 2023م</p><p><br></p>",
+      "theme": [
+        "Other"
+      ],
+      "theme_en": [
+        "Other"
+      ],
+      "theme_ar": [
+        "اخرى"
+      ],
+      "keyword": [
+        "human resources"
+      ],
+      "keyword_en": [
+        "human resources"
+      ],
+      "keyword_ar": [
+        "HUMAN RESOURCES"
+      ],
+      "license": "CC BY 4.0",
+      "license_en": "CC BY 4.0",
+      "license_ar": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "license_url_en": "https://creativecommons.org/licenses/by/4.0/",
+      "license_url_ar": "https://creativecommons.org/licenses/by/4.0/",
+      "language": "ar",
+      "metadata_languages": [
+        "ar",
+        "en"
+      ],
+      "timezone": null,
+      "modified": "2024-11-11T09:09:13.920000+00:00",
+      "modified_updates_on_metadata_change": true,
+      "modified_updates_on_data_change": true,
+      "data_processed": "2024-11-11T09:09:13.920000+00:00",
+      "metadata_processed": "2026-01-28T07:55:53.689000+00:00",
+      "geographic_reference": [
+        "world_ae"
+      ],
+      "geographic_reference_auto": false,
+      "territory": [
+        "United Arab Emirates"
+      ],
+      "geometry_types": null,
+      "bbox": null,
+      "publisher": "Department of Human Resources",
+      "publisher_en": "Department of Human Resources",
+      "publisher_ar": "دائرة الموارد البشرية",
+      "references": "https://www.ajmanhrd.gov.ae/m3arf",
+      "records_count": 27,
+      "attributions": null,
+      "source_domain": null,
+      "source_domain_title": null,
+      "source_domain_address": null,
+      "source_dataset": null,
+      "shared_catalog": null,
+      "federated": false,
+      "parent_domain": null,
+      "update_frequency": null
+    },
+    "department-publisher": {
+      "department-publisher": null
+    }
+  }
+}

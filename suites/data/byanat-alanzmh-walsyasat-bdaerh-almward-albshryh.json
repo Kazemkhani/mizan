@@ -1,0 +1,151 @@
+{
+  "dataset_id": "byanat-alanzmh-walsyasat-bdaerh-almward-albshryh",
+  "dataset_uid": "da_f8z46q",
+  "source_url": "https://data.ajman.ae/explore/dataset/byanat-alanzmh-walsyasat-bdaerh-almward-albshryh/",
+  "api_url": "https://data.ajman.ae/api/explore/v2.1/catalog/datasets/byanat-alanzmh-walsyasat-bdaerh-almward-albshryh/records",
+  "portal": "Ajman Open Data Portal (data.ajman.ae)",
+  "publisher": "Department of Human Resources",
+  "title": "Human Resources Department Systems and Policies Data",
+  "modified": "2024-11-11T09:09:13.920000+00:00",
+  "read_date": "2026-08-19",
+  "total_records_in_portal": 27,
+  "cached_records": 27,
+  "cache_note": "full",
+  "results": [
+    {
+      "m": 1.0,
+      "sm_lnzm_ldlyl": "سياسة التوطين",
+      "sn_lsdr": "2015"
+    },
+    {
+      "m": 2.0,
+      "sm_lnzm_ldlyl": "نظام ادارة الاداء",
+      "sn_lsdr": "2015"
+    },
+    {
+      "m": 3.0,
+      "sm_lnzm_ldlyl": "نظام الدوام المرن",
+      "sn_lsdr": "2015"
+    },
+    {
+      "m": 8.0,
+      "sm_lnzm_ldlyl": "دليل الهياكل التنظيمية",
+      "sn_lsdr": "2017"
+    },
+    {
+      "m": 12.0,
+      "sm_lnzm_ldlyl": "نظام التدريب والتطوير في حكومة عجمان",
+      "sn_lsdr": "2017"
+    },
+    {
+      "m": 19.0,
+      "sm_lnzm_ldlyl": "الدليل الاسترشادي للعمل عن بعد",
+      "sn_lsdr": "2020"
+    },
+    {
+      "m": 20.0,
+      "sm_lnzm_ldlyl": "نظام العمل عن بعد في حكومة عجمان",
+      "sn_lsdr": "2020"
+    },
+    {
+      "m": 25.0,
+      "sm_lnzm_ldlyl": "دليل إدارة المعرفة في حكومة عجمان",
+      "sn_lsdr": "2022"
+    },
+    {
+      "m": 5.0,
+      "sm_lnzm_ldlyl": "الدليل الاسترشادي لتصميم وتطوير الهياكل التنظيمية",
+      "sn_lsdr": "2016"
+    },
+    {
+      "m": 6.0,
+      "sm_lnzm_ldlyl": "دليل التوطين",
+      "sn_lsdr": "2016"
+    },
+    {
+      "m": 7.0,
+      "sm_lnzm_ldlyl": "دليل الساعات التطوعية في حكومة عجمان",
+      "sn_lsdr": "2017"
+    },
+    {
+      "m": 13.0,
+      "sm_lnzm_ldlyl": "نظام التظلمات و الشكاوى في حكومة عجمان",
+      "sn_lsdr": "2017"
+    },
+    {
+      "m": 14.0,
+      "sm_lnzm_ldlyl": "نظام بدل طبيعة العمل في حكومة عجمان",
+      "sn_lsdr": "2017"
+    },
+    {
+      "m": 17.0,
+      "sm_lnzm_ldlyl": "قرار اعتماد  بدل هاتف متحرك",
+      "sn_lsdr": "2019"
+    },
+    {
+      "m": 18.0,
+      "sm_lnzm_ldlyl": "سياسة التأمين المحدثة",
+      "sn_lsdr": "2019"
+    },
+    {
+      "m": 21.0,
+      "sm_lnzm_ldlyl": "نظام تقييم وتصنيف الوظائف في حكومة عجمان",
+      "sn_lsdr": "2021"
+    },
+    {
+      "m": 22.0,
+      "sm_lnzm_ldlyl": "نظام إدارة الأداء في حكومة عجمان",
+      "sn_lsdr": "2022"
+    },
+    {
+      "m": 23.0,
+      "sm_lnzm_ldlyl": "إطار الكفاءات الفنية في حكومة عجمان",
+      "sn_lsdr": "2022"
+    },
+    {
+      "m": null,
+      "sm_lnzm_ldlyl": "دليل برنامج فكرة لإقتراحات موظفي حكومة عجمان",
+      "sn_lsdr": "2023"
+    },
+    {
+      "m": null,
+      "sm_lnzm_ldlyl": "الدليل الإسترشادي لإعداد المسارات الوظيفة في حكومة عجمان",
+      "sn_lsdr": "2023"
+    },
+    {
+      "m": 4.0,
+      "sm_lnzm_ldlyl": "دليل اصدار البطاقات التعريفية",
+      "sn_lsdr": "2015"
+    },
+    {
+      "m": 9.0,
+      "sm_lnzm_ldlyl": "قانون الموارد البشرية و اللائحة التنفيذية في حكومة عجمان",
+      "sn_lsdr": "2017"
+    },
+    {
+      "m": 10.0,
+      "sm_lnzm_ldlyl": "ميثاق السلوك الوظيفي لموظفي  حكومة عجمان",
+      "sn_lsdr": "2017"
+    },
+    {
+      "m": 11.0,
+      "sm_lnzm_ldlyl": "نظام الأوصاف الوظيفية في حكومة عجمان",
+      "sn_lsdr": "2017"
+    },
+    {
+      "m": 15.0,
+      "sm_lnzm_ldlyl": "نظام شاغلي الوظائف القيادية في حكومة عجمان",
+      "sn_lsdr": "2017"
+    },
+    {
+      "m": 16.0,
+      "sm_lnzm_ldlyl": "نظام المكافآت التشجيعية  وحوافز الأداء في حكومة عجمان",
+      "sn_lsdr": "2018"
+    },
+    {
+      "m": 24.0,
+      "sm_lnzm_ldlyl": "إطار الكفاءات السلوكية في حكومة عجمان",
+      "sn_lsdr": "2022"
+    }
+  ]
+}

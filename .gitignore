@@ -6,16 +6,22 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
 
 # Node
 web/node_modules/
 web/dist/
 
-# Database (generated at runtime; not committed except for demo artefacts)
-data/mizan.db
+# Runtime database. Regenerate with `make seed`; never a source of truth.
+data/*.db
+data/*.db-journal
+data/*.db-wal
 
-# pytest
-.pytest_cache/
+# Tooling scratch
+.playwright-mcp/
+*.log
 
 # macOS
 .DS_Store

@@ -112,3 +112,79 @@ def test_tick_in_a_string_catalogue_is_caught(tmp_path):
     which the design doctrine bans as a generated-output tell."""
     path = write(tmp_path, "en.json", '{"status": "Certified ✓"}\n')
     assert "E004" in codes(path)
+
+
+# ---------------------------------------------------------------------------
+# E005, the precise language law. Charter Addendum 01 section 4.
+# ---------------------------------------------------------------------------
+
+def pitch(tmp_path: Path, body: str, name: str = "README.md") -> Path:
+    """A pitch-facing surface. README.md is in scope by name."""
+    return write(tmp_path, name, body)
+
+
+def test_marketing_adjective_is_caught(tmp_path):
+    assert "E005" in codes(pitch(tmp_path, "An innovative approach to compliance.\n"))
+
+
+def test_ai_powered_is_caught(tmp_path):
+    assert "E005" in codes(pitch(tmp_path, "An AI-powered registry.\n"))
+
+
+def test_platform_as_product_noun_is_caught(tmp_path):
+    assert "E005" in codes(pitch(tmp_path, "MIZAN is a compliance platform.\n"))
+
+
+def test_solution_as_product_noun_is_caught(tmp_path):
+    assert "E005" in codes(pitch(tmp_path, "Our solution adjudicates models.\n"))
+
+
+def test_efficiency_claim_without_a_number_is_caught(tmp_path):
+    assert "E005" in codes(pitch(tmp_path, "MIZAN improves efficiency for federal entities.\n"))
+
+
+def test_efficiency_claim_with_a_number_is_permitted(tmp_path):
+    body = "MIZAN improves evaluation efficiency by 80 percent, measured by the proof script.\n"
+    assert codes(pitch(tmp_path, body)) == []
+
+
+def test_uses_ai_without_saying_what_is_caught(tmp_path):
+    assert "E005" in codes(pitch(tmp_path, "The registry uses AI to help government entities.\n"))
+
+
+def test_uses_ai_with_the_action_named_is_permitted(tmp_path):
+    body = "The engine uses a bandit allocator that ranks test suites by information gain.\n"
+    assert codes(pitch(tmp_path, body)) == []
+
+
+def test_precise_language_law_is_scoped_to_pitch_surfaces(tmp_path):
+    """An internal engineering note may say platform; it is not a pitch claim."""
+    path = write(tmp_path, "notes.md", "The platform layer is innovative here.\n")
+    assert "E005" not in codes(path)
+
+
+def test_allow_banned_marker_exempts_a_document(tmp_path):
+    body = "<!-- register-lint: allow-banned -->\nBanned words include innovative and platform.\n"
+    assert "E005" not in codes(pitch(tmp_path, body))
+
+
+def test_compliant_pitch_copy_is_clean(tmp_path):
+    body = (
+        "MIZAN is a registry. The engine allocates evaluation budget across test "
+        "suites and stops when the confidence bound separates from the threshold. "
+        "Every certificate cites the evidence hash behind each control verdict.\n"
+    )
+    assert codes(pitch(tmp_path, body)) == []
+
+
+def test_html_attribute_in_a_document_is_not_prose(tmp_path):
+    """align="center" is HTML specification vocabulary, like the CSS color
+    property. Flagging it was a gate defect, not a document defect."""
+    path = write(tmp_path, "a.md", '<div align="center">\n\nThe evaluation centre.\n\n</div>\n')
+    assert codes(path) == []
+
+
+def test_american_spelling_in_html_tag_body_is_still_caught(tmp_path):
+    """Masking the tag must not mask the text between tags."""
+    path = write(tmp_path, "a.md", '<div align="center">\n\nWe optimize the colour.\n\n</div>\n')
+    assert "E003" in codes(path)

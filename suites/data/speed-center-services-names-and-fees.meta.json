@@ -1,0 +1,134 @@
+{
+  "visibility": "domain",
+  "fields": [
+    {
+      "name": "number",
+      "description": null,
+      "annotations": {},
+      "label": "Number",
+      "type": "double",
+      "label_en": "Number",
+      "label_ar": "الرقم",
+      "description_en": null,
+      "description_ar": null
+    },
+    {
+      "name": "year",
+      "description": null,
+      "annotations": {},
+      "label": "Year",
+      "type": "double",
+      "label_en": "Year",
+      "label_ar": "السنة",
+      "description_en": null,
+      "description_ar": null
+    },
+    {
+      "name": "list_of_provided_services_to_the_public_by_speed_center_english",
+      "description": null,
+      "annotations": {},
+      "label": "List of provided services to the public by Speed Center-English",
+      "type": "text",
+      "label_en": "List of provided services to the public by Speed Center-English",
+      "label_ar": "قائمة الخدمات المقدمة للجمهور من مركز سبيد (بالإنجليزية)",
+      "description_en": null,
+      "description_ar": null
+    },
+    {
+      "name": "list_of_provided_services_to_the_public_by_speed_center_arabic",
+      "description": null,
+      "annotations": {},
+      "label": "List of provided services to the public by Speed Center-Arabic",
+      "type": "text",
+      "label_en": "List of provided services to the public by Speed Center-Arabic",
+      "label_ar": "قائمة الخدمات المقدمة للجمهور من مركز سبيد (بالعربية)",
+      "description_en": null,
+      "description_ar": null
+    },
+    {
+      "name": "service_fees",
+      "description": null,
+      "annotations": {},
+      "label": "Service Fees",
+      "type": "double",
+      "label_en": "Service Fees",
+      "label_ar": "رسوم الخدمة ",
+      "description_en": null,
+      "description_ar": null
+    }
+  ],
+  "dataset_id": "speed-center-services-names-and-fees",
+  "dataset_uid": "da_vx5h92",
+  "has_records": true,
+  "features": [
+    "analyze"
+  ],
+  "attachments": [],
+  "alternative_exports": [],
+  "data_visible": true,
+  "metas": {
+    "default": {
+      "title": "Speed center services names and fees",
+      "title_en": "Speed center services names and fees",
+      "title_ar": " اسماء خدمات مركز سبيد و رسوم الخدمة ",
+      "description": "<p>The dataset shows the provided Speed Center services and fee to the public.<br></p>",
+      "description_en": "<p>The dataset shows the provided Speed Center services and fee to the public.<br></p>",
+      "description_ar": "<p>قائمة البيانات توضح اسماء الخدمات المقدمة للجمهور من مركز سبيد مع رسوم الخدمة </p>",
+      "theme": [
+        "Transport and infrastructure"
+      ],
+      "theme_en": [
+        "Transport and infrastructure"
+      ],
+      "theme_ar": [
+        "مواصلات وبنية تحتية"
+      ],
+      "keyword": null,
+      "keyword_en": null,
+      "keyword_ar": null,
+      "license": "CC BY 4.0",
+      "license_en": "CC BY 4.0",
+      "license_ar": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "license_url_en": "https://creativecommons.org/licenses/by/4.0/",
+      "license_url_ar": "https://creativecommons.org/licenses/by/4.0/",
+      "language": "en",
+      "metadata_languages": [
+        "en",
+        "ar"
+      ],
+      "timezone": "Asia/Dubai",
+      "modified": "2026-06-25T16:08:21.157000+00:00",
+      "modified_updates_on_metadata_change": true,
+      "modified_updates_on_data_change": true,
+      "data_processed": "2026-06-25T16:08:21.157000+00:00",
+      "metadata_processed": "2026-06-25T16:13:11.142000+00:00",
+      "geographic_reference": [
+        "world_ae"
+      ],
+      "geographic_reference_auto": false,
+      "territory": [
+        "United Arab Emirates"
+      ],
+      "geometry_types": null,
+      "bbox": null,
+      "publisher": "Transport Authority",
+      "publisher_en": "Transport Authority",
+      "publisher_ar": "هيئة النقل",
+      "references": null,
+      "records_count": 60,
+      "attributions": null,
+      "source_domain": null,
+      "source_domain_title": null,
+      "source_domain_address": null,
+      "source_dataset": null,
+      "shared_catalog": null,
+      "federated": false,
+      "parent_domain": null,
+      "update_frequency": null
+    },
+    "department-publisher": {
+      "department-publisher": "Transport Authority"
+    }
+  }
+}

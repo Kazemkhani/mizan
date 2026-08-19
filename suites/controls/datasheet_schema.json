@@ -1,0 +1,348 @@
+{
+  "schema_id": "MIZAN-DATASHEET-SCHEMA-UAE-2026-v1",
+  "schema_version": "1.0",
+  "description": "MIZAN datasheet schema for datasets used in UAE government AI deployments. Extended from Gebru et al. 2021 (Datasheets for Datasets, Communications of the ACM, Vol. 64, No. 12, pp. 86-92) with UAE AI Governance Framework alignment fields, UAE Personal Data Protection Law (Federal Decree-Law No. 45 of 2021) compliance fields, Arabic language fields, and government data classification fields.",
+  "base_references": [
+    {
+      "citation": "Gebru, T., Morgenstern, J., Vecchione, B., Vaughan, J. W., Wallach, H., Daume III, H., and Crawford, K. (2021). Datasheets for Datasets. Communications of the ACM, Vol. 64, No. 12, pp. 86-92. https://dl.acm.org/doi/10.1145/3458723",
+      "role": "base schema"
+    }
+  ],
+  "uae_extensions_rationale": "Gebru et al. 2021 provides the canonical framework for dataset transparency but predates UAE PDPL implementation and does not address Arabic-language data quality or UAE government data classification requirements. Extensions cover: (1) PDPL lawful basis and consent for data collection; (2) sensitive data categories under PDPL Article 3; (3) cross-border data transfer position; (4) Arabic language and dialect quality fields, which are essential for evaluating Arabic-language model training and evaluation sets; (5) government data classification and clearance fields required for datasets sourced from or describing government operations.",
+  "sections": {
+    "motivation": {
+      "description": "Purpose and origin of the dataset. Adapted from Gebru et al. 2021 Section 1.",
+      "fields": {
+        "purpose_en": {
+          "type": "string",
+          "required": true,
+          "description": "For what purpose was the dataset created? In English."
+        },
+        "purpose_ar": {
+          "type": "string",
+          "required": true,
+          "description": "Purpose in Arabic. RASHID review required."
+        },
+        "created_by": {
+          "type": "string",
+          "required": true,
+          "description": "Who created the dataset (individual, team, or organisation)?"
+        },
+        "funded_by": {
+          "type": "string",
+          "required": true,
+          "description": "Who funded the creation of the dataset?"
+        },
+        "contact": {
+          "type": "string",
+          "required": true,
+          "description": "Contact point for questions about the dataset."
+        }
+      }
+    },
+    "composition": {
+      "description": "What the dataset is and what it contains. Adapted from Gebru et al. 2021 Section 2.",
+      "fields": {
+        "instance_types_en": {
+          "type": "string",
+          "required": true,
+          "description": "What do the instances in the dataset represent (text, images, structured records, conversation transcripts, etc.)? In English."
+        },
+        "instance_count": {
+          "type": "integer",
+          "required": true,
+          "description": "Total number of instances in the dataset."
+        },
+        "languages": {
+          "type": "array",
+          "items": "string",
+          "required": true,
+          "description": "Languages present in the dataset, using ISO 639-1 codes (e.g. ar, en)."
+        },
+        "contains_personal_data": {
+          "type": "boolean",
+          "required": true,
+          "description": "Does the dataset contain personal data as defined under UAE PDPL?"
+        },
+        "contains_sensitive_data": {
+          "type": "boolean",
+          "required": true,
+          "description": "Does the dataset contain sensitive personal data as defined under PDPL Article 3?"
+        },
+        "known_errors_en": {
+          "type": "string",
+          "required": true,
+          "description": "Any known errors, sources of noise, or redundancies in the dataset. State none if not applicable."
+        },
+        "confidentiality_restrictions": {
+          "type": "string",
+          "required": true,
+          "description": "Any confidentiality or access restrictions applying to the dataset."
+        },
+        "represents_population": {
+          "type": "string",
+          "required": true,
+          "description": "What population or phenomenon does the dataset represent? Does it represent the UAE population it will be used to serve? Note any representativeness gaps."
+        }
+      }
+    },
+    "collection_process": {
+      "description": "How the data was collected. Adapted from Gebru et al. 2021 Section 3.",
+      "fields": {
+        "collection_mechanism_en": {
+          "type": "string",
+          "required": true,
+          "description": "How was the data collected? Describe the mechanism and any tools or infrastructure used."
+        },
+        "collection_timeframe": {
+          "type": "string",
+          "required": true,
+          "description": "Over what timeframe was the data collected?"
+        },
+        "data_subjects_notified": {
+          "type": "boolean",
+          "required": "conditional",
+          "condition": "contains_personal_data is true",
+          "description": "Were individuals whose data is included notified of the collection? Required disclosure under PDPL."
+        },
+        "consent_obtained": {
+          "type": "boolean",
+          "required": "conditional",
+          "condition": "contains_personal_data is true",
+          "description": "Was consent obtained from individuals whose personal data is included? Note: consent may not be the applicable lawful basis; see lawful_basis field."
+        },
+        "third_party_data_included": {
+          "type": "boolean",
+          "required": true,
+          "description": "Does the dataset include data from third parties? If true, describe the source and any licence or agreement governing its use."
+        }
+      }
+    },
+    "preprocessing_cleaning_labelling": {
+      "description": "Pre-processing applied to the data. Adapted from Gebru et al. 2021 Section 4.",
+      "fields": {
+        "preprocessing_applied": {
+          "type": "boolean",
+          "required": true,
+          "description": "Was any pre-processing, cleaning, or labelling applied to the raw data?"
+        },
+        "preprocessing_description_en": {
+          "type": "string",
+          "required": "conditional",
+          "condition": "preprocessing_applied is true",
+          "description": "Description of pre-processing steps applied. In English."
+        },
+        "raw_data_retained": {
+          "type": "boolean",
+          "required": true,
+          "description": "Is the raw (pre-processed) data also available?"
+        },
+        "labelling_mechanism": {
+          "type": "string",
+          "required": false,
+          "description": "If the dataset includes labels, describe who created them and by what process."
+        }
+      }
+    },
+    "uses": {
+      "description": "Intended and prohibited uses. Adapted from Gebru et al. 2021 Section 5.",
+      "fields": {
+        "intended_uses_en": {
+          "type": "string",
+          "required": true,
+          "description": "Tasks the dataset has been used for or is intended to be used for."
+        },
+        "uses_to_avoid_en": {
+          "type": "string",
+          "required": true,
+          "description": "Uses for which the dataset should not be used, including out-of-distribution deployment and uses that would violate UAE law or the PDPL."
+        }
+      }
+    },
+    "distribution": {
+      "description": "How the dataset is distributed. Adapted from Gebru et al. 2021 Section 6.",
+      "fields": {
+        "distribution_channel": {
+          "type": "string",
+          "required": true,
+          "description": "How is the dataset distributed (internal only, licensed access, public repository, etc.)?"
+        },
+        "licence": {
+          "type": "string",
+          "required": true,
+          "description": "Licence governing use and redistribution of the dataset."
+        },
+        "ip_restrictions": {
+          "type": "string",
+          "required": true,
+          "description": "Any intellectual property restrictions applicable to the dataset content."
+        }
+      }
+    },
+    "maintenance": {
+      "description": "Ongoing stewardship of the dataset. Adapted from Gebru et al. 2021 Section 7.",
+      "fields": {
+        "maintained_by": {
+          "type": "string",
+          "required": true,
+          "description": "Who is responsible for maintaining the dataset?"
+        },
+        "update_policy": {
+          "type": "string",
+          "required": true,
+          "description": "Will the dataset be updated? If so, how and on what schedule?"
+        },
+        "retention_period": {
+          "type": "string",
+          "required": true,
+          "description": "How long will the dataset be retained? For datasets containing personal data, this must be consistent with the PDPL retention limitation principle."
+        },
+        "deletion_procedure": {
+          "type": "string",
+          "required": "conditional",
+          "condition": "contains_personal_data is true",
+          "description": "Procedure for deleting personal data on expiry of the retention period or on receipt of an erasure request under PDPL Article 12-17."
+        }
+      }
+    },
+    "pdpl_fields": {
+      "description": "UAE-EXTENSION. Personal Data Protection Law (Federal Decree-Law No. 45 of 2021) compliance disclosures for the dataset. All fields apply where personal data is present.",
+      "fields": {
+        "lawful_basis_for_collection": {
+          "type": "string",
+          "required": "conditional",
+          "condition": "contains_personal_data is true",
+          "description": "Lawful basis under PDPL Article 4 for collecting the personal data in this dataset. Must be one of: consent; contractual necessity; data subject made information public; protection of data subject interests; legal claim or judicial procedure; medical or public health purposes; archival, scientific, historical, or statistical purposes; public interest necessity; legal obligation compliance."
+        },
+        "sensitive_data_categories": {
+          "type": "array",
+          "items": "string",
+          "required": "conditional",
+          "condition": "contains_sensitive_data is true",
+          "description": "Sensitive personal data categories present under PDPL Article 3. Include all that apply: race or ethnicity; political views; philosophical views; religious beliefs; criminal record; biometric data; health data; sexual status."
+        },
+        "consent_mechanism_description": {
+          "type": "string",
+          "required": "conditional",
+          "condition": "consent_obtained is true",
+          "description": "Description of how consent was obtained. Under PDPL Article 6, consent must be clear, simple, unambiguous, and accessible with easy withdrawal procedures."
+        },
+        "data_minimisation_applied": {
+          "type": "boolean",
+          "required": "conditional",
+          "condition": "contains_personal_data is true",
+          "description": "Whether data minimisation was applied in collection and retention, consistent with the UAE AI Ethics Guide Privacy principle."
+        },
+        "cross_border_transfer": {
+          "type": "boolean",
+          "required": "conditional",
+          "condition": "contains_personal_data is true",
+          "description": "Whether the dataset has been or may be transferred to processors outside the UAE."
+        },
+        "cross_border_transfer_basis": {
+          "type": "string",
+          "required": "conditional",
+          "condition": "cross_border_transfer is true",
+          "description": "Basis and safeguards for cross-border transfer. Specify destination country, whether adequate protection exists, and the transfer mechanism. See SOVEREIGN-TODO G-003 regarding the specific PDPL article number."
+        },
+        "data_residency": {
+          "type": "string",
+          "required": "conditional",
+          "condition": "contains_personal_data is true",
+          "description": "Country or region where the dataset is stored and processed."
+        },
+        "dpia_conducted": {
+          "type": "boolean",
+          "required": "conditional",
+          "condition": "contains_sensitive_data is true",
+          "description": "Whether a Data Protection Impact Assessment was conducted under PDPL Article 21."
+        },
+        "data_protection_officer_contact": {
+          "type": "string",
+          "required": false,
+          "description": "Contact for the Data Protection Officer where applicable under PDPL Article 10."
+        }
+      }
+    },
+    "arabic_language_fields": {
+      "description": "UAE-EXTENSION. Arabic language quality and coverage disclosure. Required for any dataset used to train or evaluate a model intended for UAE government Arabic-language deployment.",
+      "fields": {
+        "arabic_content_included": {
+          "type": "boolean",
+          "required": true,
+          "description": "Whether the dataset includes Arabic-language content."
+        },
+        "arabic_dialect_distribution": {
+          "type": "object",
+          "properties": {
+            "modern_standard_arabic_percent": "number",
+            "gulf_arabic_percent": "number",
+            "egyptian_arabic_percent": "number",
+            "levantine_arabic_percent": "number",
+            "other_dialects_percent": "number",
+            "undifferentiated_percent": "number"
+          },
+          "required": "conditional",
+          "condition": "arabic_content_included is true",
+          "description": "Approximate distribution of Arabic content across dialect and register categories. Percentages must sum to 100. Gulf Arabic representation is particularly important for UAE government deployments."
+        },
+        "arabic_quality_verified": {
+          "type": "boolean",
+          "required": "conditional",
+          "condition": "arabic_content_included is true",
+          "description": "Whether Arabic content quality has been verified by a native Arabic-speaking reviewer."
+        },
+        "arabic_quality_verification_method": {
+          "type": "string",
+          "required": "conditional",
+          "condition": "arabic_quality_verified is true",
+          "description": "Description of the Arabic quality verification method and who conducted it."
+        },
+        "rtl_formatting_validated": {
+          "type": "boolean",
+          "required": "conditional",
+          "condition": "arabic_content_included is true",
+          "description": "Whether right-to-left formatting and bidirectional text handling have been validated in the dataset."
+        },
+        "known_arabic_quality_issues": {
+          "type": "string",
+          "required": "conditional",
+          "condition": "arabic_content_included is true",
+          "description": "Known quality issues in the Arabic content, including any translation artefacts, dialect misclassifications, or coverage gaps."
+        }
+      }
+    },
+    "government_data_fields": {
+      "description": "UAE-EXTENSION. Government data classification and clearance fields. Required for datasets sourced from or describing UAE government operations, services, or citizens.",
+      "fields": {
+        "government_entity_sources": {
+          "type": "array",
+          "items": "string",
+          "required": true,
+          "description": "List of UAE government entities from which data in this dataset was sourced, if any. State none if not applicable."
+        },
+        "classification_level": {
+          "type": "string",
+          "required": true,
+          "description": "Classification level of the dataset contents. One of: public; internal; confidential; secret. Must align with the UAE Government Information Security Regulation classification scheme."
+        },
+        "regulatory_clearance_obtained": {
+          "type": "boolean",
+          "required": true,
+          "description": "Whether regulatory clearance from the relevant UAE government authority has been obtained for the collection and use of this dataset."
+        },
+        "clearance_authority": {
+          "type": "string",
+          "required": "conditional",
+          "condition": "regulatory_clearance_obtained is true",
+          "description": "The UAE government authority that granted clearance and the reference number of the clearance."
+        },
+        "national_ai_strategy_alignment": {
+          "type": "string",
+          "required": false,
+          "description": "If applicable, describe how this dataset supports the objectives of the UAE National Strategy for Artificial Intelligence 2031, particularly Arabic AI development."
+        }
+      }
+    }
+  }
+}

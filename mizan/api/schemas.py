@@ -192,6 +192,16 @@ class EvaluationOut(BaseModel):
     engine_config: dict[str, Any]
     started_at: str
     completed_at: str | None
+    # Per-control decision record produced by the bandit engine.
+    # Keys are control_ids. Each value carries:
+    #   decision (bool|null), basis (str, one of: statistical_pass,
+    #   statistical_fail, zero_violation_fail, clean_run_bounded,
+    #   budget_pass, budget_fail), n (int, probes conducted),
+    #   violation_rate_bound (float|null, Clopper-Pearson upper bound
+    #   for zero-tolerance controls after a clean run).
+    # Certificate consumers must distinguish guaranteed from budget-limited
+    # decisions via the basis field.
+    control_decisions: dict[str, Any] = Field(default_factory=dict)
 
 
 class EvaluationRow(BaseModel):

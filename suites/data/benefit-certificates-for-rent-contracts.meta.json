@@ -1,0 +1,147 @@
+{
+  "visibility": "domain",
+  "fields": [
+    {
+      "name": "year",
+      "description": null,
+      "annotations": {
+        "facetsort": "-count"
+      },
+      "label": "Year",
+      "type": "text",
+      "label_en": "Year",
+      "label_ar": "السنة",
+      "description_en": null,
+      "description_ar": null
+    },
+    {
+      "name": "month_ar",
+      "description": null,
+      "annotations": {},
+      "label": "Month_AR",
+      "type": "text",
+      "label_en": "Month_AR",
+      "label_ar": "الشهر (بالعربية)",
+      "description_en": null,
+      "description_ar": null
+    },
+    {
+      "name": "month_en",
+      "description": null,
+      "annotations": {},
+      "label": "Month_EN",
+      "type": "text",
+      "label_en": "Month_EN",
+      "label_ar": "الشهر (بالإنجليزية)",
+      "description_en": null,
+      "description_ar": null
+    },
+    {
+      "name": "service_ar",
+      "description": null,
+      "annotations": {},
+      "label": "Service_AR",
+      "type": "text",
+      "label_en": "Service_AR",
+      "label_ar": "الخدمة (بالعربية)",
+      "description_en": null,
+      "description_ar": null
+    },
+    {
+      "name": "service_en",
+      "description": null,
+      "annotations": {},
+      "label": "Service_EN",
+      "type": "text",
+      "label_en": "Service_EN",
+      "label_ar": "الخدمة (بالإنجليزية)",
+      "description_en": null,
+      "description_ar": null
+    },
+    {
+      "name": "number_of_lssued_benefit_certificates",
+      "description": null,
+      "annotations": {},
+      "label": "Number of lssued benefit certificates",
+      "type": "double",
+      "label_en": "Number of lssued benefit certificates",
+      "label_ar": "عدد شهادات المنفعة الصادرة",
+      "description_en": null,
+      "description_ar": null
+    }
+  ],
+  "dataset_id": "benefit-certificates-for-rent-contracts",
+  "dataset_uid": "da_hq5ypb",
+  "has_records": true,
+  "features": [
+    "analyze"
+  ],
+  "attachments": [],
+  "alternative_exports": [],
+  "data_visible": true,
+  "metas": {
+    "default": {
+      "title": "Benefit Certificates for Rent Contracts",
+      "title_en": "Benefit Certificates for Rent Contracts",
+      "title_ar": "شهادات إفادة عقد الإيجار",
+      "description": "<p><span style=\"color: rgb(54, 58, 64); font-family: Roboto; font-size: 20px;\">Total No. of Benefit certificates for rent contracts</span><br/></p>",
+      "description_en": "<p><span style=\"color: rgb(54, 58, 64); font-family: Roboto; font-size: 20px;\">Total No. of Benefit certificates for rent contracts</span><br/></p>",
+      "description_ar": "<p><span style=\"color: rgb(54, 58, 64); font-family: AtrissiGhad, Arial, sans-serif; font-size: 20px; text-align: right;\">اجمالي شهادات إفادة عقد الايجار التي تم إصدارها في الإمارة</span><br></p>",
+      "theme": [
+        "Housing"
+      ],
+      "theme_en": [
+        "Housing"
+      ],
+      "theme_ar": [
+        "إسكان"
+      ],
+      "keyword": null,
+      "keyword_en": null,
+      "keyword_ar": null,
+      "license": "CC BY 4.0",
+      "license_en": "CC BY 4.0",
+      "license_ar": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "license_url_en": "https://creativecommons.org/licenses/by/4.0/",
+      "license_url_ar": "https://creativecommons.org/licenses/by/4.0/",
+      "language": "en",
+      "metadata_languages": [
+        "en",
+        "ar"
+      ],
+      "timezone": "Asia/Dubai",
+      "modified": "2025-11-26T06:02:46.764000+00:00",
+      "modified_updates_on_metadata_change": true,
+      "modified_updates_on_data_change": true,
+      "data_processed": "2025-11-26T06:02:46.764000+00:00",
+      "metadata_processed": "2026-01-28T07:55:20.494000+00:00",
+      "geographic_reference": [
+        "world_ae"
+      ],
+      "geographic_reference_auto": false,
+      "territory": [
+        "United Arab Emirates"
+      ],
+      "geometry_types": null,
+      "bbox": null,
+      "publisher": "Municipality & Planning Department",
+      "publisher_en": "Municipality & Planning Department",
+      "publisher_ar": "دائرة البلدية والتخطيط",
+      "references": null,
+      "records_count": 105,
+      "attributions": null,
+      "source_domain": null,
+      "source_domain_title": null,
+      "source_domain_address": null,
+      "source_dataset": null,
+      "shared_catalog": null,
+      "federated": false,
+      "parent_domain": null,
+      "update_frequency": null
+    },
+    "department-publisher": {
+      "department-publisher": null
+    }
+  }
+}

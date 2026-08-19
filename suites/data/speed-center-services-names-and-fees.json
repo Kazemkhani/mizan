@@ -1,0 +1,436 @@
+{
+  "dataset_id": "speed-center-services-names-and-fees",
+  "dataset_uid": "da_vx5h92",
+  "source_url": "https://data.ajman.ae/explore/dataset/speed-center-services-names-and-fees/",
+  "api_url": "https://data.ajman.ae/api/explore/v2.1/catalog/datasets/speed-center-services-names-and-fees/records",
+  "portal": "Ajman Open Data Portal (data.ajman.ae)",
+  "publisher": "Transport Authority",
+  "title": "Speed center services names and fees",
+  "modified": "2026-06-25T16:08:21.157000+00:00",
+  "read_date": "2026-08-19",
+  "total_records_in_portal": 60,
+  "cached_records": 60,
+  "cache_note": "full",
+  "results": [
+    {
+      "number": 2.0,
+      "year": 2023.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Secound Light Vehicle Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "إعادة الفحص الفني لمركبة خفيفة",
+      "service_fees": 50.0
+    },
+    {
+      "number": 3.0,
+      "year": 2023.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Classic Inspectiom",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "الفحص الفني لمركبة كلاسيكية",
+      "service_fees": 420.0
+    },
+    {
+      "number": 4.0,
+      "year": 2023.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Secound Classic Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "إعادة الفحص الفني لمركبة كلاسيكية",
+      "service_fees": 100.0
+    },
+    {
+      "number": 12.0,
+      "year": 2023.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Technical inspection outside the center for heavy vehicles - for companies",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "الفحص الفني خارج المركز للمركبات الثقيلة - للشركات",
+      "service_fees": 500.0
+    },
+    {
+      "number": 13.0,
+      "year": 2023.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Secound Technical inspection outside the center for heavy vehicles - for companies",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "إعادة الفحص الفني خارج المركز للمركبات الثقيلة - للشركات",
+      "service_fees": 500.0
+    },
+    {
+      "number": 17.0,
+      "year": 2023.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Painting and Denting Light Vehicle Inspection - Change Color",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "فحص الصبغ والسمكرة  لمركبة خفيفة (تغيير لون)",
+      "service_fees": 50.0
+    },
+    {
+      "number": 18.0,
+      "year": 2023.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Painting and Denting Heavy Vehicle Inspection - Same Color",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "فحص الصبغ والسمكرة لمركبة ثقيلة (نفس اللون)",
+      "service_fees": 100.0
+    },
+    {
+      "number": 19.0,
+      "year": 2023.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Painting and Denting Heavy Vehicle Inspection - Change Color",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "فحص الصبغ والسمكرة  لمركبة ثقيلة (تغيير لون)",
+      "service_fees": 50.0
+    },
+    {
+      "number": 20.0,
+      "year": 2023.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Painting and Denting Trailer Vehicle Inspection - Same Color",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "فحص الصبغ والسمكرة للمقطورة (نفس اللون)",
+      "service_fees": 100.0
+    },
+    {
+      "number": 2.0,
+      "year": 2024.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Secound Light Vehicle Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "إعادة الفحص الفني لمركبة خفيفة",
+      "service_fees": 50.0
+    },
+    {
+      "number": 4.0,
+      "year": 2024.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Secound Classic Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "إعادة الفحص الفني لمركبة كلاسيكية",
+      "service_fees": 100.0
+    },
+    {
+      "number": 5.0,
+      "year": 2024.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Heavy Vehicle Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "الفحص الفني لمركبة ثقيلة",
+      "service_fees": 200.0
+    },
+    {
+      "number": 6.0,
+      "year": 2024.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Second Heavy Vehicle Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "إعادة الفحص الفني لمركبة ثقيلة",
+      "service_fees": 75.0
+    },
+    {
+      "number": 7.0,
+      "year": 2024.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Motorcycle Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "الفحص الفني لدراجة نارية",
+      "service_fees": 150.0
+    },
+    {
+      "number": 9.0,
+      "year": 2024.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Trailer Vehicle Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "الفحص الفني للمقطورة وشبة المقطورة",
+      "service_fees": 150.0
+    },
+    {
+      "number": 10.0,
+      "year": 2024.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Secound Trailer Vehicle Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "إعادة الفحص الفني للمقطورة وشبة المقطورة",
+      "service_fees": 100.0
+    },
+    {
+      "number": 18.0,
+      "year": 2024.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Painting and Denting Heavy Vehicle Inspection - Same Color",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "فحص الصبغ والسمكرة لمركبة ثقيلة (نفس اللون)",
+      "service_fees": 50.0
+    },
+    {
+      "number": 21.0,
+      "year": 2024.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Painting and Denting Trailer Vehicle Inspection - Change Color",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "فحص الصبغ والسمكرة  للمقطورة (تغيير لون)",
+      "service_fees": 50.0
+    },
+    {
+      "number": 1.0,
+      "year": 2022.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Light Vehicle Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "الفحص الفني لمركبة خفيفة",
+      "service_fees": 150.0
+    },
+    {
+      "number": 4.0,
+      "year": 2022.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Secound Classic Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "إعادة الفحص الفني لمركبة كلاسيكية",
+      "service_fees": 100.0
+    },
+    {
+      "number": 6.0,
+      "year": 2022.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Second Heavy Vehicle Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "إعادة الفحص الفني لمركبة ثقيلة",
+      "service_fees": 75.0
+    },
+    {
+      "number": 8.0,
+      "year": 2022.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Secound Motorcycle Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "إعادة الفحص الفني لدراجة نارية",
+      "service_fees": 50.0
+    },
+    {
+      "number": 11.0,
+      "year": 2022.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Export  Vehicle Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "الفحص الفني لتصدير مركبة خارج الدولة",
+      "service_fees": 100.0
+    },
+    {
+      "number": 20.0,
+      "year": 2022.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Painting and Denting Trailer Vehicle Inspection - Same Color",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "فحص الصبغ والسمكرة للمقطورة (نفس اللون)",
+      "service_fees": 100.0
+    },
+    {
+      "number": 22.0,
+      "year": 2022.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "CCM Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "فحص مقاسات الشاسي",
+      "service_fees": 350.0
+    },
+    {
+      "number": 1.0,
+      "year": 2024.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Light Vehicle Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "الفحص الفني لمركبة خفيفة",
+      "service_fees": 150.0
+    },
+    {
+      "number": 11.0,
+      "year": 2024.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Export  Vehicle Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "الفحص الفني لتصدير مركبة خارج الدولة",
+      "service_fees": 100.0
+    },
+    {
+      "number": 12.0,
+      "year": 2024.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Technical inspection outside the center for heavy vehicles - for companies",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "الفحص الفني خارج المركز للمركبات الثقيلة - للشركات",
+      "service_fees": 500.0
+    },
+    {
+      "number": 16.0,
+      "year": 2024.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Painting and Denting Light Vehicle Inspection - Same Color",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "فحص الصبغ والسمكرة لمركبة خفيفة (نفس اللون)",
+      "service_fees": 50.0
+    },
+    {
+      "number": 17.0,
+      "year": 2024.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Painting and Denting Light Vehicle Inspection - Change Color",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "فحص الصبغ والسمكرة  لمركبة خفيفة (تغيير لون)",
+      "service_fees": 50.0
+    },
+    {
+      "number": 19.0,
+      "year": 2024.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Painting and Denting Heavy Vehicle Inspection - Change Color",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "فحص الصبغ والسمكرة  لمركبة ثقيلة (تغيير لون)",
+      "service_fees": 50.0
+    },
+    {
+      "number": 22.0,
+      "year": 2024.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "CCM Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "فحص مقاسات الشاسي",
+      "service_fees": 450.0
+    },
+    {
+      "number": 5.0,
+      "year": 2023.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Heavy Vehicle Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "الفحص الفني لمركبة ثقيلة",
+      "service_fees": 200.0
+    },
+    {
+      "number": 7.0,
+      "year": 2023.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Motorcycle Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "الفحص الفني لدراجة نارية",
+      "service_fees": 150.0
+    },
+    {
+      "number": 8.0,
+      "year": 2023.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Secound Motorcycle Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "إعادة الفحص الفني لدراجة نارية",
+      "service_fees": 50.0
+    },
+    {
+      "number": 9.0,
+      "year": 2023.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Trailer Vehicle Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "الفحص الفني للمقطورة وشبة المقطورة",
+      "service_fees": 150.0
+    },
+    {
+      "number": 11.0,
+      "year": 2023.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Export  Vehicle Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "الفحص الفني لتصدير مركبة خارج الدولة",
+      "service_fees": 100.0
+    },
+    {
+      "number": 3.0,
+      "year": 2022.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Classic Inspectiom",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "الفحص الفني لمركبة كلاسيكية",
+      "service_fees": 420.0
+    },
+    {
+      "number": 5.0,
+      "year": 2022.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Heavy Vehicle Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "الفحص الفني لمركبة ثقيلة",
+      "service_fees": 200.0
+    },
+    {
+      "number": 9.0,
+      "year": 2022.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Trailer Vehicle Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "الفحص الفني للمقطورة وشبة المقطورة",
+      "service_fees": 150.0
+    },
+    {
+      "number": 10.0,
+      "year": 2022.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Secound Trailer Vehicle Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "إعادة الفحص الفني للمقطورة وشبة المقطورة",
+      "service_fees": 100.0
+    },
+    {
+      "number": 2.0,
+      "year": 2022.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Secound Light Vehicle Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "إعادة الفحص الفني لمركبة خفيفة",
+      "service_fees": 50.0
+    },
+    {
+      "number": 7.0,
+      "year": 2022.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Motorcycle Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "الفحص الفني لدراجة نارية",
+      "service_fees": 150.0
+    },
+    {
+      "number": 12.0,
+      "year": 2022.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Technical inspection outside the center for heavy vehicles - for companies",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "الفحص الفني خارج المركز للمركبات الثقيلة - للشركات",
+      "service_fees": 500.0
+    },
+    {
+      "number": 13.0,
+      "year": 2022.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Secound Technical inspection outside the center for heavy vehicles - for companies",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "إعادة الفحص الفني خارج المركز للمركبات الثقيلة - للشركات",
+      "service_fees": 500.0
+    },
+    {
+      "number": 16.0,
+      "year": 2022.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Painting and Denting Light Vehicle Inspection - Same Color",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "فحص الصبغ والسمكرة لمركبة خفيفة (نفس اللون)",
+      "service_fees": 100.0
+    },
+    {
+      "number": 17.0,
+      "year": 2022.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Painting and Denting Light Vehicle Inspection - Change Color",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "فحص الصبغ والسمكرة  لمركبة خفيفة (تغيير لون)",
+      "service_fees": 50.0
+    },
+    {
+      "number": 18.0,
+      "year": 2022.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Painting and Denting Heavy Vehicle Inspection - Same Color",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "فحص الصبغ والسمكرة لمركبة ثقيلة (نفس اللون)",
+      "service_fees": 100.0
+    },
+    {
+      "number": 19.0,
+      "year": 2022.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Painting and Denting Heavy Vehicle Inspection - Change Color",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "فحص الصبغ والسمكرة  لمركبة ثقيلة (تغيير لون)",
+      "service_fees": 50.0
+    },
+    {
+      "number": 21.0,
+      "year": 2022.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Painting and Denting Trailer Vehicle Inspection - Change Color",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "فحص الصبغ والسمكرة  للمقطورة (تغيير لون)",
+      "service_fees": 50.0
+    },
+    {
+      "number": 1.0,
+      "year": 2023.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Light Vehicle Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "الفحص الفني لمركبة خفيفة",
+      "service_fees": 150.0
+    },
+    {
+      "number": 6.0,
+      "year": 2023.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Second Heavy Vehicle Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "إعادة الفحص الفني لمركبة ثقيلة",
+      "service_fees": 75.0
+    },
+    {
+      "number": 10.0,
+      "year": 2023.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Secound Trailer Vehicle Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "إعادة الفحص الفني للمقطورة وشبة المقطورة",
+      "service_fees": 100.0
+    },
+    {
+      "number": 16.0,
+      "year": 2023.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Painting and Denting Light Vehicle Inspection - Same Color",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "فحص الصبغ والسمكرة لمركبة خفيفة (نفس اللون)",
+      "service_fees": 100.0
+    },
+    {
+      "number": 21.0,
+      "year": 2023.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Painting and Denting Trailer Vehicle Inspection - Change Color",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "فحص الصبغ والسمكرة  للمقطورة (تغيير لون)",
+      "service_fees": 50.0
+    },
+    {
+      "number": 22.0,
+      "year": 2023.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "CCM Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "فحص مقاسات الشاسي",
+      "service_fees": 350.0
+    },
+    {
+      "number": 3.0,
+      "year": 2024.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Classic Inspectiom",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "الفحص الفني لمركبة كلاسيكية",
+      "service_fees": 420.0
+    },
+    {
+      "number": 8.0,
+      "year": 2024.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Secound Motorcycle Inspection",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "إعادة الفحص الفني لدراجة نارية",
+      "service_fees": 50.0
+    },
+    {
+      "number": 13.0,
+      "year": 2024.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Secound Technical inspection outside the center for heavy vehicles - for companies",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "إعادة الفحص الفني خارج المركز للمركبات الثقيلة - للشركات",
+      "service_fees": 500.0
+    },
+    {
+      "number": 20.0,
+      "year": 2024.0,
+      "list_of_provided_services_to_the_public_by_speed_center_english": "Painting and Denting Trailer Vehicle Inspection - Same Color",
+      "list_of_provided_services_to_the_public_by_speed_center_arabic": "فحص الصبغ والسمكرة للمقطورة (نفس اللون)",
+      "service_fees": 50.0
+    }
+  ]
+}

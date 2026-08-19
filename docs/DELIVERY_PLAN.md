@@ -17,6 +17,38 @@ British English. No em-dashes. No emojis. American spellings are a rejection. Co
 
 Every quantitative claim that reaches the pitch must be produced by a committed, reproducible script with output written to `docs/evidence/`. If a measured figure falls short of target, the configuration is tuned honestly, re-measured, and the real figure reported. Fabrication or extrapolation of a pitch number terminates the engagement.
 
+## 3A. Build order, Charter Addendum 01
+
+Amends section 4 below. This is a dependency sequence, not a triage list. **Nothing in the charter is descoped.** No workstream may choose a lighter implementation on the assumption that time is short.
+
+Addendum section 7, the deadline compression and freeze schedule, is struck in full by operator instruction and does not apply. Addendum sections 1 to 6 stand and win over the charter on any conflict.
+
+The spine is built first because everything else hangs from it, then the work proceeds outward:
+
+1. **The spine.** The Fatima journey running end to end offline in under ninety seconds, and `scripts/prove_reduction.py` producing real measured figures. Neither is meaningful without the other: a demo with no measured proof is a description, and a proof with no journey is a spreadsheet.
+2. **Dataset bindings.** BAYAN binds the Arabic citizen-chatbot use case to a real Bayanat resource with a live fetch and a hash-verified offline cache, then the remaining four use cases.
+3. **Certificates.** Signed bilingual PDFs, control by control, evidence hashes and dataset GUIDs present, print-perfect. One certified and one rejected.
+4. **The remaining use cases.** Full adjudication paths for all five, not only the demo case.
+5. **The compounding registry and the Arabic polish.** The learning curve made visible, and Arabic register brought to final quality across every surface rather than only the demo path.
+
+Everything in the charter ships. The demo shows one journey; the rest of the system stays in the repository, finished, and comes out under questioning.
+
+## 3B. The journey law
+
+The demo is one named journey and it is demonstrated, never described. Fatima, AI lead at a federal entity. She submits a candidate model against the Arabic citizen-chatbot use case, watches evaluation budget reallocate live between suites, sees an Arabic-native safety probe fail and opens the exact failing question from the certificate trail, then sees the compliant model carry a signed certificate. Both models are pre-staged. The dashboard's default state, the seed data and the choreography are all built around this and nothing in the demo exists that does not serve it.
+
+## 3C. Standing gates added by Addendum 01
+
+| Gate | Command | Law |
+|---|---|---|
+| Register discipline | `python3 scripts/audit/register_lint.py` | British English, no em-dashes, no emojis, charter section 7 |
+| Precise language, E005 | same command | Addendum section 4: name the action, name the outcome, name the safeguard |
+| Contrast | `python3 scripts/audit/verify_contrast.py` | WCAG AA on every text pairing, composited |
+| Evidence integrity | `uv run python scripts/verify_evidence.py` | Hash chain intact, every payload hash recomputed |
+| Grounding and honesty | `python3 scripts/audit/verify_grounding.py` | Addendum sections 2 and 5: risks named with mitigations, every use case bound to a real dataset, every pitch-facing figure sourced |
+
+An unsourced number on a pitch-facing surface is a critical finding equal to a fabricated benchmark.
+
 ## 4. Wave schedule
 
 | Wave | Name | Mode | Leads | Gate |

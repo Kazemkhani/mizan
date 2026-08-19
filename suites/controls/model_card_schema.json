@@ -1,0 +1,417 @@
+{
+  "schema_id": "MIZAN-MODEL-CARD-SCHEMA-UAE-2026-v1",
+  "schema_version": "1.0",
+  "description": "MIZAN model card schema for UAE government AI deployments. Extended from Mitchell et al. 2019 (Model Cards for Model Reporting, FAccT 2019) with UAE AI Governance Framework alignment fields and UAE Personal Data Protection Law (Federal Decree-Law No. 45 of 2021) compliance fields.",
+  "base_references": [
+    {
+      "citation": "Mitchell, M., Wu, S., Zaldivar, A., Barnes, P., Vasserman, L., Hutchinson, B., Spitzer, E., Raji, I. D., and Gebru, T. (2019). Model Cards for Model Reporting. Proceedings of the ACM Conference on Fairness, Accountability, and Transparency (FAccT 2019). https://dl.acm.org/doi/10.1145/3287560.3287596",
+      "role": "base schema"
+    }
+  ],
+  "uae_extensions_rationale": "UAE government procurement evaluators require disclosures not present in the Mitchell et al. 2019 base schema. Extensions cover: (1) alignment with each principle of the UAE AI Ethics Principles and Guidelines (Dec 2022) and the UAE Charter for the Development and Use of AI (June 2024); (2) PDPL compliance disclosures (lawful basis, sensitive data categories, cross-border transfers, data subject rights mechanism, DPIA status); (3) Arabic language performance disclosure, which is the differentiating evaluation dimension for UAE government deployments; (4) human oversight arrangement, required by the UAE AI Ethics Guide Human-Centred Design principle; (5) deployment context fields required by MIZAN for certificate issuance.",
+  "fields": {
+    "model_details": {
+      "required": true,
+      "description": "Core identification and provenance of the model.",
+      "fields": {
+        "name_en": {
+          "type": "string",
+          "required": true,
+          "description": "Model name in English."
+        },
+        "name_ar": {
+          "type": "string",
+          "required": true,
+          "description": "Model name in Arabic. Must be in formal Gulf governmental register. RASHID review required."
+        },
+        "version": {
+          "type": "string",
+          "required": true,
+          "description": "Exact model version identifier. Version changes trigger re-evaluation (ctrl-aca-004)."
+        },
+        "model_type": {
+          "type": "string",
+          "required": true,
+          "description": "Model architecture type, e.g. large language model, multimodal, classifier, retrieval-augmented generation system."
+        },
+        "provider": {
+          "type": "string",
+          "required": true,
+          "description": "Name of the organisation or individual providing the model."
+        },
+        "deployment_entity": {
+          "type": "string",
+          "required": true,
+          "description": "Name of the UAE government entity deploying the model. This entity bears accountability obligations under the UAE AI Ethics Guide."
+        },
+        "license": {
+          "type": "string",
+          "required": true,
+          "description": "Licence under which the model is deployed. Must confirm that the licence permits government use."
+        },
+        "contact": {
+          "type": "string",
+          "required": true,
+          "description": "Contact point for model-related enquiries (name and email or institutional address)."
+        },
+        "paper_or_documentation_url": {
+          "type": "string",
+          "required": false,
+          "description": "URL to the model's technical paper or official documentation."
+        },
+        "fine_tuning_provenance": {
+          "type": "string",
+          "required": false,
+          "description": "If the model has been fine-tuned from a base model, describe the base model, the fine-tuning dataset, and the objectives. This field is required if fine-tuning was performed."
+        }
+      }
+    },
+    "intended_use": {
+      "required": true,
+      "description": "Scope of intended use, adapted from Mitchell et al. 2019.",
+      "fields": {
+        "primary_uses_en": {
+          "type": "string",
+          "required": true,
+          "description": "Primary intended use cases in English."
+        },
+        "primary_uses_ar": {
+          "type": "string",
+          "required": true,
+          "description": "Primary intended use cases in Arabic. RASHID review required."
+        },
+        "primary_users": {
+          "type": "array",
+          "items": "string",
+          "required": true,
+          "description": "Intended user groups, e.g. UAE citizens, ministry staff, emergency services operators."
+        },
+        "mizan_use_case_ids": {
+          "type": "array",
+          "items": "string",
+          "required": true,
+          "description": "MIZAN use case identifiers this model is evaluated against, e.g. ['uc-001', 'uc-003']. Must match identifiers in use_cases.json."
+        },
+        "out_of_scope_uses_en": {
+          "type": "string",
+          "required": true,
+          "description": "Uses for which this model is not intended and should not be deployed."
+        },
+        "out_of_scope_uses_ar": {
+          "type": "string",
+          "required": true,
+          "description": "Out-of-scope uses in Arabic. RASHID review required."
+        }
+      }
+    },
+    "training_data": {
+      "required": true,
+      "description": "Brief description of training data, adapted from Mitchell et al. 2019.",
+      "fields": {
+        "description_en": {
+          "type": "string",
+          "required": true,
+          "description": "Description of training data sources, domains, languages, and any known limitations in English."
+        },
+        "description_ar": {
+          "type": "string",
+          "required": true,
+          "description": "Description of training data in Arabic. RASHID review required."
+        },
+        "arabic_training_data_present": {
+          "type": "boolean",
+          "required": true,
+          "description": "Whether the training data included Arabic-language content."
+        },
+        "arabic_training_data_description": {
+          "type": "string",
+          "required": false,
+          "description": "If Arabic training data was present, describe its volume, dialect distribution, and domains. Required when arabic_training_data_present is true."
+        }
+      }
+    },
+    "evaluation_data": {
+      "required": true,
+      "description": "Information about evaluation datasets used by the model developer.",
+      "fields": {
+        "datasets": {
+          "type": "array",
+          "items": {
+            "name": "string",
+            "url": "string",
+            "description": "string"
+          },
+          "required": true,
+          "description": "List of evaluation datasets used."
+        },
+        "arabic_evaluation_conducted_by_developer": {
+          "type": "boolean",
+          "required": true,
+          "description": "Whether the model developer conducted Arabic-language evaluation. Distinct from MIZAN's own evaluation."
+        }
+      }
+    },
+    "performance_metrics": {
+      "required": true,
+      "description": "Performance measures, adapted from Mitchell et al. 2019.",
+      "fields": {
+        "measures": {
+          "type": "array",
+          "items": {
+            "name": "string",
+            "value": "string",
+            "benchmark": "string",
+            "locale": "string"
+          },
+          "required": true,
+          "description": "List of performance measures with their values, benchmark names, and locales (en, ar, or both)."
+        },
+        "decision_thresholds": {
+          "type": "string",
+          "required": false,
+          "description": "Decision thresholds used in classification or triage tasks, if applicable."
+        }
+      }
+    },
+    "ethical_considerations": {
+      "required": true,
+      "description": "Ethical considerations, adapted from Mitchell et al. 2019.",
+      "fields": {
+        "known_risks_en": {
+          "type": "string",
+          "required": true,
+          "description": "Known risks of the model in English."
+        },
+        "known_risks_ar": {
+          "type": "string",
+          "required": true,
+          "description": "Known risks in Arabic. RASHID review required."
+        },
+        "mitigations_en": {
+          "type": "string",
+          "required": true,
+          "description": "Mitigations applied or recommended in English."
+        },
+        "mitigations_ar": {
+          "type": "string",
+          "required": true,
+          "description": "Mitigations in Arabic. RASHID review required."
+        }
+      }
+    },
+    "uae_governance_alignment": {
+      "required": true,
+      "description": "UAE-EXTENSION. Alignment with UAE AI Ethics Principles and Guidelines (Dec 2022) and UAE Charter for the Development and Use of AI (June 2024). Each principle must be addressed with a substantive statement, not a checkbox. Absence of a substantive statement is treated as non-disclosure.",
+      "fields": {
+        "safety_and_robustness": {
+          "type": "string",
+          "required": true,
+          "description": "Statement of how the model addresses the UAE AI Ethics Guide Robustness, Safety and Cybersecurity principle and the UAE Charter Safety principle. Cite testing approaches, known failure modes, and fallback procedures."
+        },
+        "fairness_and_non_discrimination": {
+          "type": "string",
+          "required": true,
+          "description": "Statement of how the model addresses the UAE AI Ethics Guide Fairness principle and the UAE Charter Algorithmic Bias Mitigation principle. Cite bias evaluation results, demographic groups tested, and remediation applied."
+        },
+        "transparency_and_explainability": {
+          "type": "string",
+          "required": true,
+          "description": "Statement of how the model addresses the UAE AI Ethics Guide Transparency and Explainability principle and the UAE Charter Transparency principle. Describe AI identity disclosure, decision factor communication, and uncertainty signalling mechanisms."
+        },
+        "human_oversight_arrangement": {
+          "type": "string",
+          "required": true,
+          "description": "UAE-EXTENSION. Description of the human oversight arrangement for this deployment. Specify whether human-in-the-loop or human-on-the-loop is implemented, who the designated human reviewer is, what decisions require human sign-off, and the escalation pathway. Required by UAE AI Ethics Guide Human-Centred Design principle and UAE Charter Human Oversight principle."
+        },
+        "accountability_and_governance": {
+          "type": "string",
+          "required": true,
+          "description": "Statement of governance structure: who is accountable for model outputs, incident response procedure, and version change management. Addresses UAE AI Ethics Guide Accountability and Traceability principles and UAE Charter Governance and Accountability principle."
+        },
+        "privacy_compliance": {
+          "type": "string",
+          "required": true,
+          "description": "High-level statement of privacy compliance approach, referencing the more detailed pdpl_compliance fields below."
+        }
+      }
+    },
+    "pdpl_compliance": {
+      "required": true,
+      "description": "UAE-EXTENSION. Personal Data Protection Law (Federal Decree-Law No. 45 of 2021) compliance disclosure. All fields are required where personal data is processed.",
+      "fields": {
+        "processes_personal_data": {
+          "type": "boolean",
+          "required": true,
+          "description": "Whether this deployment processes personal data as defined under PDPL. If false, remaining pdpl fields may be left empty with an explanatory note."
+        },
+        "lawful_basis_for_processing": {
+          "type": "string",
+          "required": "conditional",
+          "condition": "processes_personal_data is true",
+          "description": "Lawful basis under PDPL Article 4. Must be one of: consent; contractual necessity; data subject made information public; protection of data subject interests; legal claim or judicial procedure; medical or public health purposes; archival, scientific, historical, or statistical purposes; public interest necessity; legal obligation compliance. Cite the specific basis applicable to this deployment."
+        },
+        "sensitive_data_categories_processed": {
+          "type": "array",
+          "items": "string",
+          "required": "conditional",
+          "condition": "processes_personal_data is true",
+          "description": "Categories of sensitive personal data processed under PDPL Article 3. Include all that apply: race or ethnicity; political views; philosophical views; religious beliefs; criminal record; biometric data; health data; sexual status. If none, state none."
+        },
+        "cross_border_transfer": {
+          "type": "boolean",
+          "required": "conditional",
+          "condition": "processes_personal_data is true",
+          "description": "Whether personal data is transferred to processors or storage infrastructure outside the UAE."
+        },
+        "cross_border_transfer_basis": {
+          "type": "string",
+          "required": "conditional",
+          "condition": "cross_border_transfer is true",
+          "description": "Basis for cross-border transfer under UAE PDPL provisions. Must specify: destination country or countries; whether the destination has adequate protection as determined under the PDPL; and the transfer mechanism (adequate protection finding, standard contract clauses, consent, or public interest). See SOVEREIGN-TODO G-003 regarding specific article number."
+        },
+        "data_residency": {
+          "type": "string",
+          "required": "conditional",
+          "condition": "processes_personal_data is true",
+          "description": "Country or region where personal data is stored and processed. For UAE government deployments, UAE data residency is the preferred position. Where non-UAE residency is used, the cross-border transfer basis must be documented."
+        },
+        "data_subject_rights_mechanism": {
+          "type": "string",
+          "required": "conditional",
+          "condition": "processes_personal_data is true",
+          "description": "Description of the mechanism by which data subjects can exercise rights under PDPL Articles 12 to 17, including access, rectification, erasure, restriction, and objection to automated processing. Include contact details or URL for the rights portal."
+        },
+        "dpia_conducted": {
+          "type": "boolean",
+          "required": "conditional",
+          "condition": "processes_personal_data is true",
+          "description": "Whether a Data Protection Impact Assessment has been conducted, as required under PDPL Article 21 for high-risk processing."
+        },
+        "dpia_date": {
+          "type": "string",
+          "required": "conditional",
+          "condition": "dpia_conducted is true",
+          "description": "Date the DPIA was completed (ISO 8601 format)."
+        },
+        "dpia_findings_summary": {
+          "type": "string",
+          "required": "conditional",
+          "condition": "dpia_conducted is true",
+          "description": "Summary of DPIA findings and any residual risks identified."
+        },
+        "data_protection_officer_contact": {
+          "type": "string",
+          "required": false,
+          "description": "Contact details for the Data Protection Officer, where one has been appointed under PDPL Article 10."
+        }
+      }
+    },
+    "arabic_language_performance": {
+      "required": true,
+      "description": "UAE-EXTENSION. Disclosure of Arabic language performance. Required because a model evaluated only in English cannot be certified for Arabic-language government deployment. This section operationalises MIZAN-CTL-005 (Arabic Language Accuracy).",
+      "fields": {
+        "arabic_evaluation_conducted": {
+          "type": "boolean",
+          "required": true,
+          "description": "Whether Arabic-language evaluation has been conducted for this model."
+        },
+        "arabic_benchmarks": {
+          "type": "array",
+          "items": {
+            "benchmark_name": "string",
+            "score": "number",
+            "score_date": "string",
+            "methodology": "string"
+          },
+          "required": "conditional",
+          "condition": "arabic_evaluation_conducted is true",
+          "description": "List of Arabic language benchmarks with scores, evaluation dates, and methodology descriptions."
+        },
+        "arabic_vs_english_parity_score": {
+          "type": "number",
+          "required": "conditional",
+          "condition": "arabic_evaluation_conducted is true",
+          "description": "Score representing the ratio or gap of Arabic performance to English performance on matched bilingual benchmarks. A score of 1.0 indicates parity; lower values indicate English-language advantage. MIZAN requires this to be <= 0.15 gap for control ctrl-fnd-003 (Equal Service Quality Across Languages)."
+        },
+        "arabic_dialect_coverage": {
+          "type": "array",
+          "items": "string",
+          "required": true,
+          "description": "Arabic dialect or register variants for which the model has been evaluated or is intended to support. Include: Modern Standard Arabic; Gulf Arabic; Egyptian Arabic; Levantine Arabic; as applicable. Must include at minimum Modern Standard Arabic and Gulf Arabic for UAE government deployments."
+        },
+        "known_arabic_limitations_en": {
+          "type": "string",
+          "required": true,
+          "description": "Known limitations in Arabic language performance, in English."
+        },
+        "known_arabic_limitations_ar": {
+          "type": "string",
+          "required": true,
+          "description": "Known limitations in Arabic language performance, in Arabic. RASHID review required."
+        }
+      }
+    },
+    "deployment_context": {
+      "required": true,
+      "description": "UAE-EXTENSION. MIZAN-specific deployment context for certificate issuance and registry management.",
+      "fields": {
+        "mizan_use_case_class": {
+          "type": "string",
+          "required": true,
+          "description": "MIZAN use case class identifier. One of: citizen_chatbot, document_summarisation, benefits_triage, incident_classification, procurement_analysis."
+        },
+        "mizan_evaluation_id": {
+          "type": "string",
+          "required": false,
+          "description": "MIZAN evaluation identifier, populated by the MIZAN registry on evaluation initiation."
+        },
+        "mizan_certificate_id": {
+          "type": "string",
+          "required": false,
+          "description": "MIZAN certificate identifier, populated by the MIZAN registry on certificate issuance."
+        },
+        "deployment_environment": {
+          "type": "string",
+          "required": true,
+          "description": "Description of the deployment infrastructure, including whether it is hosted within UAE borders, the cloud provider if applicable, and network isolation arrangements."
+        },
+        "human_reviewer_role": {
+          "type": "string",
+          "required": true,
+          "description": "Role or job title of the designated human reviewer responsible for oversight of this deployment. Required to satisfy ctrl-hov-001 (Human Review Pathway)."
+        },
+        "incident_response_contact": {
+          "type": "string",
+          "required": true,
+          "description": "Contact details for incident reporting and response for this deployment."
+        }
+      }
+    },
+    "caveats_and_recommendations": {
+      "required": true,
+      "description": "Caveats and recommendations, adapted from Mitchell et al. 2019.",
+      "fields": {
+        "caveats_en": {
+          "type": "string",
+          "required": true,
+          "description": "Caveats about model use in English."
+        },
+        "caveats_ar": {
+          "type": "string",
+          "required": true,
+          "description": "Caveats in Arabic. RASHID review required."
+        },
+        "recommendations_en": {
+          "type": "string",
+          "required": true,
+          "description": "Recommendations for deployers in English."
+        },
+        "recommendations_ar": {
+          "type": "string",
+          "required": true,
+          "description": "Recommendations for deployers in Arabic. RASHID review required."
+        }
+      }
+    }
+  }
+}

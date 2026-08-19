@@ -1,0 +1,57 @@
+{
+    "_FIXTURE_WARNING": "TEST FIXTURE ONLY. Not governance content. Never commit as a control set. Used exclusively by tests/test_bandit_engine.py to verify engine behaviour under controlled conditions. Real controls live in suites/controls/controls.json.",
+    "_DESIGN_NOTE": "Three suites are required. With two suites and deterministic probe outcomes, UCB1 never produces ties and the seed never affects arm selection. Three suites guarantee a genuine UCB1 tie at step 4 (when bias and transparency share equal mean_reward = 0.25 after warm-start), exercising the RNG tie-breaking path and making test_different_seed_produces_different_sequence meaningful.",
+    "use_case_id": "fixture-uc-001",
+    "use_case_class": "fixture_test_case",
+    "confidence_threshold": 0.95,
+    "controls": [
+        {
+            "_comment": "Mandatory: pass rate must be >= 0.90. at_least threshold_direction. Part of suite-safety.",
+            "control_id": "fixture-ctrl-safety-001",
+            "suite_id": "fixture-suite-safety",
+            "is_mandatory": true,
+            "pass_threshold": 0.90,
+            "threshold_direction": "at_least"
+        },
+        {
+            "_comment": "Mandatory: pass rate must be >= 0.85. at_least threshold_direction. Part of suite-safety.",
+            "control_id": "fixture-ctrl-safety-002",
+            "suite_id": "fixture-suite-safety",
+            "is_mandatory": true,
+            "pass_threshold": 0.85,
+            "threshold_direction": "at_least"
+        },
+        {
+            "_comment": "Mandatory: zero-tolerance (pass_threshold=1.0, threshold_direction=at_least, required_pass_rate=1.0). Any violation causes ZERO_VIOLATION_FAIL; a clean run produces CLEAN_RUN_BOUNDED. Part of suite-safety to keep arm count at 3 and preserve UCB1 tie-breaking dynamics. NOTE: currently unexercised in production (GOVERNANCE Wave 1 converted all zero-tolerance probe controls to attestation); retained for completeness.",
+            "control_id": "fixture-ctrl-zt-001",
+            "suite_id": "fixture-suite-safety",
+            "is_mandatory": true,
+            "pass_threshold": 1.0,
+            "threshold_direction": "at_least"
+        },
+        {
+            "_comment": "Mandatory: violation rate must be at_most 0.15, so required_pass_rate = 1 - 0.15 = 0.85. at_most threshold_direction. Part of suite-bias.",
+            "control_id": "fixture-ctrl-bias-001",
+            "suite_id": "fixture-suite-bias",
+            "is_mandatory": true,
+            "pass_threshold": 0.15,
+            "threshold_direction": "at_most"
+        },
+        {
+            "_comment": "Mandatory: pass rate must be >= 0.80. at_least threshold_direction. Part of suite-transparency. Third suite ensures UCB1 ties at step 4 when bias and transparency have identical mean_reward = 0.25 after warm-start.",
+            "control_id": "fixture-ctrl-transparency-001",
+            "suite_id": "fixture-suite-transparency",
+            "is_mandatory": true,
+            "pass_threshold": 0.80,
+            "threshold_direction": "at_least"
+        },
+        {
+            "_comment": "Advisory: not mandatory. Must NOT gate the verdict. Part of suite-bias to test that advisory controls in a mixed suite are not probed.",
+            "control_id": "fixture-ctrl-advisory-001",
+            "suite_id": "fixture-suite-bias",
+            "is_mandatory": false,
+            "pass_threshold": 0.80,
+            "threshold_direction": "at_least"
+        }
+    ]
+}

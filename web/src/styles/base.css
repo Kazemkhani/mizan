@@ -1,6 +1,6 @@
 /* =============================================================================
    MIZAN Base Stylesheet
-   Sovereign AI Model Registry — TDRA UAE Hackathon 2026
+   Sovereign AI Model Registry, TDRA UAE Hackathon 2026
    Author: ATELIER, Design Director, Sovereign Digital Products
 
    SCOPE
@@ -12,7 +12,7 @@
    ───────────
    tokens.css must be imported before this file.
 
-   RTL BASELINE — THE RULE
+   RTL BASELINE
    ────────────────────────
    No physical directional CSS properties appear anywhere in this file.
    The full list of banned physical forms and their logical equivalents is
@@ -84,7 +84,7 @@ body {
 
 
 /* =============================================================================
-   ARABIC SCRIPT — document-level adjustments
+   ARABIC SCRIPT: document-level adjustments
    Applied when dir="rtl" is set on <html> or any ancestor.
    Extends body defaults; does not duplicate them.
    ============================================================================= */
@@ -103,7 +103,7 @@ body {
 /* =============================================================================
    HEADINGS
    Playfair Display for Latin; Amiri for Arabic.
-   Colour is left to the component layer — headings appear on multiple surfaces.
+   Colour is left to the component layer; headings appear on multiple surfaces.
    text-align: start resolves to left in LTR and right in RTL automatically.
    ============================================================================= */
 
@@ -205,7 +205,7 @@ nav ul,
 
 
 /* =============================================================================
-   DATA ELEMENTS — tabular numerics (MANDATORY)
+   DATA ELEMENTS: tabular numerics (MANDATORY)
    Every element displaying evaluation scores, confidence bounds, budget
    allocations, model IDs, timestamps, or hashes must render numerals in
    tabular lining figures so columns align precisely.
@@ -294,7 +294,7 @@ td {
 
 
 /* =============================================================================
-   FORM ELEMENTS — structural defaults only; not styled components
+   FORM ELEMENTS: structural defaults only, not styled components
    ============================================================================= */
 
 input, textarea, select, button {
@@ -357,7 +357,7 @@ hr {
 
 
 /* =============================================================================
-   BLOCKQUOTE — for long-form evidence excerpts and certificate pull quotes
+   BLOCKQUOTE: for long-form evidence excerpts and certificate pull quotes
    The border-inline-start resolves to the correct side automatically in RTL.
    ============================================================================= */
 
@@ -410,7 +410,7 @@ blockquote {
 
 
 /* =============================================================================
-   SCROLLBAR — minimal, harmonised with navy surfaces
+   SCROLLBAR: minimal, harmonised with navy surfaces
    ============================================================================= */
 
 html {
@@ -457,7 +457,7 @@ html {
 
 
 /* =============================================================================
-   PRINT — safety defaults only
+   PRINT: safety defaults only
    The certificate template is a component-level concern in Wave 3.
    background-color: transparent lets the browser/printer handle paper colour;
    authoring #fff here would be the "pure white background" prohibited tell.

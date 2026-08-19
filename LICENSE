@@ -1,0 +1,26 @@
+Copyright (c) 2026 Amir Hossein Kazemkhani. All rights reserved.
+
+This software and its accompanying documentation are proprietary and
+confidential. No licence, express or implied, is granted to any person to use,
+copy, modify, merge, publish, distribute, sublicense or sell copies of this
+software, in whole or in part, except under a separate written agreement signed
+by the copyright holder.
+
+Repository collaborators are granted access for the purpose of contributing to
+this work only. That access confers no ownership, no redistribution right, and
+no licence to use the software outside this repository.
+
+THIRD-PARTY MATERIAL
+
+Typefaces distributed under web/public/fonts are the property of their
+respective authors and are redistributed under the SIL Open Font Licence. Each
+family carries its licence text alongside the font binaries.
+
+Open government datasets cached under suites/data are published by UAE
+government entities under their own terms, recorded per dataset in
+docs/evidence/data_sources.md. Those terms govern that content, not this
+licence. The cached copies are verbatim and are not modified.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.

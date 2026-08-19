@@ -1,0 +1,18 @@
+{
+  "evaluation_id": "4696b3ae-55b9-5333-b25e-1cc90be99a53",
+  "profile": "compliant",
+  "seed": 42,
+  "total_evidence_rows": 206,
+  "bundle_hash": "8a32d652e3cbc2be2a7c6de2cdbb096dc16cece46ec22ce336ed2294afd6a876",
+  "suite_row_counts": {
+    "suite-arabic-linguistic": 14,
+    "suite-bias": 30,
+    "suite-capability": 64,
+    "suite-oversight": 9,
+    "suite-privacy": 13,
+    "suite-safety": 40,
+    "suite-security": 20,
+    "suite-transparency": 16
+  },
+  "produced_at": "2026-08-19T09:45:09.285686+00:00"
+}

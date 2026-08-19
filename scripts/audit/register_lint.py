@@ -38,6 +38,18 @@ EXCLUDED_FILES = {
     "scripts/audit/test_register_lint.py",
 }
 
+# Files under these relative path prefixes are excluded from ALL register-lint
+# checks (E001 em-dash, E002 emoji, E003 American spelling, E004 dingbats,
+# E005 pitch language). suites/data/ contains verbatim Bayanat open-data
+# artefacts sourced from the UAE government portal. Their string content (e.g.
+# "Speed Center", "analyze" in metadata fields) is the authoritative dataset
+# text and must not be altered without falsifying the source. Grounding rule
+# (Wave 1): an externally-sourced file may not be silently corrected; it is
+# excluded here and its provenance is recorded in DECISIONS.md.
+EXCLUDED_PREFIXES: tuple[str, ...] = (
+    "suites/data/",
+)
+
 EXCLUDED_DIRS = {
     ".git", "node_modules", ".venv", "venv", "__pycache__", "dist", "build",
     ".pytest_cache", ".ruff_cache", ".mypy_cache", "uv.lock",
@@ -71,6 +83,70 @@ DINGBAT_PATTERN = re.compile(
 
 # Paths whose string literals reach a human reading the product.
 USER_FACING_PREFIXES = ("web/src/", "web/public/", "suites/", "api/")
+
+# ---------------------------------------------------------------------------
+# E005, the precise language law. Charter Addendum 01 section 4.
+# The judges' formula is: name the action, name the outcome, name the safeguard.
+# Marketing register is banned wherever a judge can read it. This is scoped to
+# pitch-facing surfaces rather than the whole repository, because an internal
+# engineering note discussing a "platform" is not a pitch claim.
+# ---------------------------------------------------------------------------
+PITCH_FACING_PREFIXES = ("web/src/i18n/", "docs/submission/")
+PITCH_FACING_FILES = {
+    "docs/RISKS.md",
+    "docs/DATA_REQUESTS.md",
+    "suites/controls/certificate_content.json",
+    "README.md",
+}
+
+# A document that must quote the banned vocabulary, such as this law itself,
+# opts out with this marker on any line.
+ALLOW_BANNED_MARKER = "register-lint: allow-banned"
+
+BANNED_PHRASES = {
+    "ai-powered": "name what the engine does instead",
+    "ai powered": "name what the engine does instead",
+    "innovative": "show the mechanism; the judge decides if it is novel",
+    "ecosystem": "name the actual parties",
+    "seamless": "name the step that was removed",
+    "leverage": "use, or name the specific mechanism",
+    "revolutionise": "state the measured change",
+    "revolutionize": "state the measured change",
+    "cutting-edge": "state what it does that the alternative does not",
+    "cutting edge": "state what it does that the alternative does not",
+    "state-of-the-art": "state the measured comparison",
+    "game-changing": "state the measured change",
+    "world-class": "state the measured standard met",
+    "best-in-class": "state the measured comparison",
+}
+
+# The product is described only as a registry, an engine, a certificate, an
+# instrument, or infrastructure.
+BANNED_PRODUCT_NOUNS = {
+    "platform": "registry, engine, certificate, instrument or infrastructure",
+    "solution": "registry, engine, certificate, instrument or infrastructure",
+}
+
+# "improves efficiency" is permitted only with a number in the same sentence.
+EFFICIENCY_CLAIM = re.compile(
+    r"[^.!?\n]*\b(improve[sd]?|increase[sd]?|boost[sd]?|enhance[sd]?)\s+(the\s+)?"
+    r"(efficiency|productivity|speed|performance)\b[^.!?\n]*",
+    re.IGNORECASE,
+)
+# "uses AI" is permitted only when the same sentence says what the AI does.
+USES_AI_CLAIM = re.compile(
+    r"[^.!?\n]*\b(uses?|using|powered by|driven by|built on)\s+"
+    r"(ai|artificial intelligence|machine learning|ml)\b[^.!?\n]*",
+    re.IGNORECASE,
+)
+HAS_NUMBER = re.compile(r"\d")
+# Verbs that constitute saying what the AI actually does.
+AI_ACTION_VERBS = re.compile(
+    r"\b(allocat\w+|rank\w+|classif\w+|scor\w+|order\w+|select\w+|stop\w+|"
+    r"predict\w+|detect\w+|refus\w+|summaris\w+|extract\w+|estimat\w+|"
+    r"search\w+|schedul\w+|adjudicat\w+|measur\w+|comput\w+)\b",
+    re.IGNORECASE,
+)
 
 # American form -> British form. Kept to forms that are unambiguous in prose.
 AMERICAN_SPELLINGS = {
@@ -128,6 +204,10 @@ TECHNICAL_ALLOWLIST = {
 FENCED_CODE = re.compile(r"^```.*?^```", re.DOTALL | re.MULTILINE)
 INLINE_CODE = re.compile(r"`[^`\n]*`")
 MD_LINK_TARGET = re.compile(r"\]\([^)]*\)")
+# An HTML tag inside a document is markup, not prose. Attribute values such
+# as align="center" are fixed by the HTML specification, exactly as the CSS
+# `color` property is, and must not be flagged as American spellings.
+HTML_TAG = re.compile(r"<[^>\n]+>")
 
 STRING_LITERAL = re.compile(r"""(['"`])((?:\\.|(?!\1).)*)\1""", re.DOTALL)
 PY_COMMENT = re.compile(r"#(.*)$", re.MULTILINE)
@@ -175,6 +255,8 @@ def iter_files(targets: list[Path]):
             rel = path.relative_to(REPO_ROOT).as_posix() if path.is_relative_to(REPO_ROOT) else path.as_posix()
             if rel in EXCLUDED_FILES:
                 continue
+            if rel.startswith(EXCLUDED_PREFIXES):
+                continue
             if path.suffix in PROSE_SUFFIXES | CODE_SUFFIXES | DATA_SUFFIXES:
                 yield path
 
@@ -204,6 +286,7 @@ def extract_checkable_spans(text: str, suffix: str) -> list[tuple[int, str, bool
         prose = mask(text, FENCED_CODE)
         prose = mask(prose, INLINE_CODE)
         prose = mask(prose, MD_LINK_TARGET)
+        prose = mask(prose, HTML_TAG)
         for i, line in enumerate(prose.splitlines(), start=1):
             spans.append((i, line, False))
         return spans
@@ -264,6 +347,15 @@ def check_file(path: Path) -> list[Finding]:
                     m.group(2),
                 ))
 
+    # E005, the precise language law, applies only to pitch-facing surfaces.
+    pitch_facing = (
+        rel.startswith(PITCH_FACING_PREFIXES)
+        or rel in PITCH_FACING_FILES
+        or rel.endswith("/README.md")
+    )
+    if pitch_facing and ALLOW_BANNED_MARKER not in text:
+        findings.extend(check_precise_language(rel, text, path.suffix))
+
     # E003 applies only where British English is required.
     for line_no, span, allow_technical in extract_checkable_spans(text, path.suffix):
         for m in WORD.finditer(span):
@@ -282,6 +374,45 @@ def check_file(path: Path) -> list[Finding]:
             findings.append(
                 Finding(rel, line_no, "E003", f"American spelling {word!r}, use {british!r}", span)
             )
+
+    return findings
+
+
+def check_precise_language(rel: str, text: str, suffix: str) -> list["Finding"]:
+    """Enforce Charter Addendum 01 section 4 on one pitch-facing file."""
+    findings: list[Finding] = []
+
+    if suffix in PROSE_SUFFIXES:
+        scanned = mask(mask(text, FENCED_CODE), INLINE_CODE)
+        spans = [(i, line) for i, line in enumerate(scanned.splitlines(), start=1)]
+    else:
+        spans = [
+            (text.count("\n", 0, m.start(2)) + 1, m.group(2))
+            for m in STRING_LITERAL.finditer(text)
+        ]
+
+    for line_no, span in spans:
+        lowered = span.lower()
+        for phrase, remedy in BANNED_PHRASES.items():
+            if re.search(r"\b" + re.escape(phrase) + r"\b", lowered):
+                findings.append(Finding(
+                    rel, line_no, "E005",
+                    f"marketing register {phrase!r} in pitch-facing copy; {remedy}", span))
+        for noun, remedy in BANNED_PRODUCT_NOUNS.items():
+            if re.search(r"\b" + re.escape(noun) + r"s?\b", lowered):
+                findings.append(Finding(
+                    rel, line_no, "E005",
+                    f"{noun!r} as a product noun; MIZAN is a {remedy}", span))
+        for m in EFFICIENCY_CLAIM.finditer(span):
+            if not HAS_NUMBER.search(m.group(0)):
+                findings.append(Finding(
+                    rel, line_no, "E005",
+                    "efficiency claim with no number in the same sentence", m.group(0)))
+        for m in USES_AI_CLAIM.finditer(span):
+            if not AI_ACTION_VERBS.search(m.group(0)):
+                findings.append(Finding(
+                    rel, line_no, "E005",
+                    "says the system uses AI without naming what the AI does", m.group(0)))
 
     return findings
 

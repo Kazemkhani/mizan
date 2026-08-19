@@ -1,0 +1,186 @@
+{
+  "schema_version": "1.0",
+  "document_id": "MIZAN-CERTIFICATE-CONTENT-UAE-2026-v1",
+  "description": "Substantive content of the MIZAN Certificate of Compliance, in English and Arabic. This document specifies what the certificate asserts, what it does not assert, its legal precision, and its limits. Visual design is owned by ATELIER. Arabic register polish is owned by RASHID.",
+  "design_principles": {
+    "overclaim_warning": "A certificate that overclaims is a liability. The MIZAN Certificate is a conformance assessment against a defined control set under defined conditions. It is not a general endorsement, a warranty of safety, or government approval.",
+    "scope_precision": "Every certificate must state its scope with precision: the model version, the use case, the control set version, the evaluation date, and the evidence bundle to which it is anchored. Any reader must be able to determine from the certificate face exactly what was assessed and under what conditions.",
+    "evidence_anchoring": "The certificate is cryptographically anchored to its evidence bundle via SHA-256 hashes. A certificate without a verifiable evidence bundle hash is a declaration, not a proof.",
+    "validity_limits": "The certificate is valid only for the model version assessed, the use case it was assessed against, and the control set version in effect at time of issuance. Re-evaluation is required on model version change."
+  },
+  "certificate_title": {
+    "en": "MIZAN Certificate of AI Compliance",
+    "ar": "شهادة ميزان للامتثال في الذكاء الاصطناعي",
+    "rashid_note": "RASHID: verify that the Arabic title uses the precise formal governmental register appropriate for an official certification document."
+  },
+  "issuing_authority": {
+    "en": "MIZAN Sovereign AI Evaluation Registry",
+    "ar": "سجل ميزان لتقييم الذكاء الاصطناعي السيادي",
+    "rashid_note": "RASHID: confirm register of issuing authority name. Consider whether an alternative Arabic rendering of 'sovereign' or 'evaluation' is more precise in the governmental context."
+  },
+  "verdict_assertions": {
+    "certified": {
+      "headline_en": "CERTIFIED",
+      "headline_ar": "معتمد",
+      "body_en": "The model identified below has been evaluated by the MIZAN Adaptive Compliance Engine against the MIZAN control set for the government use case identified below and has satisfied all mandatory controls at the confidence level required for that use case. This certificate is issued in respect of the evaluation identified by the evaluation identifier below.",
+      "body_ar": "خضع النموذج المُحدَّد أدناه للتقييم من قِبَل محرك الامتثال التكيّفي ميزان وفق مجموعة ضوابط ميزان للحالة الاستخدامية الحكومية المُحدَّدة أدناه، واستوفى جميع الضوابط الإلزامية عند مستوى الثقة المطلوب لتلك الحالة. تُصدر هذه الشهادة في شأن التقييم المُعرَّف بالمُعرِّف الوارد أدناه.",
+      "rashid_note": "RASHID: review body_ar for precision and Gulf governmental register."
+    },
+    "rejected": {
+      "headline_en": "NOT CERTIFIED",
+      "headline_ar": "غير معتمد",
+      "body_en": "The model identified below has been evaluated by the MIZAN Adaptive Compliance Engine against the MIZAN control set for the government use case identified below and has not satisfied one or more mandatory controls at the confidence level required for that use case. This certificate records the outcome of that evaluation.",
+      "body_ar": "خضع النموذج المُحدَّد أدناه للتقييم من قِبَل محرك الامتثال التكيّفي ميزان وفق مجموعة ضوابط ميزان للحالة الاستخدامية الحكومية المُحدَّدة أدناه، ولم يستوفِ ضابطاً إلزامياً واحداً على الأقل عند مستوى الثقة المطلوب. تُسجّل هذه الشهادة نتيجة ذلك التقييم.",
+      "rashid_note": "RASHID: review body_ar for precision and Gulf governmental register."
+    }
+  },
+  "mandatory_fields_on_certificate_face": [
+    {
+      "field_id": "certificate_id",
+      "label_en": "Certificate Identifier",
+      "label_ar": "مُعرِّف الشهادة",
+      "description": "Globally unique identifier for this certificate."
+    },
+    {
+      "field_id": "evaluation_id",
+      "label_en": "Evaluation Identifier",
+      "label_ar": "مُعرِّف التقييم",
+      "description": "Identifier linking this certificate to its evaluation run in the MIZAN registry."
+    },
+    {
+      "field_id": "model_name_and_version",
+      "label_en": "Model",
+      "label_ar": "النموذج",
+      "description": "Name and exact version of the model evaluated."
+    },
+    {
+      "field_id": "use_case",
+      "label_en": "Use Case",
+      "label_ar": "حالة الاستخدام",
+      "description": "The MIZAN government use case against which the model was evaluated."
+    },
+    {
+      "field_id": "control_set_version",
+      "label_en": "Control Set",
+      "label_ar": "مجموعة الضوابط",
+      "description": "Version identifier of the MIZAN control set applied."
+    },
+    {
+      "field_id": "verdict",
+      "label_en": "Verdict",
+      "label_ar": "الحكم",
+      "description": "CERTIFIED or NOT CERTIFIED. In Arabic: معتمد or غير معتمد."
+    },
+    {
+      "field_id": "issued_at",
+      "label_en": "Issued",
+      "label_ar": "تاريخ الإصدار",
+      "description": "Date and time of certificate issuance in ISO 8601 format."
+    },
+    {
+      "field_id": "evidence_bundle_hash",
+      "label_en": "Evidence Bundle",
+      "label_ar": "حزمة الأدلة",
+      "description": "SHA-256 hash of the evidence bundle anchoring this certificate to its raw probe results. A verifier can recompute this hash from the evidence records in the MIZAN registry to confirm the certificate has not been altered."
+    },
+    {
+      "field_id": "evaluator",
+      "label_en": "Evaluated by",
+      "label_ar": "جهة التقييم",
+      "description": "MIZAN version string identifying the engine that produced this certificate."
+    }
+  ],
+  "control_results_table": {
+    "description": "Each certificate includes a per-control results table. Every control that was evaluated (mandatory and advisory) appears in this table.",
+    "columns": [
+      {
+        "column_id": "control_name",
+        "label_en": "Control",
+        "label_ar": "الضابط"
+      },
+      {
+        "column_id": "framework_clause",
+        "label_en": "Framework Reference",
+        "label_ar": "المرجع الإطاري"
+      },
+      {
+        "column_id": "mandatory",
+        "label_en": "Mandatory",
+        "label_ar": "إلزامي"
+      },
+      {
+        "column_id": "score",
+        "label_en": "Score",
+        "label_ar": "الدرجة"
+      },
+      {
+        "column_id": "passed",
+        "label_en": "Passed",
+        "label_ar": "مجتاز"
+      },
+      {
+        "column_id": "evidence_hash",
+        "label_en": "Evidence",
+        "label_ar": "الدليل"
+      }
+    ],
+    "mizan_defined_control_label": {
+      "en": "MIZAN-defined control (operationalises published principle)",
+      "ar": "ضابط مُعرَّف من ميزان (يُجسِّد مبدأً منشوراً)",
+      "rashid_note": "RASHID: review Arabic label for precision."
+    }
+  },
+  "what_the_certificate_asserts": {
+    "en": [
+      "That the model, at the exact version identified, was evaluated by the MIZAN Adaptive Compliance Engine on the date identified.",
+      "That the evaluation applied the MIZAN control set version identified, against the government use case identified.",
+      "That the evaluation reached a verdict of CERTIFIED or NOT CERTIFIED, as indicated, on the basis of probe results stored in the evidence bundle identified by the SHA-256 hash on the certificate face.",
+      "That mandatory controls were evaluated at or above the confidence threshold specified for the use case in the MIZAN use case register.",
+      "That the evaluation was conducted using the probe methodology and scoring rubrics defined in the MIZAN suite files for the control set version applied."
+    ],
+    "ar": [
+      "أن النموذج، بالإصدار المُحدَّد تحديداً، خضع للتقييم من قِبَل محرك الامتثال التكيّفي ميزان في التاريخ المُحدَّد.",
+      "أن التقييم طبَّق مجموعة ضوابط ميزان في الإصدار المُحدَّد، مقابل حالة الاستخدام الحكومية المُحدَّدة.",
+      "أن التقييم أسفر عن حكم بالاعتماد أو عدم الاعتماد، على النحو المُبيَّن، استناداً إلى نتائج الاختبارات المُخزَّنة في حزمة الأدلة المُحدَّدة بواسطة بصمة SHA-256 الواردة على وجه الشهادة.",
+      "أن الضوابط الإلزامية قُيِّمت عند مستوى ثقة يساوي الحد الأدنى المُحدَّد للحالة الاستخدامية في سجل ميزان أو يتجاوزه.",
+      "أن التقييم أُجريَ باستخدام منهجية الاختبار ومعايير التسجيل المُحدَّدة في ملفات أدوات اختبار ميزان للإصدار المُطبَّق من مجموعة الضوابط."
+    ],
+    "rashid_note": "RASHID: review all Arabic assertions for precision and formal governmental register."
+  },
+  "what_the_certificate_does_not_assert": {
+    "en": [
+      "That the model is compliant with UAE law in all respects. The MIZAN Certificate records conformance with the MIZAN control set, which is designed to operationalise UAE AI Governance Framework principles. It is not a legal opinion and does not substitute for legal advice.",
+      "That the model will behave identically under all conditions. The evaluation is based on sampled probe sets; results are probabilistic. Performance under conditions not covered by the probe sets is not warranted.",
+      "That the model remains compliant after the date of issuance. Model updates, fine-tuning, or changes to the deployment context may alter compliance. Re-evaluation is required on material change.",
+      "That the certificate constitutes approval by any UAE government entity. MIZAN is an evaluation registry; it is not a licensing authority and its certificates do not carry the force of a regulatory approval.",
+      "That advisory controls were passed. Advisory controls are reported for information; they do not contribute to the CERTIFIED or NOT CERTIFIED verdict.",
+      "That the model is free from all risks. The certificate records the outcome of a structured evaluation against a defined control set; it does not assert the absence of risks not covered by those controls."
+    ],
+    "ar": [
+      "أن النموذج ممتثل للقانون الإماراتي من جميع الجوانب. تُسجِّل شهادة ميزان التوافق مع مجموعة ضوابط ميزان المصمَّمة لتجسيد مبادئ الإطار الحوكمي الإماراتي للذكاء الاصطناعي. وهي لا تُعدّ رأياً قانونياً ولا تُغني عن الاستشارة القانونية.",
+      "أن النموذج سيتصرف بصورة مطابقة في جميع الظروف. يستند التقييم إلى مجموعات اختبار مأخوذة بالعيّنة؛ والنتائج ذات طابع احتمالي. لا يُكفَل الأداء في ظروف لا تشملها مجموعات الاختبار.",
+      "أن النموذج سيبقى ممتثلاً بعد تاريخ الإصدار. قد تُغيِّر تحديثات النموذج أو ضبطه الدقيق أو التغييرات في سياق النشر مستوى الامتثال. يُشترط إعادة التقييم عند حدوث تغيير جوهري.",
+      "أن الشهادة تُشكِّل اعتماداً من أي جهة حكومية إماراتية. ميزان سجل تقييم لا سلطة ترخيص، وشهاداته لا تحمل قوة الموافقة التنظيمية.",
+      "أن الضوابط الاستشارية قد اجتيزت. تُورَد الضوابط الاستشارية للإفادة فحسب؛ ولا تُسهم في الحكم بالاعتماد أو عدم الاعتماد.",
+      "أن النموذج خالٍ من المخاطر. تُسجِّل الشهادة نتيجة تقييم منهجي وفق مجموعة ضوابط مُحدَّدة؛ ولا تُؤكد انعدام المخاطر غير المشمولة بتلك الضوابط."
+    ],
+    "rashid_note": "RASHID: review all Arabic non-assertions for precision and formal governmental register."
+  },
+  "validity_statement": {
+    "en": "This certificate is valid as at the date of issuance for the model version, use case, and control set version identified. It lapses on any material change to the model or its deployment context. Re-evaluation against the then-current MIZAN control set is required to obtain a new certificate.",
+    "ar": "تكون هذه الشهادة سارية اعتباراً من تاريخ إصدارها للإصدار المُحدَّد من النموذج وحالة الاستخدام وإصدار مجموعة الضوابط. وتنتهي صلاحيتها عند حدوث أي تغيير جوهري في النموذج أو سياق نشره. ويُشترط إعادة التقييم وفق مجموعة ضوابط ميزان السارية آنذاك للحصول على شهادة جديدة.",
+    "rashid_note": "RASHID: review validity statement Arabic for precision.",
+    "sovereign_todo": "SOVEREIGN-TODO G-004: define a numeric validity period (e.g. 12 months) or a version-change trigger policy; consult with the TDRA on the appropriate approach for government AI certificates. Log in DECISIONS.md under D-GOV-004 when resolved."
+  },
+  "signature_statement": {
+    "en": "This certificate is cryptographically signed by the MIZAN evaluation engine. The signature covers the evidence bundle hash. A verifier may confirm the signature using the MIZAN public verification key published at [SOVEREIGN-TODO: verification endpoint URL].",
+    "ar": "وقَّعت محركَ التقييم ميزانُ هذه الشهادةَ توقيعاً مشفَّراً. ويشمل التوقيع بصمة حزمة الأدلة. يستطيع أي طرف التحقق من التوقيع باستخدام مفتاح التحقق العام لميزان المنشور على [العنوان الإلكتروني المرجعي للتحقق - يُحدَّد لاحقاً].",
+    "rashid_note": "RASHID: review signature statement Arabic for precision.",
+    "sovereign_todo": "SOVEREIGN-TODO D-006: wire real HMAC-SHA256 signing key in Wave 3 and publish the verification endpoint URL (see DECISIONS.md D-006)."
+  },
+  "mizan_control_label_disclaimer": {
+    "en": "Controls labelled MIZAN-CTL-NNN are MIZAN-defined controls that operationalise published UAE AI Governance Framework principles. They are not directly enumerated clauses of any published framework document but are derived from named principles therein. The derivation basis for each MIZAN-defined control is recorded in the MIZAN control register at suites/controls/controls.json.",
+    "ar": "الضوابط المُصنَّفة بالرمز MIZAN-CTL-NNN ضوابطُ مُعرَّفة من ميزان تُجسِّد مبادئ منشورة في إطار الإمارات الحوكمي للذكاء الاصطناعي. وهي ليست بنوداً مُدرَجة مباشرةً في أي وثيقة إطارية منشورة، بل مستمَدة من مبادئ مُسمَّاة فيها. يُوثَّق أساس الاستنباط لكل ضابط مُعرَّف من ميزان في سجل ضوابط ميزان.",
+    "rashid_note": "RASHID: review disclaimer Arabic for precision and formal governmental register."
+  }
+}

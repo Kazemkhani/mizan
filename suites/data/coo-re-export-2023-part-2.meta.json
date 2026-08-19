@@ -1,0 +1,237 @@
+{
+  "visibility": "domain",
+  "fields": [
+    {
+      "name": "coodate",
+      "description": "COO Issuing Date",
+      "annotations": {},
+      "label": "COODate",
+      "type": "datetime",
+      "label_en": "COODate",
+      "label_ar": "تاريخ شهادة المنشأ",
+      "description_en": "COO Issuing Date",
+      "description_ar": "تاريخ إصدار شهادة المنشأ"
+    },
+    {
+      "name": "motar",
+      "description": "Method of Transportation (Arabic)",
+      "annotations": {},
+      "label": "MotAr",
+      "type": "text",
+      "label_en": "MotAr",
+      "label_ar": "وسيلة النقل (عربي)",
+      "description_en": "Method of Transportation (Arabic)",
+      "description_ar": "وسيلة النقل مكتوبة باللغة العربية"
+    },
+    {
+      "name": "moten",
+      "description": "Method of Transportation (English)",
+      "annotations": {},
+      "label": "MotEn",
+      "type": "text",
+      "label_en": "MotEn",
+      "label_ar": "وسيلة النقل (إنجليزي)",
+      "description_en": "Method of Transportation (English)",
+      "description_ar": "وسيلة النقل مكتوبة باللغة الإنجليزية"
+    },
+    {
+      "name": "destinationar",
+      "description": "Destination (Arabic)",
+      "annotations": {},
+      "label": "DestinationAr",
+      "type": "text",
+      "label_en": "DestinationAr",
+      "label_ar": "بلد الوجهة (عربي)",
+      "description_en": "Destination (Arabic)",
+      "description_ar": "اسم بلد الوجهة مكتوب باللغة العربية"
+    },
+    {
+      "name": "destinationen",
+      "description": "Destination (English)",
+      "annotations": {},
+      "label": "DestinationEn",
+      "type": "text",
+      "label_en": "DestinationEn",
+      "label_ar": "بلد الوجهة (إنجليزي)",
+      "description_en": "Destination (English)",
+      "description_ar": "اسم بلد الوجهة مكتوب باللغة الإنجليزية"
+    },
+    {
+      "name": "productcode",
+      "description": "Product Code (HS Code)",
+      "annotations": {
+        "facetsort": "-count"
+      },
+      "label": "ProductCode",
+      "type": "int",
+      "label_en": "ProductCode",
+      "label_ar": "رمز المنتج",
+      "description_en": "Product Code (HS Code)",
+      "description_ar": "الرمز الجمركي الدولي للمنتج"
+    },
+    {
+      "name": "licensetype",
+      "description": "Entity License Type",
+      "annotations": {},
+      "label": "LicenseType",
+      "type": "text",
+      "label_en": "LicenseType",
+      "label_ar": "نوع الرخصة",
+      "description_en": "Entity License Type",
+      "description_ar": "نوع رخصة الكيان المصدر"
+    },
+    {
+      "name": "cooyear",
+      "description": "COO Issuing Year",
+      "annotations": {
+        "facetsort": "-count"
+      },
+      "label": "COOYear",
+      "type": "int",
+      "label_en": "COOYear",
+      "label_ar": "سنة إصدار الشهادة",
+      "description_en": "COO Issuing Year",
+      "description_ar": "السنة التي أُصدرت فيها شهادة المنشأ"
+    },
+    {
+      "name": "coomonth",
+      "description": "COO Issuing Month",
+      "annotations": {},
+      "label": "COOMonth",
+      "type": "text",
+      "label_en": "COOMonth",
+      "label_ar": "شهر إصدار الشهادة",
+      "description_en": "COO Issuing Month",
+      "description_ar": "الشهر التي أُصدرت فيها شهادة المنشأ"
+    },
+    {
+      "name": "origincountryname",
+      "description": "Country of Origin (Arabic)",
+      "annotations": {},
+      "label": "OriginCountryName",
+      "type": "text",
+      "label_en": "OriginCountryName",
+      "label_ar": "بلد المنشأ",
+      "description_en": "Country of Origin (Arabic)",
+      "description_ar": "بلد المنشأ"
+    },
+    {
+      "name": "companybelongsto",
+      "description": "Licensing Authority (Arabic)",
+      "annotations": {},
+      "label": "CompanyBelongsTo",
+      "type": "text",
+      "label_en": "CompanyBelongsTo",
+      "label_ar": "الجهة المُرخِّصة",
+      "description_en": "Licensing Authority (Arabic)",
+      "description_ar": "الجهة المُرخِّصة"
+    },
+    {
+      "name": "newcatenamear",
+      "description": "Entity Category (Arabic)",
+      "annotations": {},
+      "label": "NewCateNameAr",
+      "type": "text",
+      "label_en": "NewCateNameAr",
+      "label_ar": "فئة الكيان (بالعربية)",
+      "description_en": "Entity Category (Arabic)",
+      "description_ar": "تصنيف الكيان مكتوب باللغة العربية"
+    }
+  ],
+  "dataset_id": "coo-re-export-2023-part-2",
+  "dataset_uid": "da_isigsw",
+  "has_records": true,
+  "features": [
+    "timeserie",
+    "analyze"
+  ],
+  "attachments": [],
+  "alternative_exports": [],
+  "data_visible": true,
+  "metas": {
+    "default": {
+      "title": "List of All Re-Export COO (Certificate of Origin) in 2023 (Part 2)",
+      "title_en": "List of All Re-Export COO (Certificate of Origin) in 2023 (Part 2)",
+      "title_ar": "قائمة بجميع شهادات المنشأ لإعادة التصدير في عام 2023 (الجزء الثاني)",
+      "description": "<p><span style=\"font-size: 14px;\">List of All \"Re-Export\" COO (Certificate of Origin) in 2023 (Part 2)</span><br/></p>",
+      "description_en": "<p><span style=\"font-size: 14px;\">List of All \"Re-Export\" COO (Certificate of Origin) in 2023 (Part 2)</span><br/></p>",
+      "description_ar": "<p>قائمة بجميع شهادات المنشأ لإعادة التصدير في عام 2023 (الجزء الثاني)</p>",
+      "theme": [
+        "Business and industry"
+      ],
+      "theme_en": [
+        "Business and industry"
+      ],
+      "theme_ar": [
+        "تجارة وصناعة"
+      ],
+      "keyword": [
+        "Ajman Chamber",
+        "COO",
+        "Certificate of Origin",
+        "Re-export",
+        "reexport",
+        "2023"
+      ],
+      "keyword_en": [
+        "Ajman Chamber",
+        "COO",
+        "Certificate of Origin",
+        "Re-export",
+        "reexport",
+        "2023"
+      ],
+      "keyword_ar": [
+        "غرفة عجمان",
+        "شهادة المنشأ",
+        "شهادة المنشأ",
+        "إعادة تصدير",
+        "إعادة تصدير",
+        "2023"
+      ],
+      "license": "CC BY 4.0",
+      "license_en": "CC BY 4.0",
+      "license_ar": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "license_url_en": "https://creativecommons.org/licenses/by/4.0/",
+      "license_url_ar": "https://creativecommons.org/licenses/by/4.0/",
+      "language": "en",
+      "metadata_languages": [
+        "en",
+        "ar"
+      ],
+      "timezone": "Asia/Dubai",
+      "modified": "2024-07-09T20:41:33.347000+00:00",
+      "modified_updates_on_metadata_change": true,
+      "modified_updates_on_data_change": true,
+      "data_processed": "2024-07-09T20:41:33.347000+00:00",
+      "metadata_processed": "2026-01-28T07:55:50.482000+00:00",
+      "geographic_reference": [
+        "world_ae"
+      ],
+      "geographic_reference_auto": false,
+      "territory": [
+        "United Arab Emirates"
+      ],
+      "geometry_types": null,
+      "bbox": null,
+      "publisher": "Ajman Chamber",
+      "publisher_en": "Ajman Chamber",
+      "publisher_ar": "غرفة عجمان",
+      "references": null,
+      "records_count": 56975,
+      "attributions": null,
+      "source_domain": null,
+      "source_domain_title": null,
+      "source_domain_address": null,
+      "source_dataset": null,
+      "shared_catalog": null,
+      "federated": false,
+      "parent_domain": null,
+      "update_frequency": null
+    },
+    "department-publisher": {
+      "department-publisher": "Ajman Chamber"
+    }
+  }
+}

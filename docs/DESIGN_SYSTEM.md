@@ -167,7 +167,7 @@ agents must apply `--leading-ar-*` tokens in all `:lang(ar)` or `[dir="rtl"]`
 contexts. `base.css` sets the default; component stylesheets must not override
 Arabic line-height with Latin values.
 
-### Tabular numerics — mandatory on data elements
+### Tabular numerics: mandatory on data elements
 
 All elements displaying evaluation scores, confidence bounds, budget
 allocations, timestamps, model IDs, or SHA-256 hashes must carry:

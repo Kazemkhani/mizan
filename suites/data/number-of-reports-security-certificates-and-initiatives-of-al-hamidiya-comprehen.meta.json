@@ -1,0 +1,178 @@
+{
+  "visibility": "domain",
+  "fields": [
+    {
+      "name": "month",
+      "description": null,
+      "annotations": {},
+      "label": "Month",
+      "type": "text",
+      "label_en": "Month",
+      "label_ar": "Month",
+      "description_en": null,
+      "description_ar": null
+    },
+    {
+      "name": "criminal_report",
+      "description": null,
+      "annotations": {},
+      "label": "Criminal Report",
+      "type": "double",
+      "label_en": "Criminal Report",
+      "label_ar": "Criminal Report",
+      "description_en": null,
+      "description_ar": null
+    },
+    {
+      "name": "finiancial_report",
+      "description": null,
+      "annotations": {},
+      "label": "Finiancial Report",
+      "type": "double",
+      "label_en": "Finiancial Report",
+      "label_ar": "Finiancial Report",
+      "description_en": null,
+      "description_ar": null
+    },
+    {
+      "name": "traffic_report",
+      "description": null,
+      "annotations": {},
+      "label": "Traffic Report",
+      "type": "double",
+      "label_en": "Traffic Report",
+      "label_ar": "Traffic Report",
+      "description_en": null,
+      "description_ar": null
+    },
+    {
+      "name": "case_certificate",
+      "description": null,
+      "annotations": {},
+      "label": "Case Certificate",
+      "type": "double",
+      "label_en": "Case Certificate",
+      "label_ar": "Case Certificate",
+      "description_en": null,
+      "description_ar": null
+    },
+    {
+      "name": "loss_certificate",
+      "description": null,
+      "annotations": {},
+      "label": "Loss Certificate",
+      "type": "double",
+      "label_en": "Loss Certificate",
+      "label_ar": "Loss Certificate",
+      "description_en": null,
+      "description_ar": null
+    },
+    {
+      "name": "destruction_certificate",
+      "description": null,
+      "annotations": {},
+      "label": "Destruction Certificate",
+      "type": "double",
+      "label_en": "Destruction Certificate",
+      "label_ar": "Destruction Certificate",
+      "description_en": null,
+      "description_ar": null
+    },
+    {
+      "name": "duration_of_detention",
+      "description": null,
+      "annotations": {},
+      "label": "Duration of Detention",
+      "type": "double",
+      "label_en": "Duration of Detention",
+      "label_ar": "Duration of Detention",
+      "description_en": null,
+      "description_ar": null
+    },
+    {
+      "name": "total_of_certificates",
+      "description": null,
+      "annotations": {},
+      "label": "Total of Certificates",
+      "type": "double",
+      "label_en": "Total of Certificates",
+      "label_ar": "Total of Certificates",
+      "description_en": null,
+      "description_ar": null
+    }
+  ],
+  "dataset_id": "number-of-reports-security-certificates-and-initiatives-of-al-hamidiya-comprehen",
+  "dataset_uid": "da_mew4ks",
+  "has_records": true,
+  "features": [
+    "analyze"
+  ],
+  "attachments": [],
+  "alternative_exports": [],
+  "data_visible": true,
+  "metas": {
+    "default": {
+      "title": "Number of reports, security certificates and initiatives of Al Hamidiya Comprehensive Police Station Statistics",
+      "title_en": "Number of reports, security certificates and initiatives of Al Hamidiya Comprehensive Police Station Statistics",
+      "title_ar": "إحصائية عدد البلاغات والشهادات الأمنية والمبادرات لمركز شرطة الحميدية الشامل",
+      "description": "<p>Number of reports, security certificates, and initiatives of Al Hamidiya Comprehensive Police Station Statistics<br/></p>",
+      "description_en": "<p>Number of reports, security certificates, and initiatives of Al Hamidiya Comprehensive Police Station Statistics<br/></p>",
+      "description_ar": "<p><span style='font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif; font-size: 18px; text-wrap: nowrap;'>إحصائية عدد البلاغات والشهادات الأمنية والمبادرات لمركز شرطة الحميدية الشامل</span><br/></p>",
+      "theme": [
+        "Public order justice and rights"
+      ],
+      "theme_en": [
+        "Public order justice and rights"
+      ],
+      "theme_ar": [
+        "نظام عام، عدالة وحقوق"
+      ],
+      "keyword": null,
+      "keyword_en": null,
+      "keyword_ar": null,
+      "license": "CC BY 4.0",
+      "license_en": "CC BY 4.0",
+      "license_ar": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "license_url_en": "https://creativecommons.org/licenses/by/4.0/",
+      "license_url_ar": "https://creativecommons.org/licenses/by/4.0/",
+      "language": "en",
+      "metadata_languages": [
+        "en",
+        "ar"
+      ],
+      "timezone": "Asia/Dubai",
+      "modified": "2024-07-09T20:39:35.058000+00:00",
+      "modified_updates_on_metadata_change": true,
+      "modified_updates_on_data_change": true,
+      "data_processed": "2024-07-09T20:39:35.058000+00:00",
+      "metadata_processed": "2026-01-28T07:55:41.166000+00:00",
+      "geographic_reference": [
+        "world_ae"
+      ],
+      "geographic_reference_auto": false,
+      "territory": [
+        "United Arab Emirates"
+      ],
+      "geometry_types": null,
+      "bbox": null,
+      "publisher": "Ajman Police",
+      "publisher_en": "Ajman Police",
+      "publisher_ar": "شرطة عجمان",
+      "references": null,
+      "records_count": 39,
+      "attributions": null,
+      "source_domain": null,
+      "source_domain_title": null,
+      "source_domain_address": null,
+      "source_dataset": null,
+      "shared_catalog": null,
+      "federated": false,
+      "parent_domain": null,
+      "update_frequency": null
+    },
+    "department-publisher": {
+      "department-publisher": null
+    }
+  }
+}
