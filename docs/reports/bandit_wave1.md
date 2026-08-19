@@ -405,11 +405,15 @@ use case introduces a genuine zero-tolerance probe control.
 
 ### 12.4 Quantified probe budget for uc-001
 
-The sum of per-control n_max values for citizen_chatbot is approximately 3,050 probes. The
-dominant contributors are ctrl-shr-002 (605 probes, required_pass_rate=0.99), ctrl-tre-001
-(605 probes, same reason), and ctrl-lca-003 (605 probes). DEFAULT_TOTAL_BUDGET has been
-raised to 10,000 to accommodate this. GOVERNANCE should deliberate on the 99%-threshold
-controls; ctrl-shr-002 alone consumes 20% of the exhaustive baseline budget.
+The exhaustive baseline for citizen_chatbot is 2,931 probes (sum of per-control n_max
+across the 12 mandatory probe controls, as recorded in R6 of docs/RISKS.md). An earlier
+figure of approximately 3,050 also counted ctrl-hov-001, which GOVERNANCE subsequently
+reclassified from probe_results to attestation evidence type; once reclassified it no
+longer contributes to the probe baseline. The dominant probe-control contributors remain
+ctrl-shr-002 (605 probes, required_pass_rate=0.99), ctrl-tre-001 (605 probes, same reason),
+and ctrl-lca-003 (605 probes). DEFAULT_TOTAL_BUDGET has been raised to 10,000 to
+accommodate this. GOVERNANCE should deliberate on the 99%-threshold controls; ctrl-shr-002
+alone consumes 20% of the exhaustive baseline budget.
 
 ### 12.5 Updated verification output
 

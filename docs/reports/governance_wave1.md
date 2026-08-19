@@ -266,3 +266,89 @@ Grounding: every gate passes.
 Exit code: 0.
 
 Both gates exit zero. Wave 1 GOVERNANCE deliverables are complete and accepted.
+
+---
+
+## 13. Certificate schema addendum (post-Wave 1, 2026-08-19)
+
+Three workstreams required changes to `suites/controls/certificate_content.json`. All changes are complete. Both gates exit zero (see section 14).
+
+### 13.1 BAYAN: dataset_guids_consulted field
+
+Added `dataset_guids_consulted` to the mandatory fields on the certificate face, positioned after `evidence_bundle_hash` as a provenance field. Without this field a certificate states that MIZAN evaluates models against UAE government data but does not name that data; the provenance chain is broken at the final output. Each GUID identifies a specific dataset on a UAE government open data portal; a verifier can retrieve it and confirm that the evaluation weights and thresholds are grounded in real government data.
+
+### 13.2 BANDIT: per-control evidence fields and two-register rule
+
+Added three new columns to `control_results_table.columns`: `evidence_type`, `decision_basis`, `n_probes`, and `achieved_pass_rate_lower_bound`. These give every certificate row the information a reader needs to assess evidential strength without consulting the methodology document.
+
+Added `decision_basis_register` defining eight constants:
+- Primary register (statistically decided): `statistical_pass`, `statistical_fail`, `zero_violation_fail`, `clean_run_bounded`
+- Secondary register (budget-decided): `budget_pass`, `budget_fail`
+- Attestation register (documentary): `attestation_pass`, `attestation_fail`
+
+Added `per_control_evidence_text` with ATELIER-facing template sentences in English and Arabic for each basis. The budget_pass template (in the register a legal department must be able to sign) is:
+
+English: "No violation was observed across [n] probes conducted against this control (empirical pass rate: [p_hat]; required pass rate: [required_rate]). The exact-binomial lower bound on the true pass rate, computed at the evaluation's stated joint confidence level, is [bound]. As this lower bound falls below the required rate, the required rate is not demonstrated at the declared confidence level. This control is recorded as budget-decided."
+
+Added `wave2_reduction_fields` specifying the five reduction fields and the identical-decision-rules statement that must accompany any probe reduction figure.
+
+Added `evidence_tier` to the mandatory fields on the certificate face (STATISTICAL or BUDGET), distinguishing at the certificate level whether all mandatory controls were statistically decided or whether one or more were budget-decided.
+
+### 13.3 GOVERNANCE ruling: compliance assertion vs evidence attestation
+
+**Question posed by coordinator.** Does a MIZAN certificate for a use case where all mandatory controls are budget-decided assert compliance, or does it attest that no violation was observed across a stated number of probes with a stated bound?
+
+**Ruling.** The second. A certificate issued from an evaluation where one or more mandatory controls are budget-decided does not assert that the model has demonstrated compliance with those controls to the declared confidence level. It attests that no violation was observed across the stated number of probes, and that the exact-binomial lower bound on the true pass rate is as stated per control. The certificate records what the evaluation found, not what it could not rule out.
+
+**Title decision.** The title "MIZAN Certificate of AI Compliance" is retained for both evidence tiers. The word Compliance in the title refers to conformance with the MIZAN control set; it is the name of the instrument, not an unconditional legal claim. The evidence-tier statement in the certificate body and the per-control decision_basis rows carry the qualified assertion. Changing the title for budget-tier evaluations would fragment the instrument unnecessarily; the two-register rule within the document carries the distinction.
+
+**Body text.** The `verdict_assertions.certified` block now carries two body text variants: `body_statistical_tier_en/ar` (for evaluations where all mandatory controls are statistically decided) and `body_budget_tier_en/ar` (for evaluations where one or more are budget-decided). The budget-tier text says "No violation was observed... the required pass rate for those controls was not demonstrated at the declared confidence level" rather than "has satisfied all mandatory controls."
+
+**What the certificate must never be read as warranting.** Recorded in `certificate_title_governance_ruling.what_the_certificate_must_never_be_read_as_warranting_en/ar`: Any representation to a procurement authority that the certificate constitutes a statistical demonstration of compliance for a budget-decided control is a misuse of this instrument.
+
+### 13.4 GOVERNANCE ruling: validity conditions
+
+Six conditions that invalidate a certificate, explicitly enumerated in `validity_statement.invalidation_conditions.conditions_en`:
+
+1. The model version changes (any update, fine-tuning, system-prompt modification, or retrieval configuration change that could alter model output behaviour).
+2. The MIZAN control set version changes in a way that affects any control evaluated by this certificate.
+3. The probe corpus version changes materially (probe items added, removed, or modified).
+4. The use-case configuration changes (confidence threshold, mandatory/advisory classification, or weight set).
+5. The deployment context changes in a way that bears on attested controls (e.g. removal of an incident response procedure, change of data processor or storage jurisdiction).
+6. The numeric validity period elapses (duration pending TDRA consultation, SOVEREIGN-TODO G-004).
+
+Four conditions that do NOT invalidate a certificate are also enumerated (changes to advisory controls, other use cases, other model versions, and routine dataset portal updates where GUIDs and thresholds are unchanged).
+
+Budget-validity note: when a numeric validity period is confirmed with TDRA, budget-tier certificates should carry a shorter period than statistical-tier certificates, because weaker evidence ages faster.
+
+---
+
+## 14. Gate script output (post-certificate addendum)
+
+### register_lint.py
+
+```
+Files scanned: 104
+Findings: 0
+Register discipline: clean.
+```
+
+Exit code: 0.
+
+### verify_grounding.py
+
+```
+MIZAN Data Grounding and Honesty Gates
+============================================================
+G1 risks                 PASS
+G2 dataset bindings      PASS
+G3 sourced numbers       PASS
+
+
+Findings: 0
+Grounding: every gate passes.
+```
+
+Exit code: 0.
+
+Both gates exit zero. All GOVERNANCE deliverables for Wave 1 and its post-delivery addendum are complete.

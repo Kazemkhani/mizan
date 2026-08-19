@@ -1,36 +1,50 @@
 {
-  "schema_version": "1.0",
-  "document_id": "MIZAN-CERTIFICATE-CONTENT-UAE-2026-v1",
-  "description": "Substantive content of the MIZAN Certificate of Compliance, in English and Arabic. This document specifies what the certificate asserts, what it does not assert, its legal precision, and its limits. Visual design is owned by ATELIER. Arabic register polish is owned by RASHID.",
+  "schema_version": "1.1",
+  "document_id": "MIZAN-CERTIFICATE-CONTENT-UAE-2026-v2",
+  "description": "Substantive content of the MIZAN Certificate of AI Compliance, in English and Arabic. This document specifies what the certificate asserts, what it does not assert, its legal precision, its evidence-tier language, and its limits. Visual design is owned by ATELIER. Arabic register polish is owned by RASHID.",
   "design_principles": {
     "overclaim_warning": "A certificate that overclaims is a liability. The MIZAN Certificate is a conformance assessment against a defined control set under defined conditions. It is not a general endorsement, a warranty of safety, or government approval.",
     "scope_precision": "Every certificate must state its scope with precision: the model version, the use case, the control set version, the evaluation date, and the evidence bundle to which it is anchored. Any reader must be able to determine from the certificate face exactly what was assessed and under what conditions.",
     "evidence_anchoring": "The certificate is cryptographically anchored to its evidence bundle via SHA-256 hashes. A certificate without a verifiable evidence bundle hash is a declaration, not a proof.",
-    "validity_limits": "The certificate is valid only for the model version assessed, the use case it was assessed against, and the control set version in effect at time of issuance. Re-evaluation is required on model version change."
+    "validity_limits": "The certificate is valid only for the model version assessed, the use case it was assessed against, and the control set version in effect at time of issuance. Re-evaluation is required on model version change.",
+    "two_register_rule": "A budget-decided pass and a statistically decided pass must not share the same visual treatment. ATELIER implements the visual distinction; GOVERNANCE specifies the wording. See decision_basis_register and per_control_evidence_text."
   },
   "certificate_title": {
     "en": "MIZAN Certificate of AI Compliance",
     "ar": "شهادة ميزان للامتثال في الذكاء الاصطناعي",
-    "rashid_note": "RASHID: verify that the Arabic title uses the precise formal governmental register appropriate for an official certification document."
+    "rashid_note": "RASHID: verify that the Arabic title uses the precise formal governmental register appropriate for an official certification document.",
+    "governance_ruling": "The title is retained for both evidence tiers. The word Compliance refers to conformance with the defined MIZAN control set, not to a statistical claim. The evidence tier is qualified in the body text and in the per-control results table. A budget-tier certificate must not be confused with a statistical-tier certificate by visual design; that is the two-register rule. The title itself is single and consistent."
   },
   "issuing_authority": {
     "en": "MIZAN Sovereign AI Evaluation Registry",
     "ar": "سجل ميزان لتقييم الذكاء الاصطناعي السيادي",
-    "rashid_note": "RASHID: confirm register of issuing authority name. Consider whether an alternative Arabic rendering of 'sovereign' or 'evaluation' is more precise in the governmental context."
+    "rashid_note": "RASHID: confirm register of issuing authority name. Consider whether an alternative Arabic rendering of sovereign or evaluation is more precise in the governmental context."
+  },
+  "certificate_title_governance_ruling": {
+    "ruling_date": "2026-08-19",
+    "ruling_by": "GOVERNANCE, Director of AI Policy and Compliance, UAE",
+    "question": "Does a MIZAN certificate for a use case where all mandatory controls are budget-decided assert compliance, or does it attest that no violation was observed across a stated number of probes with a stated bound?",
+    "ruling": "The second. A certificate issued from an evaluation where one or more mandatory controls are budget-decided does not assert that the model has demonstrated compliance with those controls to the declared confidence level. It attests that no violation was observed across the stated number of probes, and that the exact-binomial lower bound on the true pass rate is as stated per control in the results table. The certificate records what the evaluation found, not what it could not rule out.",
+    "title_decision": "The certificate title MIZAN Certificate of AI Compliance is retained for both evidence tiers. The word Compliance in the title refers to conformance with the MIZAN control set; it is the name of the instrument, not an unconditional legal claim. The evidence-tier statement in the certificate body and the per-control decision_basis rows carry the qualified assertion.",
+    "what_the_certificate_must_never_be_read_as_warranting_en": "A certificate issued from an evaluation where one or more mandatory controls are budget-decided must not be read as asserting that the model has demonstrated the required pass rate to the declared confidence level for those controls. It warrants only that no violation was observed across the stated number of probes and that the exact-binomial lower bound on the true pass rate is as stated per control. Any representation to a procurement authority that the certificate constitutes a statistical demonstration of compliance for a budget-decided control is a misuse of this instrument.",
+    "what_the_certificate_must_never_be_read_as_warranting_ar": "لا يجوز تفسير شهادة صادرة عن تقييم اتُّخذ فيه القرار في ضابط إلزامي واحد على الأقل عند استنفاد ميزانية الاختبار، على أنها تُؤكد إثبات المعدل المطلوب للنجاح بمستوى الثقة المُعلَن لتلك الضوابط. لا تضمن الشهادة إلا أنه لم تُرصد أي مخالفة في عدد الاختبارات المُنجَزة، وأن الحد الأدنى الثنائي الدقيق للمعدل الحقيقي للنجاح هو ما هو مُبيَّن لكل ضابط. ويُعدّ أي تمثيل لجهة المشتريات بأن الشهادة تُثبت إحصائياً الامتثال لضابط اتُّخذ قراره باستنفاد الميزانية إساءةً لاستخدام هذه الأداة.",
+    "validity_period_note": "SOVEREIGN-TODO G-004 remains open. Pending TDRA consultation: when a numeric validity period is defined, budget-tier certificates should carry a shorter validity period than statistical-tier certificates, because weaker evidence ages faster."
   },
   "verdict_assertions": {
     "certified": {
       "headline_en": "CERTIFIED",
       "headline_ar": "معتمد",
-      "body_en": "The model identified below has been evaluated by the MIZAN Adaptive Compliance Engine against the MIZAN control set for the government use case identified below and has satisfied all mandatory controls at the confidence level required for that use case. This certificate is issued in respect of the evaluation identified by the evaluation identifier below.",
-      "body_ar": "خضع النموذج المُحدَّد أدناه للتقييم من قِبَل محرك الامتثال التكيّفي ميزان وفق مجموعة ضوابط ميزان للحالة الاستخدامية الحكومية المُحدَّدة أدناه، واستوفى جميع الضوابط الإلزامية عند مستوى الثقة المطلوب لتلك الحالة. تُصدر هذه الشهادة في شأن التقييم المُعرَّف بالمُعرِّف الوارد أدناه.",
-      "rashid_note": "RASHID: review body_ar for precision and Gulf governmental register."
+      "body_statistical_tier_en": "The model identified below was evaluated by the MIZAN Adaptive Compliance Engine against the MIZAN control set for the government use case identified below. All mandatory controls were decided by statistical evidence: the exact-binomial lower bound on the true pass rate exceeded the required rate at the declared confidence level for each mandatory control. This certificate records that finding.",
+      "body_statistical_tier_ar": "خضع النموذج المُحدَّد أدناه للتقييم من قِبَل محرك الامتثال التكيّفي ميزان وفق مجموعة ضوابط ميزان للحالة الاستخدامية الحكومية المُحدَّدة أدناه. اتُّخذ القرار في جميع الضوابط الإلزامية استناداً إلى أدلة إحصائية: تجاوز الحد الأدنى الثنائي الدقيق للمعدل الحقيقي للنجاح المعدلَ المطلوب عند مستوى الثقة المُعلَن لكل ضابط إلزامي. تُسجِّل هذه الشهادة تلك النتيجة.",
+      "body_budget_tier_en": "The model identified below was evaluated by the MIZAN Adaptive Compliance Engine against the MIZAN control set for the government use case identified below. No violation was observed across the probes conducted. One or more mandatory controls were decided at budget exhaustion: the required pass rate for those controls was not demonstrated at the declared confidence level. Each control's decision basis and achieved statistical strength are stated in the control results table. This document records the evaluation conducted and the evidence it produced.",
+      "body_budget_tier_ar": "خضع النموذج المُحدَّد أدناه للتقييم من قِبَل محرك الامتثال التكيّفي ميزان وفق مجموعة ضوابط ميزان للحالة الاستخدامية الحكومية المُحدَّدة أدناه. لم تُرصد أي مخالفة في الاختبارات المُنجَزة. واتُّخذ القرار في ضابط إلزامي واحد على الأقل عند استنفاد ميزانية الاختبار: لم يُثبَت المعدل المطلوب للنجاح لتلك الضوابط عند مستوى الثقة المُعلَن. تُبيَّن أساس اتخاذ القرار وقوته الإحصائية لكل ضابط في جدول نتائج الضوابط. تُسجِّل هذه الوثيقة التقييم المُجرى والأدلة التي أُنتجت.",
+      "rashid_note": "RASHID: review all Arabic body text variants for precision and Gulf governmental register."
     },
     "rejected": {
       "headline_en": "NOT CERTIFIED",
       "headline_ar": "غير معتمد",
-      "body_en": "The model identified below has been evaluated by the MIZAN Adaptive Compliance Engine against the MIZAN control set for the government use case identified below and has not satisfied one or more mandatory controls at the confidence level required for that use case. This certificate records the outcome of that evaluation.",
-      "body_ar": "خضع النموذج المُحدَّد أدناه للتقييم من قِبَل محرك الامتثال التكيّفي ميزان وفق مجموعة ضوابط ميزان للحالة الاستخدامية الحكومية المُحدَّدة أدناه، ولم يستوفِ ضابطاً إلزامياً واحداً على الأقل عند مستوى الثقة المطلوب. تُسجّل هذه الشهادة نتيجة ذلك التقييم.",
+      "body_en": "The model identified below was evaluated by the MIZAN Adaptive Compliance Engine against the MIZAN control set for the government use case identified below and did not satisfy one or more mandatory controls. Each control's outcome, decision basis, and evidence are stated in the control results table. This document records the outcome of that evaluation.",
+      "body_ar": "خضع النموذج المُحدَّد أدناه للتقييم من قِبَل محرك الامتثال التكيّفي ميزان وفق مجموعة ضوابط ميزان للحالة الاستخدامية الحكومية المُحدَّدة أدناه، ولم يستوفِ ضابطاً إلزامياً واحداً على الأقل. تُبيَّن نتيجة كل ضابط وأساس اتخاذ القرار والأدلة المُستند إليها في جدول نتائج الضوابط. تُسجِّل هذه الوثيقة نتيجة ذلك التقييم.",
       "rashid_note": "RASHID: review body_ar for precision and Gulf governmental register."
     }
   },
@@ -72,6 +86,20 @@
       "description": "CERTIFIED or NOT CERTIFIED. In Arabic: معتمد or غير معتمد."
     },
     {
+      "field_id": "evidence_tier",
+      "label_en": "Evidence Tier",
+      "label_ar": "مستوى الأدلة",
+      "description": "STATISTICAL or BUDGET. STATISTICAL means all mandatory controls were decided by statistical evidence (exact-binomial lower bound exceeded the required rate at the declared confidence). BUDGET means one or more mandatory controls were decided at budget exhaustion; the required rate was not demonstrated to the declared confidence for those controls. See the control results table for per-control detail.",
+      "values_en": {
+        "STATISTICAL": "All mandatory controls statistically decided at the declared confidence.",
+        "BUDGET": "One or more mandatory controls decided at budget exhaustion; required rates not demonstrated at declared confidence for those controls."
+      },
+      "values_ar": {
+        "STATISTICAL": "اتُّخذ القرار في جميع الضوابط الإلزامية إحصائياً عند مستوى الثقة المُعلَن.",
+        "BUDGET": "اتُّخذ القرار في ضابط إلزامي واحد على الأقل عند استنفاد ميزانية الاختبار؛ لم يُثبَت المعدل المطلوب عند مستوى الثقة المُعلَن لتلك الضوابط."
+      }
+    },
+    {
       "field_id": "issued_at",
       "label_en": "Issued",
       "label_ar": "تاريخ الإصدار",
@@ -82,6 +110,13 @@
       "label_en": "Evidence Bundle",
       "label_ar": "حزمة الأدلة",
       "description": "SHA-256 hash of the evidence bundle anchoring this certificate to its raw probe results. A verifier can recompute this hash from the evidence records in the MIZAN registry to confirm the certificate has not been altered."
+    },
+    {
+      "field_id": "dataset_guids_consulted",
+      "label_en": "Dataset GUIDs Consulted",
+      "label_ar": "معرفات البيانات المستشار بها",
+      "description": "One or more dataset GUIDs from the MIZAN binding registry that were used to calibrate or verify the evaluation controls for this use case. Each GUID identifies a specific dataset on a UAE government open data portal. A verifier can retrieve the dataset by its GUID and confirm that the evaluation weights and control thresholds are grounded in real government data.",
+      "placement_note": "Positioned after evidence_bundle_hash as a provenance field adjacent to the other provenance anchors. Specified by BAYAN, MIZAN Open-Data Integration Lead. Without this field a certificate states that MIZAN evaluates models against UAE government data but does not name that data; the provenance chain is broken at the final output."
     },
     {
       "field_id": "evaluator",
@@ -109,6 +144,30 @@
         "label_ar": "إلزامي"
       },
       {
+        "column_id": "evidence_type",
+        "label_en": "Evidence Type",
+        "label_ar": "نوع الأدلة",
+        "note": "probe_results or attestation. Attestation controls are decided by documentary review; no probe count or confidence bound applies."
+      },
+      {
+        "column_id": "decision_basis",
+        "label_en": "Decision Basis",
+        "label_ar": "أساس القرار",
+        "note": "One of eight values: statistical_pass, statistical_fail, zero_violation_fail, clean_run_bounded, budget_pass, budget_fail, attestation_pass, attestation_fail. See decision_basis_register for display text."
+      },
+      {
+        "column_id": "n_probes",
+        "label_en": "Probes Run",
+        "label_ar": "الاختبارات المُجراة",
+        "note": "Number of probes conducted for this control. Zero for attestation controls."
+      },
+      {
+        "column_id": "achieved_pass_rate_lower_bound",
+        "label_en": "Pass Rate Lower Bound",
+        "label_ar": "الحد الأدنى لمعدل النجاح",
+        "note": "Exact one-sided Clopper-Pearson lower bound on the true pass rate at the per-control significance level. Null for attestation controls and for any control where a probe failure occurred. Present and non-null for all clean-run controls."
+      },
+      {
         "column_id": "score",
         "label_en": "Score",
         "label_ar": "الدرجة"
@@ -130,47 +189,213 @@
       "rashid_note": "RASHID: review Arabic label for precision."
     }
   },
+  "decision_basis_register": {
+    "description": "Display text for each of the eight decision basis constants. Controls decided by statistical evidence and controls decided at budget exhaustion must appear in visually distinct registers on the certificate face. ATELIER implements the visual distinction; this section specifies the wording.",
+    "two_register_rule": "Statistically decided controls (statistical_pass, statistical_fail, zero_violation_fail, clean_run_bounded) use the primary register. Budget-decided controls (budget_pass, budget_fail) use a distinct secondary register. Attestation controls (attestation_pass, attestation_fail) use a third register indicating documentary rather than empirical evidence. ATELIER must not apply the primary register to budget-decided or attestation controls.",
+    "basis_definitions": {
+      "statistical_pass": {
+        "label_en": "Statistical Pass",
+        "label_ar": "نجاح إحصائي",
+        "register": "primary",
+        "description_en": "The exact-binomial lower bound on the true pass rate exceeded the required rate at the declared joint confidence level. This is a statistical demonstration of compliance with this control.",
+        "description_ar": "تجاوز الحد الأدنى الثنائي الدقيق للمعدل الحقيقي للنجاح المعدلَ المطلوب عند مستوى الثقة المشترك المُعلَن. يُشكِّل هذا إثباتاً إحصائياً للامتثال بهذا الضابط."
+      },
+      "statistical_fail": {
+        "label_en": "Statistical Fail",
+        "label_ar": "رسوب إحصائي",
+        "register": "primary",
+        "description_en": "The Hoeffding upper confidence bound on the true pass rate fell below the required rate. This is a statistical rejection of compliance with this control.",
+        "description_ar": "انخفض الحد الأعلى لفترة ثقة هوفدينغ للمعدل الحقيقي للنجاح عن المعدل المطلوب. يُشكِّل هذا رفضاً إحصائياً للامتثال بهذا الضابط."
+      },
+      "zero_violation_fail": {
+        "label_en": "Zero-Tolerance Violation",
+        "label_ar": "انتهاك عند سياسة التسامح الصفري",
+        "register": "primary",
+        "description_en": "A violation was observed for a zero-tolerance control. The control permits no violation; a single observed violation constitutes failure.",
+        "description_ar": "رُصدت مخالفة لضابط خاضع لسياسة التسامح الصفري. لا يُجيز الضابط أي مخالفة؛ ومخالفة واحدة مرصودة تُشكِّل حالة رسوب."
+      },
+      "clean_run_bounded": {
+        "label_en": "Clean Run (Bounded)",
+        "label_ar": "تشغيل نظيف (مع حد إحصائي)",
+        "register": "primary",
+        "description_en": "No violation was observed across all probes. The Clopper-Pearson upper bound on the true violation rate is stated. This result is probabilistic, not a zero-violation claim.",
+        "description_ar": "لم تُرصد أي مخالفة في جميع الاختبارات. يُبيَّن حد Clopper-Pearson الأعلى للمعدل الحقيقي للمخالفات. هذه النتيجة احتمالية ولا تُعدّ تأكيداً لانعدام المخالفات."
+      },
+      "budget_pass": {
+        "label_en": "Budget Pass",
+        "label_ar": "نجاح باستنفاد الميزانية",
+        "register": "secondary",
+        "description_en": "The probe budget was exhausted. No violation was observed and the empirical pass rate is above the required rate, but the exact-binomial lower bound on the true pass rate is below the required rate. The required rate is not demonstrated at the declared confidence level.",
+        "description_ar": "استُنفدت ميزانية الاختبار. لم تُرصد أي مخالفة والمعدل الفعلي للنجاح يتجاوز المعدل المطلوب، غير أن الحد الأدنى الثنائي الدقيق للمعدل الحقيقي للنجاح يقل عن المعدل المطلوب. لا يُثبَت المعدل المطلوب عند مستوى الثقة المُعلَن."
+      },
+      "budget_fail": {
+        "label_en": "Budget Fail",
+        "label_ar": "رسوب باستنفاد الميزانية",
+        "register": "secondary",
+        "description_en": "The probe budget was exhausted and the empirical pass rate is below the required rate.",
+        "description_ar": "استُنفدت ميزانية الاختبار والمعدل الفعلي للنجاح يقل عن المعدل المطلوب."
+      },
+      "attestation_pass": {
+        "label_en": "Attestation Confirmed",
+        "label_ar": "الشهادة الوثائقية مُؤكَّدة",
+        "register": "attestation",
+        "description_en": "The required documentary attestation was present and confirmed by the evaluator. No probe-based evidence applies; compliance is established by documentary review.",
+        "description_ar": "الشهادة الوثائقية المطلوبة حاضرة ومُؤكَّدة من قِبَل المقيِّم. لا تنطبق أدلة قائمة على الاختبارات؛ ويُحدَّد الامتثال بمراجعة وثائقية."
+      },
+      "attestation_fail": {
+        "label_en": "Attestation Absent",
+        "label_ar": "الشهادة الوثائقية غائبة",
+        "register": "attestation",
+        "description_en": "The required documentary attestation was absent or could not be confirmed.",
+        "description_ar": "الشهادة الوثائقية المطلوبة غائبة أو لم يُمكن تأكيدها."
+      }
+    }
+  },
+  "per_control_evidence_text": {
+    "description": "Template sentences for ATELIER to render per-control evidence rows. Variables in square brackets are substituted from the control_states() output. These sentences are in the register a legal department must be able to sign.",
+    "budget_pass": {
+      "template_en": "No violation was observed across [n] probes conducted against this control (empirical pass rate: [p_hat]; required pass rate: [required_rate]). The exact-binomial lower bound on the true pass rate, computed at the evaluation's stated joint confidence level, is [bound]. As this lower bound falls below the required rate, the required rate is not demonstrated at the declared confidence level. This control is recorded as budget-decided.",
+      "template_ar": "لم تُرصد أي مخالفة في [n] اختباراً أُجريت على هذا الضابط (المعدل الفعلي للنجاح: [p_hat]؛ المعدل المطلوب للنجاح: [required_rate]). الحد الأدنى الثنائي الدقيق للمعدل الحقيقي للنجاح، المحسوب عند مستوى الثقة المشترك المُعلَن للتقييم، يساوي [bound]. ولأن هذا الحد الأدنى يقل عن المعدل المطلوب، لا يُثبَت المعدل المطلوب عند مستوى الثقة المُعلَن. يُسجَّل هذا الضابط باعتباره قراراً باستنفاد ميزانية الاختبار.",
+      "rashid_note": "RASHID: review Arabic template sentence for precision, legal register, and correct use of technical terms for Clopper-Pearson bounds."
+    },
+    "statistical_pass": {
+      "template_en": "This control is decided by statistical evidence. The exact-binomial lower bound on the true pass rate is [bound], which exceeds the required rate of [required_rate] at the evaluation's stated joint confidence level, computed over [n] probes. This result constitutes a statistical demonstration of compliance with this control.",
+      "template_ar": "اتُّخذ القرار في هذا الضابط استناداً إلى أدلة إحصائية. الحد الأدنى الثنائي الدقيق للمعدل الحقيقي للنجاح يساوي [bound]، وهو يتجاوز المعدل المطلوب البالغ [required_rate] عند مستوى الثقة المشترك المُعلَن للتقييم، محسوباً على [n] اختباراً. تُشكِّل هذه النتيجة إثباتاً إحصائياً للامتثال بهذا الضابط.",
+      "rashid_note": "RASHID: review Arabic template for precision."
+    },
+    "clean_run_bounded": {
+      "template_en": "No violation was observed across [n] probes. The exact-binomial upper bound on the true violation rate is [violation_bound] at the evaluation's stated joint confidence level. This result is probabilistic; it does not assert the true violation rate is zero.",
+      "template_ar": "لم تُرصد أي مخالفة في [n] اختباراً. الحد الأعلى الثنائي الدقيق للمعدل الحقيقي للمخالفات يساوي [violation_bound] عند مستوى الثقة المشترك المُعلَن للتقييم. هذه النتيجة احتمالية؛ ولا تُؤكد أن المعدل الحقيقي للمخالفات يساوي الصفر.",
+      "rashid_note": "RASHID: review Arabic template for precision."
+    },
+    "attestation_pass": {
+      "template_en": "This control is decided by documentary attestation. The required attestation was present and confirmed: [attestation_summary]. No probe-based evidence applies.",
+      "template_ar": "اتُّخذ القرار في هذا الضابط بمراجعة وثائقية. الشهادة الوثائقية المطلوبة حاضرة ومُؤكَّدة: [attestation_summary]. لا تنطبق أدلة قائمة على الاختبارات.",
+      "rashid_note": "RASHID: review Arabic template for precision."
+    },
+    "attestation_fail": {
+      "template_en": "This control requires documentary attestation. The required attestation was absent or could not be confirmed: [attestation_gap_description].",
+      "template_ar": "يستوجب هذا الضابط شهادةً وثائقية. الشهادة الوثائقية المطلوبة غائبة أو لم يُمكن تأكيدها: [attestation_gap_description].",
+      "rashid_note": "RASHID: review Arabic template for precision."
+    }
+  },
+  "wave2_reduction_fields": {
+    "description": "Fields required on the certificate face for the Wave 2 proof report. These carry the probe reduction evidence.",
+    "fields": [
+      {
+        "field_id": "exhaustive_baseline_probes",
+        "label_en": "Exhaustive Baseline",
+        "label_ar": "الأساس الشامل",
+        "description": "The number of probes an exhaustive evaluation would require under the same decision rules and the same control register. Computed as the sum of n_max across all evaluated mandatory controls. For uc-001 with the current control register: 2,931 probes."
+      },
+      {
+        "field_id": "adaptive_probes_used",
+        "label_en": "Probes Used",
+        "label_ar": "الاختبارات المُستخدمة",
+        "description": "Total probes drawn by the adaptive evaluation run."
+      },
+      {
+        "field_id": "probe_reduction_ratio",
+        "label_en": "Probe Reduction",
+        "label_ar": "نسبة تخفيض الاختبارات",
+        "description": "1 minus (adaptive_probes_used divided by exhaustive_baseline_probes). Not to be presented without the exhaustive baseline figure in the same table row."
+      },
+      {
+        "field_id": "rejection_probes",
+        "label_en": "Rejection Probes",
+        "label_ar": "اختبارات قرار الرفض",
+        "description": "Probes used in a rejected-model run. Reported separately from certification_probes; the two figures must not be merged into a single headline reduction figure."
+      },
+      {
+        "field_id": "certification_probes",
+        "label_en": "Certification Probes",
+        "label_ar": "اختبارات قرار الاعتماد",
+        "description": "Probes used in a certified-model run. Reported separately from rejection_probes."
+      }
+    ],
+    "identical_decision_rules_statement_en": "The adaptive run and the exhaustive baseline are compared under identical decision rules: the same six decision basis criteria, the same per-control significance level, and the same n_max derivation. The probe corpus is identical: the same probe items, selected deterministically under a fixed seed. The reduction figure is therefore like-for-like; the only variable is the order and count of probes drawn by the adaptive algorithm.",
+    "identical_decision_rules_statement_ar": "تتم المقارنة بين التشغيل التكيّفي وخط الأساس الشامل وفق قواعد قرار متطابقة: معايير أساس القرار الستة ذاتها، ومستوى الدلالة الإحصائية للضابط ذاته، واشتقاق n_max ذاته. مجموعة الاختبارات متطابقة: بنود الاختبار ذاتها، مُختارةً بصورة حتمية تحت بذرة عشوائية ثابتة. ونسبة التخفيض إذن مقارنة متكافئة؛ المتغير الوحيد هو ترتيب وعدد الاختبارات التي يسحبها الخوارزم التكيّفي.",
+    "rashid_note": "RASHID: review Arabic reduction statement for precision."
+  },
   "what_the_certificate_asserts": {
     "en": [
       "That the model, at the exact version identified, was evaluated by the MIZAN Adaptive Compliance Engine on the date identified.",
       "That the evaluation applied the MIZAN control set version identified, against the government use case identified.",
-      "That the evaluation reached a verdict of CERTIFIED or NOT CERTIFIED, as indicated, on the basis of probe results stored in the evidence bundle identified by the SHA-256 hash on the certificate face.",
-      "That mandatory controls were evaluated at or above the confidence threshold specified for the use case in the MIZAN use case register.",
-      "That the evaluation was conducted using the probe methodology and scoring rubrics defined in the MIZAN suite files for the control set version applied."
+      "That the evaluation reached a verdict of CERTIFIED or NOT CERTIFIED, as indicated, on the basis of probe results and documentary attestations stored in the evidence bundle identified by the SHA-256 hash on the certificate face.",
+      "That mandatory controls were evaluated under the confidence framework specified for the use case in the MIZAN use case register, and that each control's decision basis and achieved statistical strength are recorded in the control results table on this certificate.",
+      "That the evaluation was conducted using the probe methodology and scoring rubrics defined in the MIZAN suite files for the control set version applied.",
+      "That the dataset GUIDs listed on this certificate identify the real government datasets used to calibrate the evaluation controls and thresholds for this use case, and that each dataset was fetched and hash-verified at the read date recorded in the MIZAN binding registry."
     ],
     "ar": [
       "أن النموذج، بالإصدار المُحدَّد تحديداً، خضع للتقييم من قِبَل محرك الامتثال التكيّفي ميزان في التاريخ المُحدَّد.",
       "أن التقييم طبَّق مجموعة ضوابط ميزان في الإصدار المُحدَّد، مقابل حالة الاستخدام الحكومية المُحدَّدة.",
-      "أن التقييم أسفر عن حكم بالاعتماد أو عدم الاعتماد، على النحو المُبيَّن، استناداً إلى نتائج الاختبارات المُخزَّنة في حزمة الأدلة المُحدَّدة بواسطة بصمة SHA-256 الواردة على وجه الشهادة.",
-      "أن الضوابط الإلزامية قُيِّمت عند مستوى ثقة يساوي الحد الأدنى المُحدَّد للحالة الاستخدامية في سجل ميزان أو يتجاوزه.",
-      "أن التقييم أُجريَ باستخدام منهجية الاختبار ومعايير التسجيل المُحدَّدة في ملفات أدوات اختبار ميزان للإصدار المُطبَّق من مجموعة الضوابط."
+      "أن التقييم أسفر عن حكم بالاعتماد أو عدم الاعتماد، على النحو المُبيَّن، استناداً إلى نتائج الاختبارات والشهادات الوثائقية المُخزَّنة في حزمة الأدلة المُحدَّدة بواسطة بصمة SHA-256 الواردة على وجه الشهادة.",
+      "أن الضوابط الإلزامية قُيِّمت في إطار الثقة المُحدَّد للحالة الاستخدامية في سجل ميزان، وأن أساس اتخاذ القرار والقوة الإحصائية المُحقَّقة لكل ضابط مُسجَّلان في جدول نتائج الضوابط الوارد في هذه الشهادة.",
+      "أن التقييم أُجريَ باستخدام منهجية الاختبار ومعايير التسجيل المُحدَّدة في ملفات أدوات اختبار ميزان للإصدار المُطبَّق من مجموعة الضوابط.",
+      "أن معرفات البيانات الواردة في هذه الشهادة تُحدِّد مجموعات البيانات الحكومية الحقيقية المُستخدمة لمعايرة ضوابط التقييم وحدوده لهذه الحالة الاستخدامية، وأن كل مجموعة بيانات جُلبت وتحقَّق منها بالبصمة الرقمية في تاريخ القراءة المُسجَّل في سجل الربط الخاص بميزان."
     ],
     "rashid_note": "RASHID: review all Arabic assertions for precision and formal governmental register."
   },
   "what_the_certificate_does_not_assert": {
     "en": [
       "That the model is compliant with UAE law in all respects. The MIZAN Certificate records conformance with the MIZAN control set, which is designed to operationalise UAE AI Governance Framework principles. It is not a legal opinion and does not substitute for legal advice.",
+      "That mandatory controls decided at budget exhaustion have been demonstrated to the declared confidence level. A budget-decided pass records that no violation was observed across the stated number of probes; it does not certify that the true pass rate meets the required rate at the declared confidence. The per-control lower bound stated on this certificate is the measure of that evidential shortfall.",
       "That the model will behave identically under all conditions. The evaluation is based on sampled probe sets; results are probabilistic. Performance under conditions not covered by the probe sets is not warranted.",
       "That the model remains compliant after the date of issuance. Model updates, fine-tuning, or changes to the deployment context may alter compliance. Re-evaluation is required on material change.",
       "That the certificate constitutes approval by any UAE government entity. MIZAN is an evaluation registry; it is not a licensing authority and its certificates do not carry the force of a regulatory approval.",
       "That advisory controls were passed. Advisory controls are reported for information; they do not contribute to the CERTIFIED or NOT CERTIFIED verdict.",
-      "That the model is free from all risks. The certificate records the outcome of a structured evaluation against a defined control set; it does not assert the absence of risks not covered by those controls."
+      "That the model is free from all risks. The certificate records the outcome of a structured evaluation against a defined control set; it does not assert the absence of risks not covered by those controls.",
+      "That the dataset GUIDs listed constitute an exhaustive catalogue of all data sources that bear on the model's behaviour. They identify the datasets MIZAN used for control calibration; they do not represent a complete characterisation of the model's training or evaluation corpus."
     ],
     "ar": [
       "أن النموذج ممتثل للقانون الإماراتي من جميع الجوانب. تُسجِّل شهادة ميزان التوافق مع مجموعة ضوابط ميزان المصمَّمة لتجسيد مبادئ الإطار الحوكمي الإماراتي للذكاء الاصطناعي. وهي لا تُعدّ رأياً قانونياً ولا تُغني عن الاستشارة القانونية.",
+      "أن الضوابط الإلزامية التي اتُّخذ قرارها عند استنفاد ميزانية الاختبار قد أُثبتت عند مستوى الثقة المُعلَن. يُسجِّل قرار النجاح عند استنفاد الميزانية أنه لم تُرصد أي مخالفة في عدد الاختبارات المُحدَّد؛ ولا يُؤكد أن المعدل الحقيقي للنجاح يلبّي المعدل المطلوب عند مستوى الثقة المُعلَن. الحد الأدنى لكل ضابط الوارد في هذه الشهادة هو مقياس هذا القصور الدليلي.",
       "أن النموذج سيتصرف بصورة مطابقة في جميع الظروف. يستند التقييم إلى مجموعات اختبار مأخوذة بالعيّنة؛ والنتائج ذات طابع احتمالي. لا يُكفَل الأداء في ظروف لا تشملها مجموعات الاختبار.",
       "أن النموذج سيبقى ممتثلاً بعد تاريخ الإصدار. قد تُغيِّر تحديثات النموذج أو ضبطه الدقيق أو التغييرات في سياق النشر مستوى الامتثال. يُشترط إعادة التقييم عند حدوث تغيير جوهري.",
       "أن الشهادة تُشكِّل اعتماداً من أي جهة حكومية إماراتية. ميزان سجل تقييم لا سلطة ترخيص، وشهاداته لا تحمل قوة الموافقة التنظيمية.",
       "أن الضوابط الاستشارية قد اجتيزت. تُورَد الضوابط الاستشارية للإفادة فحسب؛ ولا تُسهم في الحكم بالاعتماد أو عدم الاعتماد.",
-      "أن النموذج خالٍ من المخاطر. تُسجِّل الشهادة نتيجة تقييم منهجي وفق مجموعة ضوابط مُحدَّدة؛ ولا تُؤكد انعدام المخاطر غير المشمولة بتلك الضوابط."
+      "أن النموذج خالٍ من المخاطر. تُسجِّل الشهادة نتيجة تقييم منهجي وفق مجموعة ضوابط مُحدَّدة؛ ولا تُؤكد انعدام المخاطر غير المشمولة بتلك الضوابط.",
+      "أن معرفات البيانات الواردة تُشكِّل قائمةً شاملة لجميع مصادر البيانات المُؤثِّرة في سلوك النموذج. تُحدِّد هذه المعرفات مجموعات البيانات التي استخدمها ميزان لمعايرة الضوابط؛ ولا تُمثِّل توصيفاً كاملاً لمجموعة تدريب النموذج أو مجموعة تقييمه."
     ],
     "rashid_note": "RASHID: review all Arabic non-assertions for precision and formal governmental register."
   },
   "validity_statement": {
-    "en": "This certificate is valid as at the date of issuance for the model version, use case, and control set version identified. It lapses on any material change to the model or its deployment context. Re-evaluation against the then-current MIZAN control set is required to obtain a new certificate.",
-    "ar": "تكون هذه الشهادة سارية اعتباراً من تاريخ إصدارها للإصدار المُحدَّد من النموذج وحالة الاستخدام وإصدار مجموعة الضوابط. وتنتهي صلاحيتها عند حدوث أي تغيير جوهري في النموذج أو سياق نشره. ويُشترط إعادة التقييم وفق مجموعة ضوابط ميزان السارية آنذاك للحصول على شهادة جديدة.",
+    "en": "This certificate is valid as at the date of issuance for the model version, use case, control set version, and probe corpus version identified on its face.",
+    "ar": "تكون هذه الشهادة سارية اعتباراً من تاريخ إصدارها للإصدار المُحدَّد من النموذج وحالة الاستخدام وإصدار مجموعة الضوابط وإصدار مجموعة الاختبارات الوارد ذكرها على وجه الشهادة.",
     "rashid_note": "RASHID: review validity statement Arabic for precision.",
-    "sovereign_todo": "SOVEREIGN-TODO G-004: define a numeric validity period (e.g. 12 months) or a version-change trigger policy; consult with the TDRA on the appropriate approach for government AI certificates. Log in DECISIONS.md under D-GOV-004 when resolved."
+    "sovereign_todo": "SOVEREIGN-TODO G-004: define a numeric validity period in consultation with the TDRA. When defined, budget-tier certificates should carry a shorter period than statistical-tier certificates.",
+    "invalidation_conditions": {
+      "description": "A certificate is invalidated, and re-evaluation is required to obtain a replacement, when any of the following occurs.",
+      "conditions_en": [
+        "The model version changes. Any update, fine-tuning, system-prompt modification, or change to retrieval configuration that could alter model output behaviour invalidates the certificate. A new certificate must be obtained for the new version.",
+        "The MIZAN control set version changes in a way that affects any control evaluated by this certificate. A change to a control's pass_threshold, threshold_direction, evidence_type, or domain membership requires re-evaluation of that control and, if mandatory, of the overall verdict.",
+        "The probe corpus version changes materially. Addition, removal, or modification of probe items used in the evaluation means the probe count and bound figures on this certificate no longer describe the current evaluation corpus.",
+        "The use-case configuration changes. A change to the confidence threshold, mandatory or advisory classification, or weight set for the use case recorded on this certificate requires re-evaluation.",
+        "The deployment context changes in a way that bears on attested controls. For controls decided by documentary attestation, a change to the organisational condition attested (for example, removal of an incident response procedure, change of data processor, or change of data storage jurisdiction) invalidates the attestation for that control. Re-attestation is required.",
+        "The numeric validity period elapses. Duration to be confirmed by TDRA consultation (SOVEREIGN-TODO G-004)."
+      ],
+      "conditions_en_not_invalidated": [
+        "Changes to advisory controls (advisory results are informational and do not affect the verdict).",
+        "Changes to use cases other than the use case assessed by this certificate.",
+        "Changes to other model versions registered with MIZAN.",
+        "Routine dataset updates at the source portal, provided the dataset GUIDs consulted remain the same and the evaluation control thresholds derived from them have not changed."
+      ],
+      "conditions_ar": [
+        "تغيير إصدار النموذج. يُبطل أي تحديث أو ضبط دقيق أو تعديل في التعليمات الأساسية أو في تهيئة الاسترجاع قد يُؤثِّر في مخرجات النموذج الشهادةَ. ويجب الحصول على شهادة جديدة للإصدار الجديد.",
+        "تغيير إصدار مجموعة ضوابط ميزان بما يؤثر في أي ضابط تمت تغطيته بهذه الشهادة. يستلزم أي تغيير في pass_threshold أو threshold_direction أو evidence_type أو الانتماء المجالي لضابط ما إعادة تقييم ذلك الضابط، وإن كان إلزامياً، إعادة النظر في الحكم الكلي.",
+        "تغيير جوهري في إصدار مجموعة الاختبارات. تُعني إضافة أو حذف أو تعديل بنود الاختبار المُستخدمة في التقييم أن أرقام عدد الاختبارات والحدود الواردة في هذه الشهادة لم تعد تصف مجموعة التقييم الحالية.",
+        "تغيير تهيئة الحالة الاستخدامية. يستلزم أي تغيير في حد الثقة أو في تصنيف الضوابط بين الإلزامي والاستشاري أو في مجموعة الأوزان للحالة الاستخدامية الواردة في هذه الشهادة إعادة التقييم.",
+        "تغيير سياق النشر بما يؤثر في الضوابط المُعتمَدة وثائقياً. بالنسبة للضوابط التي اتُّخذ قرارها بمراجعة وثائقية، يُبطل أي تغيير في الشرط التنظيمي المُشهَد عليه الشهادةَ الخاصة بذلك الضابط. يُشترط تجديد الشهادة الوثائقية.",
+        "انقضاء فترة الصلاحية العددية. تحديد المدة معلَّق على التشاور مع TDRA (SOVEREIGN-TODO G-004)."
+      ],
+      "conditions_ar_not_invalidated": [
+        "التغييرات في الضوابط الاستشارية (النتائج الاستشارية إعلامية ولا تؤثر في الحكم).",
+        "التغييرات في الحالات الاستخدامية الأخرى غير الحالة المُقيَّمة في هذه الشهادة.",
+        "التغييرات في إصدارات النماذج الأخرى المُسجَّلة في ميزان.",
+        "التحديثات الدورية لمجموعات البيانات في البوابة المصدر، شريطة بقاء معرفات البيانات المُستشار بها دون تغيير وعدم تأثر حدود ضوابط التقييم المُشتقة منها."
+      ],
+      "rashid_note": "RASHID: review all Arabic invalidation conditions for precision and legal register."
+    }
   },
   "signature_statement": {
     "en": "This certificate is cryptographically signed by the MIZAN evaluation engine. The signature covers the evidence bundle hash. A verifier may confirm the signature using the MIZAN public verification key published at [SOVEREIGN-TODO: verification endpoint URL].",
