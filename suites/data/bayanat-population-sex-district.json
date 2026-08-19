@@ -1,0 +1,344 @@
+{
+  "dataset_id": "bayanat-population-sex-district",
+  "page_url": "https://bayanat.ae/en/Datasets/Dataset-info?id=dPUU00NDddAHkifXrsla0cLfS_C0eMcaC-yK_jbnCOQ",
+  "portal": "bayanat.ae",
+  "publisher": "Federal Competitiveness and Statistics Centre",
+  "title": "Population by Sex and District",
+  "modified": "2023-01-01",
+  "read_date": "2026-08-19",
+  "total_resources": 6,
+  "total_count_per_resource": 27,
+  "cache_note": "Preview only. The Bayanat portal server-renders up to 5 rows per resource in the page HTML. Each resource is one year of data. Total preview rows: 30 across 6 resources (years).",
+  "resources": [
+    {
+      "table_index": 0,
+      "columns": [
+        "Year",
+        "Medical_District_AR",
+        "Medical_District_EN",
+        "Gender_AR",
+        "Gender_EN",
+        "Value"
+      ],
+      "total_count_in_portal": 27,
+      "preview_rows": 5,
+      "rows": [
+        [
+          "2002",
+          "ابـــو ظبـــى",
+          "Abu Dhabi",
+          "ذكر",
+          "Male",
+          "539000"
+        ],
+        [
+          "2002",
+          "الغربیـــــــــه",
+          "Western",
+          "ذكر",
+          "Male",
+          "163000"
+        ],
+        [
+          "2002",
+          "العين",
+          "Al Ain",
+          "ذكر",
+          "Male",
+          "345000"
+        ],
+        [
+          "2002",
+          "دبى",
+          "Dubai",
+          "ذكر",
+          "Male",
+          "772000"
+        ],
+        [
+          "2002",
+          "الشارقــــــــة",
+          "Sharjah",
+          "ذكر",
+          "Male",
+          "382000"
+        ]
+      ]
+    },
+    {
+      "table_index": 1,
+      "columns": [
+        "Year",
+        "Medical_District_AR",
+        "Medical_District_EN",
+        "Gender_AR",
+        "Gender_EN",
+        "Value"
+      ],
+      "total_count_in_portal": 27,
+      "preview_rows": 5,
+      "rows": [
+        [
+          "2003",
+          "ابـــو ظبـــى",
+          "Abu Dhabi",
+          "ذكر",
+          "Male",
+          "579000"
+        ],
+        [
+          "2003",
+          "الغربیـــــــــه",
+          "Western",
+          "ذكر",
+          "Male",
+          "186000"
+        ],
+        [
+          "2003",
+          "العين",
+          "Al Ain",
+          "ذكر",
+          "Male",
+          "375000"
+        ],
+        [
+          "2003",
+          "دبى",
+          "Dubai",
+          "ذكر",
+          "Male",
+          "835000"
+        ],
+        [
+          "2003",
+          "الشارقــــــــة",
+          "Sharjah",
+          "ذكر",
+          "Male",
+          "406000"
+        ]
+      ]
+    },
+    {
+      "table_index": 2,
+      "columns": [
+        "Year",
+        "Medical_District_AR",
+        "Medical_District_EN",
+        "Gender_AR",
+        "Gender_EN",
+        "Value"
+      ],
+      "total_count_in_portal": 27,
+      "preview_rows": 5,
+      "rows": [
+        [
+          "2004",
+          "ابـــو ظبـــى",
+          "Abu Dhabi",
+          "ذكر",
+          "Male",
+          "591000"
+        ],
+        [
+          "2004",
+          "الغربیـــــــــه",
+          "Western",
+          "ذكر",
+          "Male",
+          "203000"
+        ],
+        [
+          "2004",
+          "العين",
+          "Al Ain",
+          "ذكر",
+          "Male",
+          "405000"
+        ],
+        [
+          "2004",
+          "دبى",
+          "Dubai",
+          "ذكر",
+          "Male",
+          "903000"
+        ],
+        [
+          "2004",
+          "الشارقــــــــة",
+          "Sharjah",
+          "ذكر",
+          "Male",
+          "434000"
+        ]
+      ]
+    },
+    {
+      "table_index": 3,
+      "columns": [
+        "Year",
+        "Medical_District_AR",
+        "Medical_District_EN",
+        "Gender_AR",
+        "Gender_EN",
+        "Value"
+      ],
+      "total_count_in_portal": 27,
+      "preview_rows": 5,
+      "rows": [
+        [
+          "2005",
+          "ابـــو ظبـــى",
+          "Abu Dhabi",
+          "ذكر",
+          "Male",
+          "531743"
+        ],
+        [
+          "2005",
+          "الغربیـــــــــه",
+          "Western",
+          "ذكر",
+          "Male",
+          "96945"
+        ],
+        [
+          "2005",
+          "العين",
+          "Al Ain",
+          "ذكر",
+          "Male",
+          "298131"
+        ],
+        [
+          "2005",
+          "دبى",
+          "Dubai",
+          "ذكر",
+          "Male",
+          "989305"
+        ],
+        [
+          "2005",
+          "الشارقــــــــة",
+          "Sharjah",
+          "ذكر",
+          "Male",
+          "520234"
+        ]
+      ]
+    },
+    {
+      "table_index": 4,
+      "columns": [
+        "Year",
+        "Medical_District_AR",
+        "Medical_District_EN",
+        "Gender_AR",
+        "Gender_EN",
+        "Value"
+      ],
+      "total_count_in_portal": 27,
+      "preview_rows": 5,
+      "rows": [
+        [
+          "2007",
+          "ابـــو ظبـــى",
+          "Abu Dhabi",
+          "ذكر",
+          "Male",
+          "578000"
+        ],
+        [
+          "2007",
+          "الغربیـــــــــه",
+          "Western",
+          "ذكر",
+          "Male",
+          "89000"
+        ],
+        [
+          "2007",
+          "العين",
+          "Al Ain",
+          "ذكر",
+          "Male",
+          "315000"
+        ],
+        [
+          "2007",
+          "دبى",
+          "Dubai",
+          "ذكر",
+          "Male",
+          "1121000"
+        ],
+        [
+          "2007",
+          "الشارقــــــــة",
+          "Sharjah",
+          "ذكر",
+          "Male",
+          "581000"
+        ]
+      ]
+    },
+    {
+      "table_index": 5,
+      "columns": [
+        "Year",
+        "Medical_District_AR",
+        "Medical_District_EN",
+        "Gender_AR",
+        "Gender_EN",
+        "Value"
+      ],
+      "total_count_in_portal": 27,
+      "preview_rows": 5,
+      "rows": [
+        [
+          "2008",
+          "ابـــو ظبـــى",
+          "Abu Dhabi",
+          "ذكر",
+          "Male",
+          "602000"
+        ],
+        [
+          "2008",
+          "الغربیـــــــــه",
+          "Western",
+          "ذكر",
+          "Male",
+          "91000"
+        ],
+        [
+          "2008",
+          "العين",
+          "Al Ain",
+          "ذكر",
+          "Male",
+          "327000"
+        ],
+        [
+          "2008",
+          "دبى",
+          "Dubai",
+          "ذكر",
+          "Male",
+          "1220000"
+        ],
+        [
+          "2008",
+          "الشارقــــــــة",
+          "Sharjah",
+          "ذكر",
+          "Male",
+          "625000"
+        ]
+      ]
+    }
+  ]
+}

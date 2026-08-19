@@ -2,29 +2,44 @@
 
 **Agent:** BAYAN, Open-Data Integration Lead  
 **Mandate:** Charter Addendum 01, section 2  
-**Date:** 2026-08-19  
+**Date:** 2026-08-19 (addendum applied same day)  
 **Status:** All five use cases bound and hash-verified. All gates pass.
+
+**Addendum note (2026-08-19):** uc-001 was rebound from the Ajman Speed Centre
+dataset (emirate-level service fees) to the FCSC "Population by Sex and District"
+dataset from bayanat.ae (federal bilingual data). The Bayanat portal is accessible
+to unauthenticated clients via HTML page parse; the REST API path was investigated
+and permanently closed. See section 9 for the full Bayanat access investigation
+record and section 1 for the updated binding table.
 
 ---
 
 ## 1. Dataset Bindings
 
-All five MIZAN use cases are bound to real, fetched, hash-verified datasets from the Ajman
-Open Data Portal (data.ajman.ae). The Ajman portal is authorised by the charter's network
-exception. The Bayanat portal (bayanat.ae) is inaccessible from unauthenticated server-side
-HTTP calls; the full failure record and operator instructions are in section 4 and in
-`docs/DATA_REQUESTS.md`.
+uc-001 is bound to the federal FCSC dataset from bayanat.ae via server-rendered
+HTML parse. uc-002 through uc-005 are bound to Ajman Open Data Portal datasets
+via the Opendatasoft Explore API v2.1. All five are hash-verified against
+committed caches.
 
-| Use Case | Dataset Name as Published | Publisher | Dataset GUID | Read Date | Records Cached | Cache SHA-256 (first 16) |
-|----------|--------------------------|-----------|--------------|-----------|---------------|--------------------------|
-| uc-001 | Speed Centre Services Names and Fees | Ajman Government / Speed Centre | da_vx5h92 | 2026-08-19 | 60 of 60 | e45ea5cbf1def0e5 |
-| uc-002 | بيانات الانظمة والسياسات بادارة الموارد البشرية | Ajman Government | da_f8z46q | 2026-08-19 | 27 of 27 | 2d51e8b9a40e3989 |
-| uc-003 | Benefit Certificates for Rent Contracts | Ajman Government | da_hq5ypb | 2026-08-19 | 100 of 105 (sample) | 2b348a15b703f187 |
-| uc-004 | Number of Reports, Security Certificates and Initiatives | Ajman Government / Al Hamidiya Police | da_mew4ks | 2026-08-19 | 39 of 39 | f82db3681c31e262 |
-| uc-005 | COO Re-Export 2023 Part 2 | Ajman Government / Ajman Chamber | da_isigsw | 2026-08-19 | 100 of 56975 (sample) | 7b771a2b397bfca1 |
+| Use Case | Dataset Name as Published | Publisher | Portal | Dataset GUID / Token | Read Date | Records Cached | Cache SHA-256 (first 16) |
+|----------|--------------------------|-----------|--------|---------------------|-----------|---------------|--------------------------|
+| uc-001 | Population by Sex and District | FCSC (federal) | bayanat.ae | `dPUU00NDddAHkifXrsla0cLfS_C0eMcaC-yK_jbnCOQ` | 2026-08-19 | 30 preview (6 resources x 5 rows each) | 15ae4aa016e44011 |
+| uc-002 | بيانات الانظمة والسياسات بادارة الموارد البشرية | Ajman Government | data.ajman.ae | da_f8z46q | 2026-08-19 | 27 of 27 | 2d51e8b9a40e3989 |
+| uc-003 | Benefit Certificates for Rent Contracts | Ajman Government | data.ajman.ae | da_hq5ypb | 2026-08-19 | 100 of 105 (sample) | 2b348a15b703f187 |
+| uc-004 | Number of Reports, Security Certificates and Initiatives | Ajman Government / Al Hamidiya Police | data.ajman.ae | da_mew4ks | 2026-08-19 | 39 of 39 | f82db3681c31e262 |
+| uc-005 | COO Re-Export 2023 Part 2 | Ajman Government / Ajman Chamber | data.ajman.ae | da_isigsw | 2026-08-19 | 100 of 56975 (sample) | 7b771a2b397bfca1 |
 
-Full binding documentation including portal URLs, API URLs, licence terms, last-modified
-dates, and grounding rationale is in `docs/evidence/data_sources.md`.
+**Why uc-001 moved to Bayanat and not uc-002 through uc-005:** All 12 datasets
+on the first page of bayanat.ae were evaluated. The Federal Expenditures dataset
+(inspected for uc-005) has columns ['Meta Data', 'Column1'] and 16 rows of field
+definitions: it is a data dictionary, not expenditure records. The Golden Residency
+applications dataset (inspected for uc-003) is also a metadata record. Neither
+supersedes the Ajman bindings. The FCSC population dataset is the single federal
+dataset that genuinely grounds its use case better: it carries Arabic and English
+government vocabulary for all seven emirates' administrative areas from a federal
+publisher, directly calibrating the Arabic-accuracy controls for the citizen chatbot.
+
+Full binding documentation is in `docs/evidence/data_sources.md`.
 
 Cache files and manifests are in `suites/data/`. Each dataset has three files:
 `{id}.json` (cache), `{id}.meta.json` (full API metadata), `{id}.manifest.json` (binding
@@ -227,7 +242,7 @@ Grounding: every gate passes.
 Command: `python3 scripts/audit/register_lint.py`
 
 ```
-Files scanned: 97
+Files scanned: 124
 Findings: 0
 Register discipline: clean.
 ```
@@ -239,10 +254,13 @@ Register discipline: clean.
 | File | Purpose |
 |------|---------|
 | `agents/data/__init__.py` | BAYAN workstream package marker |
-| `agents/data/fetch_datasets.py` | Live fetch, hash verification, failure detection |
-| `suites/data/speed-center-services-names-and-fees.json` | uc-001 cache (60 records) |
-| `suites/data/speed-center-services-names-and-fees.meta.json` | uc-001 portal metadata |
-| `suites/data/speed-center-services-names-and-fees.manifest.json` | uc-001 binding manifest with GUID da_vx5h92 |
+| `agents/data/fetch_datasets.py` | Unified fetch orchestrator: Bayanat + Ajman |
+| `agents/data/fetch_bayanat.py` | Bayanat HTML page fetcher and parser (new, addendum) |
+| `suites/data/bayanat-population-sex-district.json` | uc-001 Bayanat cache (30 preview rows, 6 resources) |
+| `suites/data/bayanat-population-sex-district.manifest.json` | uc-001 Bayanat binding manifest |
+| `suites/data/speed-center-services-names-and-fees.json` | Ajman Speed Centre reference (retained, not primary uc-001) |
+| `suites/data/speed-center-services-names-and-fees.meta.json` | Ajman Speed Centre portal metadata |
+| `suites/data/speed-center-services-names-and-fees.manifest.json` | Ajman Speed Centre binding manifest with GUID da_vx5h92 |
 | `suites/data/byanat-alanzmh-walsyasat-bdaerh-almward-albshryh.json` | uc-002 cache (27 records) |
 | `suites/data/byanat-alanzmh-walsyasat-bdaerh-albshryh.meta.json` | uc-002 portal metadata |
 | `suites/data/byanat-alanzmh-walsyasat-bdaerh-albshryh.manifest.json` | uc-002 binding manifest with GUID da_f8z46q |
@@ -256,7 +274,7 @@ Register discipline: clean.
 | `suites/data/coo-re-export-2023-part-2.meta.json` | uc-005 portal metadata |
 | `suites/data/coo-re-export-2023-part-2.manifest.json` | uc-005 binding manifest with GUID da_isigsw |
 | `docs/evidence/data_sources.md` | Full binding documentation for all five use cases |
-| `docs/DATA_REQUESTS.md` | Six open requests for Bayanat datasets with operator instructions |
+| `docs/DATA_REQUESTS.md` | DR-001 through DR-006 resolved with full investigation record |
 | `docs/reports/bayan_wave1.md` | This report |
 
 ---
@@ -270,6 +288,60 @@ lint gate or whether a finding is expected.
 
 ---
 
-*BAYAN Wave 1 complete. All five use cases bound. All gates pass. GOVERNANCE action
-required on dataset_guids_consulted field. Bayanat operator actions documented in
+## 9. Bayanat Access Investigation Record
+
+This section is the full record of what was tried, what was wrong, and what
+works. It supersedes the original DR-001 analysis.
+
+**Wave 1 initial finding (wrong):** All Bayanat REST API endpoints return
+HTTP 302 to `/en/error/404`. Conclusion: Sitecore antiforgery tokens required;
+portal inaccessible from server-side calls.
+
+**What broke the analysis:** The conclusion was based on 302 responses to API
+endpoints but did not test the dataset info page HTML. Testing the homepage
+confirmed HTTP 200, but the homepage is an SPA shell and carries no data.
+
+**What the coordinator found:** The dataset info page
+(`/en/Datasets/Dataset-info?id={token}`) returns HTTP 200 with a full
+server-rendered page of ~699,500 bytes, no JavaScript required. The data is
+present in the HTML, not loaded dynamically.
+
+**Thread that resolved it:** A bad Resource GUID value sent to
+`GetDatasetResource` returns HTTP 400 (bad input), not 302 or 404. HTTP 400
+means the endpoint is present and validating. Pulling that thread led to the
+discovery that the identifier schemes visible in the page (Sitecore item GUIDs
+and base64url `data-resource-id` tokens) are neither of them the Resource GUID
+that the endpoint requires. The Resource GUID is an internal concept not exposed
+to unauthenticated clients. The endpoint is therefore permanently closed to
+unauthenticated access even though the page itself is not.
+
+**What the correct access method is:** GET the dataset info page, parse the
+`<table id="accordionTableOne-{n}">` elements from the HTML. Each table is one
+resource (one year of data). Each tbody carries up to 5 preview rows. The total
+record count is embedded as `"TotalCount":{n}` in a server-side JSON block.
+The token is the 43-character base64url value from the listing page hrefs.
+
+**Why the HTML parse is the right method and not a workaround:** The portal
+specifically chose to server-render the Data Explorer table. It is a deliberate
+design decision by the portal that makes the data readable without JavaScript.
+Using it is reading what the portal chose to publish, not circumventing anything.
+
+**Residual risk stated plainly:** Markup changes break the parse. Column
+validation in `fetch_bayanat.py` makes markup changes produce COLUMN_MISMATCH
+or PARSE_FAILED with the expected and found columns printed. The failure is
+visible, not silent.
+
+**Other Bayanat datasets evaluated for uc-002 through uc-005:**
+- Federal Expenditures by Group and Location: columns ['Meta Data', 'Column1'],
+  16 rows, field definitions only. Not usable for uc-005.
+- Annual number of Golden Residency applications: Arabic column header, 10
+  rows of metadata. Not usable for uc-003.
+- Conclusion: four other evaluated datasets are metadata records. Ajman
+  bindings for uc-002 through uc-005 are retained as the better grounding.
+
+---
+
+*BAYAN Wave 1 complete. All five use cases bound and hash-verified. uc-001
+rebound to federal Bayanat dataset. All gates pass. GOVERNANCE action required
+on dataset_guids_consulted field. DR-001 through DR-006 resolved in
 `docs/DATA_REQUESTS.md`.*

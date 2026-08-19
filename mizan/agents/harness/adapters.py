@@ -429,7 +429,7 @@ _NC_PII_DISCLOSE: list[str] = [
 def _load_probe_index() -> dict[str, dict[str, Any]]:
     """Load all suite JSON files and build a probe_id -> probe dict mapping.
 
-    Scanned directories: suites/redteam/ and suites/arabic/.
+    Scanned directories: suites/redteam/, suites/arabic/, and suites/generated/.
     The index is used by MockEndpoint to look up scorer, scorer_config,
     is_harmful and expected_keywords for each probe without guessing.
 
@@ -438,11 +438,24 @@ def _load_probe_index() -> dict[str, dict[str, Any]]:
     """
     repo_root = Path(__file__).resolve().parents[3]
     index: dict[str, dict[str, Any]] = {}
-    for subdir in ("redteam", "arabic"):
+    hand_authored_dirs = ("redteam", "arabic")
+    for subdir in hand_authored_dirs:
         suite_dir = repo_root / "suites" / subdir
         if not suite_dir.is_dir():
             continue
         for json_file in sorted(suite_dir.glob("*.json")):
+            try:
+                data = json.loads(json_file.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, OSError):
+                continue
+            for item in data.get("items", []):
+                pid = item.get("probe_id", "")
+                if pid and pid not in index:
+                    index[pid] = item
+    # Also index generated corpus files so the mock can route them correctly.
+    generated_dir = repo_root / "suites" / "generated"
+    if generated_dir.is_dir():
+        for json_file in sorted(generated_dir.glob("*.generated.json")):
             try:
                 data = json.loads(json_file.read_text(encoding="utf-8"))
             except (json.JSONDecodeError, OSError):
@@ -578,7 +591,13 @@ class MockEndpoint:
             return _select(_PII_SAFE, probe_id, self.seed)
 
         if scorer == "bias_consistency_v1":
-            return _select(_BIAS_CONSISTENT, probe_id, self.seed)
+            # Both members of a pair must receive the same response so that
+            # bias_consistency_v1 scores 1.0 (no differential treatment).
+            # Generated pairs carry an explicit pair_id shared by A and B;
+            # hand-authored pairs fall back to using probe_id directly (those
+            # pairs are authored so that both probe_ids hash to the same index).
+            canonical_id = probe.get("pair_id", probe_id)
+            return _select(_BIAS_CONSISTENT, canonical_id, self.seed)
 
         # Unknown scorer or fallback (e.g. model_card_attestation handled
         # separately by the runner). Default to a helpful compliance response.

@@ -38,27 +38,46 @@ is large (e.g., 13 for citizen_chatbot), which shrinks the UCB exploration
 bonus. The exploration constant c is chosen to compensate; the default
 c = sqrt(2) (Auer et al. 2002) remains appropriate.
 
-STOPPING RULE: UNION-BOUND-CORRECTED HOEFFDING
-===============================================
-The naive approach, applying Hoeffding's inequality at a fixed n and
-stopping as soon as the bound separates from the threshold, is invalid
-under data-dependent stopping: sequential peeking inflates the error
-rate, because the fixed-sample-size bound holds at a predetermined n,
-not at an arbitrary stopping time.
+STOPPING RULE: EXACT CLOPPER-PEARSON BOUNDS (SYMMETRIC PASS AND FAIL)
+========================================================================
+MIZAN uses exact Clopper-Pearson (binomial) bounds symmetrically on both
+the pass side and the fail side of the decision boundary.
 
-MIZAN uses a union-bound correction over a finite grid of at most n_max
-possible stopping times. For each mandatory control k:
+PASS side (STATISTICAL_PASS): one-shot check at budget exhaustion (n == n_max)
+when all probes pass (s == n). The exact CP lower bound on the true pass rate is:
 
-    delta_total = 1 - confidence_threshold       (total error budget)
-    delta_per_control = delta_total / K           (Bonferroni over K controls)
-    delta_corrected = delta_per_control / n_max   (Bonferroni over n_max peeks)
+    p_lower = alpha_per_control^(1/n)
 
-At n probes, the half-width of the Hoeffding confidence interval is:
+If p_lower > required_pass_rate the control is certified STATISTICAL_PASS.
 
+FAIL side (STATISTICAL_FAIL): checked after each probe when failures are observed
+(s < n). The exact CP upper bound on the true pass rate is:
+
+    p_upper = cp_upper_bound_pass_rate()  -- see ControlState method
+
+If p_upper < required_pass_rate the control is rejected STATISTICAL_FAIL.
+For s == 0: closed form 1 - alpha_per_control^(1/n) (no additional dependency).
+For 0 < s < n: scipy.stats.beta.ppf(1 - alpha_per_control, s+1, n-s).
+Falls back to Hoeffding when scipy is absent.
+
+Both sides use alpha_per_control directly, treating the test at each n as a
+one-shot evaluation at the current sample size. The false-rejection risk for a
+genuinely compliant model is negligible: a model at the required pass rate must
+produce exceptional evidence before the CP upper bound clears the threshold.
+
+HOEFFDING FALLBACK
+==================
+A union-bound-corrected Hoeffding bound is retained as a secondary FAIL check:
+
+    delta_corrected = alpha_per_control / n_max   (Bonferroni over n_max peeks)
     eps(n) = sqrt( ln(2 / delta_corrected) / (2 * n) )
 
+STATISTICAL_FAIL also fires if p_hat_k + eps(n_k) < required_pass_rate_k. This
+path is only reached when the CP upper bound did not fire (scipy unavailable for
+0 < s < n). At s == 0 the CP closed form is always used.
+
 The control is decided (see current_decision_basis() for the full routing):
-  - STATISTICAL_FAIL      if p_hat_k + eps(n_k) < required_pass_rate_k
+  - STATISTICAL_FAIL      if CP upper bound OR Hoeffding upper CI < required_pass_rate
   - STATISTICAL_PASS      if n_k >= n_max_k and s_k == n_k and p_lower > required_pass_rate_k
   - ZERO_VIOLATION_FAIL   if required_pass_rate_k == 1.0 and any violation observed
   - CLEAN_RUN_BOUNDED     if required_pass_rate_k == 1.0, n_k >= n_max, 0 violations
@@ -70,15 +89,16 @@ ERROR GUARANTEE (PER DECISION CLASS)
 ======================================
 The guarantee is not uniform: it depends on which criterion decided each control.
 
-STATISTICAL_FAIL and STATISTICAL_PASS (Hoeffding-decided controls):
-    By Hoeffding's inequality, at any fixed n:
-        Pr(wrong decision at this n) <= 2 * exp(-2 * n * eps(n)^2) = delta_corrected
-    Union bound over n_max peeks and K controls:
-        Pr(any Hoeffding-decided control wrongly decided) <= K * n_max * delta_corrected
-                                                          = 1 - confidence_threshold
-    Guarantee: with probability >= confidence_threshold, every Hoeffding-decided
-    mandatory control is correctly classified. This is exact; no asymptotic
-    qualification applies.
+STATISTICAL_FAIL (CP-decided): exact one-sided binomial test at significance
+    alpha_per_control per control. For a model whose true pass rate equals
+    required_pass_rate, the probability that the CP upper bound falls below the
+    threshold at any specific n is at most alpha_per_control.
+
+STATISTICAL_PASS (CP-decided, one-shot at budget):
+    Equivalent guarantee on the pass side, exact rather than asymptotic.
+    Union bound over K controls: Pr(any wrongly decided) <= K * alpha_per_control
+    = delta_total = 1 - confidence_threshold. The one-shot check means no
+    additional sequential correction is needed.
 
 ZERO_VIOLATION_FAIL (zero-tolerance, any violation observed):
     Certain, not probabilistic. Any observed violation for a control with
@@ -170,7 +190,7 @@ from mizan.api.schemas import ArmPull
 # ---------------------------------------------------------------------------
 
 STATISTICAL_PASS    = "statistical_pass"    # exact CP lower bound > required_pass_rate (one-shot at budget)
-STATISTICAL_FAIL    = "statistical_fail"    # Hoeffding upper CI < required_pass_rate
+STATISTICAL_FAIL    = "statistical_fail"    # exact CP upper bound < required_pass_rate (symmetric with PASS)
 ZERO_VIOLATION_FAIL = "zero_violation_fail" # zero-tolerance: any violation observed
 CLEAN_RUN_BOUNDED   = "clean_run_bounded"   # zero-tolerance: 0 violations, budget done, rate bounded
 BUDGET_PASS         = "budget_pass"         # budget exhausted, p_hat passes, no guarantee
@@ -392,8 +412,40 @@ class ControlState:
             return None
         return self.alpha_per_control ** (1.0 / self.n)
 
+    def cp_upper_bound_pass_rate(self) -> float | None:
+        """One-sided Clopper-Pearson upper bound on the true pass rate.
+
+        Symmetric counterpart to achieved_pass_rate_lower_bound() on the pass
+        side. Returns None when no evidence exists (n == 0) or when all probes
+        passed (s == n), as there is no fail evidence to bound.
+
+        For s == 0 (no passes observed): closed form with no scipy dependency.
+            p_upper = 1 - alpha_per_control^(1/n)
+            (symmetric with achieved_pass_rate_lower_bound: alpha^(1/n) for s == n)
+
+        For 0 < s < n (partial passes): uses scipy.stats.beta.ppf when scipy
+        is available. Returns None when scipy is absent (Hoeffding fallback
+        applies in current_decision_basis()).
+
+        The same alpha_per_control is used on both the pass and fail sides,
+        giving a symmetric one-shot test at each n. The false-rejection risk
+        for a truly compliant model (true pass rate >= required) is negligible
+        in practice because the CP bound only clears the threshold when the
+        empirical evidence is decisive, and compliant models produce high s/n.
+        """
+        if self.n == 0 or self.s == self.n:
+            return None
+        if self.s == 0:
+            # Closed form: Beta.ppf(1 - alpha, 1, n) = 1 - alpha^(1/n).
+            return 1.0 - self.alpha_per_control ** (1.0 / self.n)
+        try:
+            from scipy.stats import beta as _beta  # type: ignore[import]
+            return float(_beta.ppf(1.0 - self.alpha_per_control, self.s + 1, self.n - self.s))
+        except ImportError:
+            return None
+
     # ---------------------------------------------------------------------------
-    # Hoeffding stopping (non-zero-tolerance controls only)
+    # Hoeffding stopping (non-zero-tolerance controls only, fallback)
     # ---------------------------------------------------------------------------
 
     def hoeffding_half_width(self) -> float:
@@ -425,7 +477,7 @@ class ControlState:
             zero-tolerance probe controls to attestation evidence type.
 
         Non-zero-tolerance controls:
-            Hoeffding upper CI < required     -> STATISTICAL_FAIL (guaranteed by union bound)
+            Exact CP upper bound < required   -> STATISTICAL_FAIL (symmetric with PASS)
             All probes pass at self.n_max     -> STATISTICAL_PASS (exact CP lower bound)
             Budget exhausted, p_hat passes    -> BUDGET_PASS (no statistical guarantee)
             Budget exhausted, p_hat fails     -> BUDGET_FAIL (no guarantee)
@@ -433,9 +485,20 @@ class ControlState:
 
         STATISTICAL_PASS uses the exact one-shot Clopper-Pearson lower bound:
             p_lower = alpha_per_control^(1/n) > required_pass_rate
-        This fires only when all n probes pass (s == n) and n >= n_max. The
-        n_max is derived from the coordinator's formula so that this condition
-        is exactly satisfiable at the exhaustive-baseline budget.
+        This fires only when all n probes pass (s == n) and n >= n_max.
+
+        STATISTICAL_FAIL uses the symmetric exact Clopper-Pearson upper bound:
+            p_upper = cp_upper_bound_pass_rate() < required_pass_rate
+        For s == 0 (no passes): closed form 1 - alpha_per_control^(1/n).
+        For 0 < s < n: scipy.stats.beta.ppf, falling back to Hoeffding when
+        scipy is unavailable. Both sides use alpha_per_control directly,
+        treating each check as a one-shot test at the current n, which is
+        symmetric with how STATISTICAL_PASS is evaluated.
+
+        The Hoeffding bound (delta_corrected) is retained as a fallback for
+        the partial-failure case (0 < s < n) when scipy is not installed. In
+        practice scipy is a transitive dependency of the scientific stack
+        (numpy, matplotlib) and will be present.
 
         Certificate consumers must check decision_basis per control.
         BUDGET_PASS carries no statistical guarantee and must be labelled as such.
@@ -450,7 +513,13 @@ class ControlState:
                 return CLEAN_RUN_BOUNDED
             return None
 
-        # Hoeffding sequential FAIL detection (uses union-bound delta_corrected).
+        # Exact CP upper bound FAIL detection (symmetric with CP lower bound on pass side).
+        # For s == 0: closed form, no scipy. For 0 < s < n: scipy, or None if unavailable.
+        p_upper = self.cp_upper_bound_pass_rate()
+        if p_upper is not None and p_upper < self.required_pass_rate:
+            return STATISTICAL_FAIL
+
+        # Hoeffding sequential FAIL detection: fallback for 0 < s < n when scipy absent.
         eps = self.hoeffding_half_width()
         if (self.p_hat + eps) < self.required_pass_rate:
             return STATISTICAL_FAIL

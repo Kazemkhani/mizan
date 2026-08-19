@@ -39,6 +39,11 @@ web:
 test:
 	$(PYTEST) -v
 
+# The slow set, deselected from `make test` by the marker in pyproject.toml.
+# Regenerates the full corpus to prove generation is deterministic.
+test-slow:
+	$(PYTEST) -v -m slow
+
 # ---------------------------------------------------------------------------
 # seed: populate the database with demo data
 # ---------------------------------------------------------------------------

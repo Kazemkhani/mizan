@@ -49,6 +49,14 @@ packages = ["mizan"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+# Slow tests are deselected by default. A suite nobody will wait for is a suite
+# nobody runs, and full-corpus regeneration takes minutes. The marker existed
+# but was never registered, so it silently deselected nothing and the suite grew
+# to just under fifteen minutes. CI runs the slow set explicitly.
+addopts = "-m 'not slow'"
+markers = [
+    "slow: regenerates the full corpus or otherwise takes minutes to run",
+]
 
 [tool.ruff]
 line-length = 100

@@ -1,0 +1,16 @@
+{
+  "dataset_id": "bayanat-population-sex-district",
+  "dataset_uid": "dPUU00NDddAHkifXrsla0cLfS_C0eMcaC-yK_jbnCOQ",
+  "portal": "bayanat.ae",
+  "publisher": "Federal Competitiveness and Statistics Centre",
+  "title": "Population by Sex and District",
+  "page_url": "https://bayanat.ae/en/Datasets/Dataset-info?id=dPUU00NDddAHkifXrsla0cLfS_C0eMcaC-yK_jbnCOQ",
+  "access_method": "server-rendered HTML parse (no API; see agents/data/fetch_bayanat.py docstring)",
+  "modified": "2023-01-01",
+  "read_date": "2026-08-19",
+  "total_resources": 6,
+  "total_count_per_resource": 27,
+  "preview_rows_per_resource": 5,
+  "sha256_cache_file": "15ae4aa016e44011ade4f588ec5d0c2b0823c2bb9d60b7c1fdc29b011287aba1",
+  "sha256_normalised_content": "02f544cd85891a675503813d7781933ce998f682c99e7940aa865571d81c5cdb"
+}

@@ -428,6 +428,84 @@ The contract (event_type values and payload shapes) is fixed.
 
 ---
 
-## 11. Design decisions
+## 11. ProbeSource: the adapter contract between BanditEngine and HARNESS
+
+`BanditEngine.run_sync` calls a `suite_runner` callable after each arm
+selection. The callable is the seam between the engine and the evaluation
+harness. Three separate implementations existed without a named contract;
+the name and specification are given here so all three (and any future one)
+implement the same interface.
+
+### Protocol definition
+
+```python
+from typing import Protocol
+
+class ProbeSource(Protocol):
+    """The adapter between BanditEngine and the evaluation harness.
+
+    BanditEngine.run_sync calls this once per arm pull. The implementation
+    is responsible for drawing exactly one probe from the selected suite,
+    calling the model endpoint, scoring the response, and writing the
+    evidence row via append_evidence().
+
+    Returns:
+        A single-element list containing one probe result dict, or an empty
+        list when the suite's corpus is exhausted for all undecided controls.
+
+    Each returned dict must contain:
+        control_id (str):   the control this probe tests.
+        probe_id   (str):   the probe identifier within its suite.
+        passed     (bool):  True if score >= 0.5.
+        score      (float): scorer output in [0.0, 1.0].
+    """
+
+    def __call__(
+        self,
+        suite_id:    str,
+        control_ids: list[str],
+    ) -> list[dict]: ...
+```
+
+### Implementations
+
+| Implementation | Location | Used by |
+|---|---|---|
+| `MockSuiteRunner` | `tests/test_bandit_engine.py` | Unit tests |
+| `BatchSuiteRunner` | `mizan/agents/harness/batch_runner.py` | Production API and run_e2e.py --adaptive |
+| `BatchSuiteRunner` (inline) | `scripts/prove_reduction.py` | Proof script (Wave 1/2) |
+
+The proof script's inline version is a verbatim copy of the extracted class.
+Any change to `BatchSuiteRunner` in `batch_runner.py` must be mirrored in
+`prove_reduction.py` until they share the import. HARNESS owns this migration.
+
+### Invariants that must hold for any ProbeSource implementation
+
+1. Exactly one probe is returned per call (or zero when exhausted). Returning
+   multiple probes defeats per-probe stopping.
+2. Evidence is written via `append_evidence()` inside the call, before
+   returning the result dict. The engine reads `n_k` and `s_k` only from
+   ControlState (which it updates from the returned results); the evidence
+   chain is written independently.
+3. The result dict's `passed` field must be consistent with the evidence row's
+   `passed` column. A mismatch would cause the engine to decide on different
+   data than the certificate records.
+4. The cursor advances on every call, even when the engine does not use the
+   result. An exhausted suite returns an empty list on every subsequent call.
+
+### Why one probe per arm pull
+
+The proof script (Wave 1) changed from whole-suite arm pulls to single-probe
+arm pulls. The reason: with whole-suite arm pulls, the engine cannot stop a
+control mid-suite. When a control's bound clears after the 50th probe, the
+remaining probes in that suite run anyway. With single-probe arm pulls,
+`check_stopping` fires between every probe. A control that crosses its bound
+at probe N causes the engine to stop drawing from that control immediately.
+This is what moved the non-compliant rejection rate from 57.9 percent to
+83.2 percent. [source: docs/evidence/reduction_report.md]
+
+---
+
+## 12. Design decisions
 
 See `docs/DECISIONS.md` for the full rationale of every consequential choice.

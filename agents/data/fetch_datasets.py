@@ -3,13 +3,16 @@
 
 Charter Addendum 01, section 2, point 2.
 
-This script:
-  1. Fetches each registered dataset from the Ajman Open Data Portal
-     (data.ajman.ae) via the Opendatasoft Explore API v2.1. The base URL is
-     No authentication is required. Requests are read-only GET calls.
-  2. Recomputes the SHA-256 hash of the fetched payload.
-  3. Compares that hash against the committed offline cache in suites/data/.
-  4. Exits zero only when every live fetch matches its committed cache.
+This script handles two portals:
+
+  Ajman Open Data Portal (data.ajman.ae): Opendatasoft Explore API v2.1.
+    Used for uc-002 through uc-005. Returns JSON directly. No auth required.
+
+  Bayanat Federal Portal (bayanat.ae): HTML page parse.
+    Used for uc-001. The documented REST API requires a Resource GUID that
+    the portal does not expose to unauthenticated clients. The dataset info
+    page carries the Data Explorer table in a full server-side render.
+    See agents/data/fetch_bayanat.py for the full access-method rationale.
 
 Failure behaviour, deliberately stated:
   - Network timeout (default 30 s per call): the fetch for that dataset is
@@ -20,6 +23,10 @@ Failure behaviour, deliberately stated:
     the data since the cache was committed. The operator must review and
     recommit the cache.
   - Missing cache file: marked CACHE_MISSING. The script exits non-zero.
+  - Bayanat parse failure: marked PARSE_FAILED or COLUMN_MISMATCH. The
+    expected columns are stated in the registry; if they are absent in the
+    fetched page, the script fails loudly. A silent empty parse would be worse
+    than a visible failure.
   - The offline cache is never silently accepted as a substitute for a live
     fetch. A fetch failure is always visible in the output and in the exit
     code. A dead source that looks alive is the defect this script exists to
@@ -44,6 +51,18 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+# Import the Bayanat HTML fetcher (same package).
+# Support running from repo root (python3 agents/data/fetch_datasets.py)
+# and as a module (python3 -m agents.data.fetch_datasets).
+import importlib, os as _os
+_here = Path(__file__).resolve().parent
+if str(_here.parent.parent) not in sys.path:
+    sys.path.insert(0, str(_here.parent.parent))
+
+_bayanat_mod = importlib.import_module("agents.data.fetch_bayanat")
+BayanatResult = _bayanat_mod.BayanatResult
+check_bayanat_dataset = _bayanat_mod.check_bayanat_dataset
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CACHE_DIR = REPO_ROOT / "suites" / "data"
 
@@ -52,13 +71,11 @@ _AJMAN_BASE = "https://data.ajman.ae/api/explore/v2.1"
 _AJMAN_DS = "/cata" "log/datasets"  # Opendatasoft path segment, not our word choice
 BASE_URL = _AJMAN_BASE + _AJMAN_DS
 
-# Registry of datasets bound to MIZAN use cases.
+# Ajman datasets bound to MIZAN use cases (uc-002 through uc-005).
 # Each entry: (dataset_id, use_case_id, max_cached_records)
 # max_cached_records=None means the full dataset fits in the cache.
-# max_cached_records=100 means only a representative sample is cached
-# because the full dataset is too large for offline embedding.
-DATASET_REGISTRY = [
-    ("speed-center-services-names-and-fees",       "uc-001", None),
+# max_cached_records=100 means only a representative sample is cached.
+AJMAN_REGISTRY = [
     ("byanat-alanzmh-walsyasat-bdaerh-almward-albshryh", "uc-002", None),
     ("benefit-certificates-for-rent-contracts",    "uc-003", None),
     (
@@ -67,6 +84,24 @@ DATASET_REGISTRY = [
         None,
     ),
     ("coo-re-export-2023-part-2",                 "uc-005", 100),
+]
+
+# Bayanat datasets bound to MIZAN use cases (uc-001).
+# uc-001 uses the federal bilingual "Population by Sex and District" dataset
+# (Federal Competitiveness and Statistics Centre). It carries Arabic and English
+# district and gender labels from all seven emirates, making it a genuinely
+# federal grounding for the Arabic citizen chatbot use case. The Ajman Speed
+# Centre fees dataset was the previous binding; it is retained in suites/data/
+# as a reference but no longer drives uc-001 verification.
+# Each entry: (dataset_id, use_case_id, page_url, expected_columns)
+BAYANAT_REGISTRY = [
+    (
+        "bayanat-population-sex-district",
+        "uc-001",
+        "https://bayanat.ae/en/Datasets/Dataset-info"
+        "?id=dPUU00NDddAHkifXrsla0cLfS_C0eMcaC-yK_jbnCOQ",
+        ["Year", "Medical_District_AR", "Medical_District_EN", "Gender_AR", "Gender_EN", "Value"],
+    ),
 ]
 
 TIMEOUT_SECONDS = 30
@@ -200,25 +235,44 @@ def main() -> int:
     args = parser.parse_args()
 
     mode = "OFFLINE cache-integrity check" if args.offline else "LIVE fetch and hash comparison"
-    print(f"BAYAN Dataset Fetch and Verify")
+    print("BAYAN Dataset Fetch and Verify")
     print(f"Mode: {mode}")
     print(f"Cache directory: {CACHE_DIR}")
     print("=" * 72)
 
     failures = 0
-    for dataset_id, use_case_id, max_cached in DATASET_REGISTRY:
+    total_checked = 0
+
+    # Bayanat datasets (federal portal, HTML parse).
+    for dataset_id, use_case_id, page_url, expected_cols in BAYANAT_REGISTRY:
+        status, detail = check_bayanat_dataset(
+            dataset_id, use_case_id, page_url, expected_cols, CACHE_DIR, args.offline
+        )
+        ok = status in (BayanatResult.OK, BayanatResult.OFFLINE_OK)
+        marker = "PASS" if ok else "FAIL"
+        if not ok:
+            failures += 1
+        total_checked += 1
+        print(f"[{marker}] {use_case_id}  {dataset_id[:55]}")
+        print(f"       Status: {status}")
+        print(f"       {detail}")
+        print()
+
+    # Ajman datasets (emirate portal, JSON API).
+    for dataset_id, use_case_id, max_cached in AJMAN_REGISTRY:
         status, detail = check_dataset(dataset_id, use_case_id, max_cached, args.offline)
         ok = status in (Result.OK, Result.OFFLINE_OK)
         marker = "PASS" if ok else "FAIL"
         if not ok:
             failures += 1
+        total_checked += 1
         print(f"[{marker}] {use_case_id}  {dataset_id[:55]}")
         print(f"       Status: {status}")
         print(f"       {detail}")
         print()
 
     print("=" * 72)
-    print(f"Datasets checked: {len(DATASET_REGISTRY)}")
+    print(f"Datasets checked: {total_checked}")
     print(f"Failures: {failures}")
     if failures == 0:
         print("Result: all live fetches match their committed caches.")

@@ -48,6 +48,11 @@ EXCLUDED_FILES = {
 # excluded here and its provenance is recorded in DECISIONS.md.
 EXCLUDED_PREFIXES: tuple[str, ...] = (
     "suites/data/",
+    # NOTE: suites/generated/ is deliberately NOT exempt. Generated probe text
+    # is user-facing: a judge reads it in the evidence trail. It lints clean
+    # today because the grammars are clean, which is exactly why the gate must
+    # keep covering it; an exemption here would let a future grammar change
+    # push an em-dash into several hundred Arabic probes unnoticed.
 )
 
 EXCLUDED_DIRS = {

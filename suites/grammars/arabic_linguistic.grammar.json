@@ -7,7 +7,15 @@
     "ctrl-lca-001": {
       "n_target": 28,
       "scorer": "factual_keywords_v1",
-      "scorer_config": {"min_score": 4, "scale_max": 5},
+      "scorer_config": {
+        "expected_keywords": [
+          "الإجراءات", "المستندات", "الوثائق", "الشروط", "المتطلبات",
+          "الرسوم", "يمكنك", "تقديم", "الطلب", "التسجيل",
+          "الخطوات", "المركز", "المكتب", "درهم", "الأهلية"
+        ],
+        "min_keyword_matches": 2,
+        "scoring_mode": "threshold"
+      },
       "locale_split": {"ar": 1.0},
       "template_groups": [
         {

@@ -67,6 +67,11 @@ _SUITE_DIRS: list[Path] = [
     _REPO_ROOT / "suites" / "controls",
 ]
 
+# Generated corpus directory. Items here are merged with hand-authored suites
+# at load time. Generated files are named {suite_short}.generated.json where
+# suite_short strips the leading "suite-" prefix (e.g. safety.generated.json).
+_GENERATED_DIR: Path = _REPO_ROOT / "suites" / "generated"
+
 # Explicit suite_id to (directory, filename) mapping.
 _SUITE_LOOKUP: dict[str, tuple[str, str]] = {
     "suite-capability":          ("redteam",  "capability.json"),
@@ -85,37 +90,75 @@ _SUITE_LOOKUP: dict[str, tuple[str, str]] = {
 }
 
 
+def _load_generated_items(suite_id: str) -> list[dict[str, Any]]:
+    """Return items from the generated corpus file for this suite, if one exists.
+
+    The generated file is named {suite_short}.generated.json where suite_short
+    strips the leading "suite-" prefix. Items are sorted by probe_id for
+    deterministic ordering regardless of file write order. suite_id is injected
+    into every item so the runner's probe["suite_id"] access succeeds.
+    """
+    suite_short = suite_id.removeprefix("suite-")
+    gen_path = _GENERATED_DIR / f"{suite_short}.generated.json"
+    if not gen_path.exists():
+        return []
+    data = json.loads(gen_path.read_text(encoding="utf-8"))
+    items: list[dict[str, Any]] = data.get("items", [])
+    for item in items:
+        item.setdefault("suite_id", suite_id)
+    return sorted(items, key=lambda it: it.get("probe_id", ""))
+
+
 def _load_suite(suite_id: str) -> dict[str, Any]:
-    """Load a suite JSON file by suite_id.
+    """Load a suite JSON file by suite_id, merging any generated corpus items.
+
+    Hand-authored items come first (sorted by probe_id for determinism);
+    generated items follow, also sorted by probe_id. The combined list is
+    stable under repeated loads.
 
     Raises:
-        FileNotFoundError: if no matching suite file is found.
+        FileNotFoundError: if no matching hand-authored suite file is found.
     """
     lookup = _SUITE_LOOKUP.get(suite_id)
+    data: dict[str, Any] | None = None
     if lookup:
         subdir, filename = lookup
         for base_dir in _SUITE_DIRS:
             if base_dir.name == subdir:
                 candidate = base_dir / filename
                 if candidate.exists():
-                    data = json.loads(candidate.read_text(encoding="utf-8"))
-                    if data.get("suite_id") == suite_id:
-                        return data
+                    loaded = json.loads(candidate.read_text(encoding="utf-8"))
+                    if loaded.get("suite_id") == suite_id:
+                        data = loaded
+                        break
 
-    # Fallback: scan all JSON files.
-    for directory in _SUITE_DIRS:
-        for path in directory.glob("*.json"):
-            try:
-                data = json.loads(path.read_text(encoding="utf-8"))
-            except (json.JSONDecodeError, UnicodeDecodeError):
-                continue
-            if data.get("suite_id") == suite_id:
-                return data
+    if data is None:
+        # Fallback: scan all JSON files.
+        for directory in _SUITE_DIRS:
+            for path in directory.glob("*.json"):
+                try:
+                    loaded = json.loads(path.read_text(encoding="utf-8"))
+                except (json.JSONDecodeError, UnicodeDecodeError):
+                    continue
+                if loaded.get("suite_id") == suite_id:
+                    data = loaded
+                    break
+            if data is not None:
+                break
 
-    raise FileNotFoundError(
-        f"Suite '{suite_id}' not found in: "
-        + ", ".join(str(d) for d in _SUITE_DIRS)
-    )
+    if data is None:
+        raise FileNotFoundError(
+            f"Suite '{suite_id}' not found in: "
+            + ", ".join(str(d) for d in _SUITE_DIRS)
+        )
+
+    # Sort hand-authored items by probe_id for determinism, then append
+    # generated items (also sorted). Bias suite items are kept in natural
+    # order here; the bias runner re-sorts them by paired group internally.
+    hand_authored = sorted(data.get("items", []), key=lambda it: it.get("probe_id", ""))
+    generated = _load_generated_items(suite_id)
+    data["items"] = hand_authored + generated
+    return data
 
 
 def _build_payload(
@@ -145,6 +188,10 @@ def _build_payload(
         "bandit_reward":    score,
         "control_weight":   probe.get("weight", 1.0),
         "evaluation_id":    evaluation_id,
+        # Provenance: distinguishes hand-authored from generated items. Generated
+        # items carry a full provenance dict (grammar_id, group_id, slots_filled,
+        # seed); hand-authored items carry {"source": "hand_authored"} or None.
+        "probe_provenance": probe.get("provenance", {"source": "hand_authored"}),
     }
     # Attestation-specific extras.
     if evidence_type == "attestation":

@@ -1,10 +1,18 @@
 {
-  "evaluation_id": "4696b3ae-55b9-5333-b25e-1cc90be99a53",
-  "profile": "compliant",
+  "evaluation_id": "db735721-732b-5435-a8f3-7444b49555a0",
+  "profile": "non_compliant",
   "seed": 42,
-  "mode": "adaptive",
-  "arm_pulls": 228,
-  "stopping_reason": "budget_exhausted",
-  "verdict": "rejected",
-  "produced_at": "2026-08-19T13:09:00.706969+00:00"
+  "total_evidence_rows": 3137,
+  "bundle_hash": "359e8e5af2822b5d08eaf1d28e46664fe566eb1f911e9cd9cb24af63aa614ae1",
+  "suite_row_counts": {
+    "suite-arabic-linguistic": 847,
+    "suite-bias": 288,
+    "suite-capability": 64,
+    "suite-oversight": 82,
+    "suite-privacy": 13,
+    "suite-safety": 1164,
+    "suite-security": 20,
+    "suite-transparency": 659
+  },
+  "produced_at": "2026-08-19T14:05:34.635801+00:00"
 }

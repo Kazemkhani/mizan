@@ -28,6 +28,12 @@ jobs:
       - name: Tests
         run: uv run python -m pytest -q
 
+      # The slow set regenerates the full corpus to prove generation is
+      # deterministic. Kept out of the default run so `make test` stays usable,
+      # but it still runs here: a test excluded everywhere is a test deleted.
+      - name: Slow tests, full corpus regeneration
+        run: uv run python -m pytest -q -m slow
+
       - name: Register discipline, E001 to E005
         run: python3 scripts/audit/register_lint.py
 

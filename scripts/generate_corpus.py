@@ -115,28 +115,31 @@ def _generate_control(
         log.warning("Control %s has no template_groups -- skipping.", control_id)
         return []
 
-    # Determine locale for each group and allocate slots accordingly.
-    # For bias controls, template_en and template_en_b are paired.
-    items: list[dict[str, Any]] = []
-    seen_normalised: set[str] = set()
+    # Per-locale quota: ensure locale distribution matches locale_split.
+    # Each locale gets a pool of up to n_target * ratio * 3 items; after all
+    # groups are processed, each pool is trimmed to n_target * ratio.
+    locale_pool: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    locale_seen: dict[str, set[str]] = defaultdict(set)
     near_dup_count = 0
     seq = 0
+
+    # Per-locale cap during generation (3x to allow dedup headroom)
+    locale_caps: dict[str, int] = {
+        loc: max(1, round(n_target * ratio * 3))
+        for loc, ratio in locale_split.items()
+    }
 
     for group in groups:
         group_id: str = group["group_id"]
         locale: str = group.get("locale", "en")
         slots: dict[str, list[str]] = group.get("slots", {})
 
-        # Collect all template variants (en, ar, en_b, ar_b)
         templates_en: list[str] = group.get("templates_en", [])
         templates_ar: list[str] = group.get("templates_ar", [])
         templates_en_b: list[str] = group.get("templates_en_b", [])
         templates_ar_b: list[str] = group.get("templates_ar_b", [])
 
-        # Primary templates for this locale
         primary_templates = templates_ar if locale == "ar" else templates_en
-
-        # Bias groups also have a _b variant -- handle pairing.
         b_templates = templates_ar_b if locale == "ar" else templates_en_b
         is_paired = bool(b_templates)
 
@@ -144,20 +147,22 @@ def _generate_control(
             log.warning("Group %s/%s has no templates -- skipping.", control_id, group_id)
             continue
 
-        # Calculate how many items to produce from this group.
-        # Distribute evenly across groups; overshoot slightly to allow dedup.
-        n_groups = len(groups)
-        group_target = max(1, (n_target * 2) // n_groups)  # 2x then trim at end
+        # Check if this locale's pool is already full.
+        locale_cap = locale_caps.get(locale, n_target * 3)
+        if len(locale_pool[locale]) >= locale_cap:
+            log.debug("Group %s/%s: locale %s pool full, skipping.", control_id, group_id, locale)
+            continue
 
-        template_count = len(primary_templates)
+        n_groups_for_locale = sum(
+            1 for g in groups if g.get("locale", "en") == locale
+        )
+        group_target = max(1, (locale_cap * 2) // max(1, n_groups_for_locale))
+
         slot_combinations: list[dict[str, str]] = []
-
-        # Build all slot key-value combinations up to a limit.
         slot_keys = list(slots.keys())
         if slot_keys:
             slot_value_lists = [slots[k] for k in slot_keys]
             all_combinations = list(product(*slot_value_lists))
-            # Limit combinations to avoid memory explosion
             max_combos = min(len(all_combinations), group_target * 4)
             all_combinations = all_combinations[:max_combos]
             for combo in all_combinations:
@@ -165,10 +170,11 @@ def _generate_control(
         else:
             slot_combinations = [{}]
 
-        # Generate items, selecting deterministically.
+        seen = locale_seen[locale]
+
         for t_idx, template in enumerate(primary_templates):
             for combo_idx, combo in enumerate(slot_combinations):
-                if len(items) >= n_target * 2:
+                if len(locale_pool[locale]) >= locale_cap:
                     break
 
                 filled_text = template
@@ -182,7 +188,6 @@ def _generate_control(
                 if is_paired and b_templates:
                     b_template = b_templates[t_idx % len(b_templates)]
                     b_slots = {k: v for k, v in combo.items()}
-                    # For b-variant, swap a-slots with b-slots using deterministic selection.
                     for slot_name in list(b_slots.keys()):
                         b_slot_key = slot_name + "_b"
                         if b_slot_key in slots:
@@ -191,28 +196,23 @@ def _generate_control(
                     filled_b_text = b_template
                     for sn, sv in b_slots.items():
                         filled_b_text = filled_b_text.replace("{" + sn + "}", sv)
-                    # Clean up any remaining unfilled slots
                     import re as _re
                     filled_b_text = _re.sub(r"\{[^}]+\}", "[SLOT]", filled_b_text)
 
-                # Clean up any remaining unfilled slots
                 import re as _re
                 filled_text = _re.sub(r"\{[^}]+\}", "[SLOT]", filled_text)
 
                 norm = _normalise(filled_text)
-
-                # Exact duplicate check
-                if norm in seen_normalised:
+                if norm in seen:
                     log.debug("Exact duplicate skipped in %s/%s.", control_id, group_id)
                     continue
 
-                # Near-duplicate count (report only, do not suppress)
-                for existing_norm in list(seen_normalised)[-200:]:  # check last 200
+                for existing_norm in list(seen)[-200:]:
                     if _edit_distance(norm, existing_norm) <= 20:
                         near_dup_count += 1
                         break
 
-                seen_normalised.add(norm)
+                seen.add(norm)
                 probe_id_str = _probe_id(grammar_id, control_id, group_id, seq)
                 seq += 1
 
@@ -234,41 +234,93 @@ def _generate_control(
                 }
 
                 if is_paired and filled_b_text:
+                    b_norm = _normalise(filled_b_text)
+                    # Skip the whole pair if the b-text would be a duplicate.
+                    if b_norm in seen:
+                        log.debug("Pair skipped: b-text duplicate in %s/%s.", control_id, group_id)
+                        # Roll back: remove the a-item's norm from seen since it was added above.
+                        seen.discard(norm)
+                        seq -= 1
+                        continue
+                    # Define b_probe_id before building either item so that
+                    # paired_probe_id can be set symmetrically.  The runner
+                    # looks for probe.get("paired_probe_id") to locate the
+                    # partner's response for bias_consistency_v1 scoring.
+                    b_probe_id = probe_id_str + "-b"
                     pair_id = f"pair-{probe_id_str}"
                     item["pair_id"] = pair_id
                     item["pair_member"] = "a"
-                    items.append(item)
-
-                    b_probe_id = probe_id_str + "-b"
-                    b_norm = _normalise(filled_b_text)
-                    if b_norm not in seen_normalised:
-                        seen_normalised.add(b_norm)
-                        b_item: dict[str, Any] = {
-                            "probe_id": b_probe_id,
-                            "control_id": control_id,
-                            "locale": locale,
-                            "prompt": filled_b_text,
-                            "scorer": scorer,
-                            "scorer_config": scorer_config,
-                            "pair_id": pair_id,
-                            "pair_member": "b",
-                            "provenance": {
-                                "source": "generated",
-                                "grammar_id": grammar_id,
-                                "group_id": group_id,
-                                "template_idx": t_idx,
-                                "slots_filled": provenance_slots,
-                                "seed": seed,
-                                "variant": "b",
-                            },
-                        }
-                        items.append(b_item)
+                    item["paired_probe_id"] = b_probe_id
+                    locale_pool[locale].append(item)
+                    seen.add(b_norm)
+                    b_item: dict[str, Any] = {
+                        "probe_id": b_probe_id,
+                        "control_id": control_id,
+                        "locale": locale,
+                        "prompt": filled_b_text,
+                        "scorer": scorer,
+                        "scorer_config": scorer_config,
+                        "pair_id": pair_id,
+                        "pair_member": "b",
+                        "paired_probe_id": probe_id_str,
+                        "provenance": {
+                            "source": "generated",
+                            "grammar_id": grammar_id,
+                            "group_id": group_id,
+                            "template_idx": t_idx,
+                            "slots_filled": provenance_slots,
+                            "seed": seed,
+                            "variant": "b",
+                        },
+                    }
+                    locale_pool[locale].append(b_item)
                 else:
-                    items.append(item)
+                    locale_pool[locale].append(item)
 
-    # Trim to n_target
+    # Trim locale pools to quota, then combine.
+    # For paired controls, distribute in pair-units (n_target // 2 pairs total) so
+    # rounding errors in individual locale quotas do not cause orphaned a-items or
+    # a combined total that falls 2 short.
+    all_pool_items = [it for pool in locale_pool.values() for it in pool]
+    has_pairs = any(it.get("pair_member") for it in all_pool_items[:8])
+    items: list[dict[str, Any]] = []
+
+    if has_pairs:
+        n_pairs_total = n_target // 2
+        pair_quotas: dict[str, int] = {}
+        assigned = 0
+        for loc, ratio in locale_split.items():
+            pool = locale_pool.get(loc, [])
+            pool_pairs = len(pool) // 2
+            wanted = round(n_pairs_total * ratio)
+            pair_quotas[loc] = min(wanted, pool_pairs)
+            assigned += pair_quotas[loc]
+        # Redistribute any shortfall (locale had fewer pairs than wanted).
+        shortfall = n_pairs_total - assigned
+        for loc in locale_split:
+            if shortfall <= 0:
+                break
+            pool = locale_pool.get(loc, [])
+            pool_pairs = len(pool) // 2
+            extra = pool_pairs - pair_quotas.get(loc, 0)
+            give = min(extra, shortfall)
+            pair_quotas[loc] = pair_quotas.get(loc, 0) + give
+            shortfall -= give
+        for loc in locale_split:
+            quota_items = pair_quotas.get(loc, 0) * 2
+            pool = locale_pool.get(loc, [])
+            items.extend(pool[:quota_items])
+    else:
+        for loc, ratio in locale_split.items():
+            quota = round(n_target * ratio)
+            pool = locale_pool.get(loc, [])
+            items.extend(pool[:quota])
+
+    # Final guard: never exceed n_target; ensure no trailing orphan a-item.
     if len(items) > n_target:
         items = items[:n_target]
+    if items and items[-1].get("pair_member") == "a":
+        items = items[:-1]
 
     if near_dup_count > 0:
         log.info(
@@ -287,12 +339,126 @@ def _generate_control(
     return items
 
 
-def generate(seed: int, grammar_file: Path | None = None) -> dict[str, int]:
+# ---------------------------------------------------------------------------
+# Validation pass
+# ---------------------------------------------------------------------------
+
+# Every scorer name that the MIZAN harness can dispatch.  If a generated
+# item declares any other name it will silently score 0.0 at evaluation
+# time, which is not a hard probe -- it is a broken one.
+_VALID_SCORERS: frozenset[str] = frozenset({
+    "keyword_refusal_v1",
+    "refusal_integrity_v1",
+    "factual_keywords_v1",
+    "bias_consistency_v1",
+    "injection_resistance_v1",
+    "pii_non_disclosure_v1",
+    "model_card_attestation_v1",
+})
+
+# Scorers whose config must contain a non-empty list under this key.
+_KEYWORD_SCORER_REQUIRED_FIELD: dict[str, str] = {
+    "factual_keywords_v1": "expected_keywords",
+}
+
+# Scorers that require a resolvable paired_probe_id field.
+_PAIR_BASED_SCORERS: frozenset[str] = frozenset({"bias_consistency_v1"})
+
+
+def _validate_items(items: list[dict[str, Any]], control_id: str) -> None:
+    """Fail loudly if any item has a structural scorer violation.
+
+    This runs after generation of each control's item list, before writing
+    to disk.  Its purpose is to close the defect class where an item
+    declares a scorer contract it cannot satisfy, causing it to score 0.0
+    regardless of the model's response.
+
+    Violations detected
+    -------------------
+    1. Scorer name not registered in the harness.
+    2. factual_keywords_v1 config missing or empty expected_keywords.
+    3. bias_consistency_v1 item missing paired_probe_id, or paired_probe_id
+       not present in the generated item set.
+    """
+    probe_id_set: set[str] = {item["probe_id"] for item in items}
+    violations: list[str] = []
+
+    for item in items:
+        probe_id = item["probe_id"]
+        scorer = item.get("scorer", "")
+        config = item.get("scorer_config", {})
+
+        if scorer not in _VALID_SCORERS:
+            violations.append(
+                f"{probe_id}: unknown scorer {scorer!r} -- not registered in "
+                f"the harness scorer dispatcher"
+            )
+            continue  # No further checks possible for this item.
+
+        keyword_key = _KEYWORD_SCORER_REQUIRED_FIELD.get(scorer)
+        if keyword_key is not None:
+            keywords = config.get(keyword_key, [])
+            if not keywords:
+                violations.append(
+                    f"{probe_id}: {scorer} requires a non-empty "
+                    f"scorer_config.{keyword_key}; got {config!r}"
+                )
+
+        if scorer in _PAIR_BASED_SCORERS:
+            paired_id = item.get("paired_probe_id")
+            if not paired_id:
+                violations.append(
+                    f"{probe_id}: {scorer} requires paired_probe_id; "
+                    f"field is absent or None"
+                )
+            elif paired_id not in probe_id_set:
+                violations.append(
+                    f"{probe_id}: paired_probe_id {paired_id!r} is not "
+                    f"present in the generated item set for {control_id}"
+                )
+
+    if violations:
+        log.error(
+            "CORPUS VALIDATION FAILED -- %d violation(s) in control %s:",
+            len(violations),
+            control_id,
+        )
+        for v in violations:
+            log.error("  %s", v)
+        log.error(
+            "Generation aborted.  A probe that always scores zero regardless "
+            "of the model's response is not a hard probe, it is a broken one.  "
+            "Fix the grammar's scorer / scorer_config before regenerating."
+        )
+        sys.exit(1)
+
+
+def generate(
+    seed: int,
+    grammar_file: Path | None = None,
+    output_dir: Path | None = None,
+) -> dict[str, int]:
     """
     Generate corpus from all grammar files (or one specified file).
-    Returns {suite_id: item_count}.
+
+    Parameters
+    ----------
+    seed:
+        Deterministic seed.  Same seed always produces byte-identical output.
+    grammar_file:
+        If provided, generate only from this one grammar file.
+    output_dir:
+        Directory to write generated JSON files into.  Defaults to
+        OUTPUT_DIR (suites/generated/).  Pass a temporary directory in tests
+        so suites/generated/ is never touched.
+
+    Returns
+    -------
+    dict[str, int]
+        Mapping from suite_id to the number of items generated.
     """
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    dest = output_dir if output_dir is not None else OUTPUT_DIR
+    dest.mkdir(parents=True, exist_ok=True)
 
     grammar_files = [grammar_file] if grammar_file else sorted(GRAMMARS_DIR.glob("*.grammar.json"))
     if not grammar_files:
@@ -317,12 +483,13 @@ def generate(seed: int, grammar_file: Path | None = None) -> dict[str, int]:
                 continue
 
             items = _generate_control(grammar, control_id, control_def, seed)
+            _validate_items(items, control_id)
             all_items.extend(items)
             control_counts[control_id] = len(items)
 
         # Assign suite_id from grammar_id (strip version suffix)
         suite_id = grammar_id.replace("-v1", "")
-        output_path = OUTPUT_DIR / f"{suite_id}.generated.json"
+        output_path = dest / f"{suite_id}.generated.json"
 
         # Verify no exact duplicate probe_ids across the whole file
         probe_ids = [item["probe_id"] for item in all_items]
@@ -362,10 +529,21 @@ def main() -> None:
         default=None,
         help="Generate from a single grammar file (default: all).",
     )
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=None,
+        dest="output_dir",
+        help=(
+            "Directory to write generated JSON files into "
+            "(default: suites/generated/).  Pass a temporary directory "
+            "in test invocations to keep suites/generated/ untouched."
+        ),
+    )
     args = parser.parse_args()
 
     log.info("Generating corpus with seed=%d", args.seed)
-    results = generate(seed=args.seed, grammar_file=args.grammar)
+    results = generate(seed=args.seed, grammar_file=args.grammar, output_dir=args.output_dir)
     total = sum(results.values())
     log.info("Generation complete. Total items: %d across %d suites.", total, len(results))
     for suite_id, count in results.items():
