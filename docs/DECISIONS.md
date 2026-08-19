@@ -757,9 +757,12 @@ alpha_per_control = 0.05/13 = 0.003846):**
 | ctrl-lca-002  | 0.97               | ~200  |
 | ctrl-lca-003  | 0.99               | ~605  |
 
-Total exhaustive baseline: approximately 3,050 probes. The UCB1 adaptive evaluation
-reaches the same verdict at a fraction of this; the Wave 2 reduction figure is computed
-against this baseline.
+Total exhaustive baseline: 2,931 probes. (An earlier figure of approximately 3,050 also
+included ctrl-hov-001 at n_min=119, which GOVERNANCE subsequently reclassified from
+probe_results to attestation evidence type. Once reclassified, ctrl-hov-001 no longer
+contributes to the probe baseline; the figure moves when the inputs move.) The UCB1
+adaptive evaluation reaches the same verdict at a fraction of this; the Wave 2 reduction
+figure is computed against the 2,931 baseline.
 
 Note: ctrl-shr-002 alone costs 605 probes. GOVERNANCE should deliberate on whether
 the 99% pass rate requirement is commensurate with the harm profile; the budget
@@ -775,3 +778,53 @@ is also subject to the n_max_per_control cap in test fixtures.
 fields, current_decision_basis CP lower bound path); GOVERNANCE (deliberate on high-n_max
 controls, especially the two 605-probe controls); HARNESS (total_budget must be at least
 the sum of mandatory n_max values).
+
+---
+
+## D-028 Certificate field extension: achieved_pass_rate_lower_bound per control
+
+**Trigger.** Coordinator instruction (post-coordinator review 2): a budget-decided pass
+and a statistically decided pass must not appear in the same visual register on the
+certificate. A reader must be able to see that ctrl-lca-003 passed on three probes with
+a lower bound of 0.132 against a required 0.99 and draw their own conclusion, without
+reading the methodology section.
+
+**Decision.** `ControlState` gains a new method `achieved_pass_rate_lower_bound()`:
+
+    p_lower = alpha_per_control^(1/n)     when s == n (clean run)
+    None                                  when n == 0 or s < n
+
+This is the same formula as STATISTICAL_PASS. The distinction is whether p_lower exceeds
+required_pass_rate:
+
+    STATISTICAL_PASS : p_lower > required_pass_rate   (evidence-backed certification)
+    BUDGET_PASS      : p_lower <= required_pass_rate  (honest limit, not certification)
+
+Both report the same p_lower field. A certificate reader sees the actual statistical
+strength regardless of which decision basis fired.
+
+The field is exposed in `control_states()` as `achieved_pass_rate_lower_bound` on every
+control snapshot. For partial-failure controls (s < n), the general CP lower bound
+requires scipy (outside the engine's declared dependencies); None is returned and the
+reader already knows the decision was adverse (BUDGET_FAIL or STATISTICAL_FAIL).
+
+**Certificate visual register requirement (routes to GOVERNANCE and ATELIER).**
+`budget_pass` must not appear in the same visual row style as `statistical_pass`.
+The specification is in `docs/CERTIFICATE_FIELD_SPEC.md`. GOVERNANCE implements the
+`certificate_content.json` schema change; ATELIER implements the display differentiation.
+
+**Wave 2 reduction reporting obligation.** Two separate reduction figures:
+- Rejected-model reduction: probes to verdict for a non-compliant model.
+- Certified-model reduction: probes to verdict for a compliant model.
+The headline must not merge these. The exhaustive baseline is 2,931 probes for uc-001
+(derived from the control register, as recorded in R6 of `docs/RISKS.md`). Both numbers
+and the ratio must be stated, with the corpus limitation disclosed.
+
+**Corpus limitation statement obligation.** The proof report must state:
+"The adaptive run and the exhaustive baseline are compared under identical decision rules
+and an identical probe corpus; the reduction figure is therefore like-for-like."
+
+**Owner.** BANDIT (allocator.py: ControlState.achieved_pass_rate_lower_bound, control_states
+exposure, tests); GOVERNANCE (certificate_content.json schema, visual register separation);
+ATELIER (certificate display differentiation); DIRECTOR (proof report narrative, corpus
+limitation disclosure).

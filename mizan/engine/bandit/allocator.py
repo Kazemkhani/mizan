@@ -359,6 +359,39 @@ class ControlState:
             return 1.0
         return 1.0 - (self.delta_corrected ** (1.0 / self.n))
 
+    def achieved_pass_rate_lower_bound(self) -> float | None:
+        """Exact one-sided Clopper-Pearson lower bound on the true pass rate.
+
+        For a clean run (s == n, all probes passing), the one-shot CP lower
+        bound at significance alpha_per_control is:
+
+            p_lower = alpha_per_control^(1/n)
+
+        This is the same formula used by STATISTICAL_PASS. The difference is
+        whether it exceeds required_pass_rate:
+
+            STATISTICAL_PASS   : p_lower > required_pass_rate  (bound is certified)
+            BUDGET_PASS        : p_lower <= required_pass_rate (bound is honest)
+
+        Both cases are reported here so a certificate reader can see exactly
+        what statistical strength each decision carries, regardless of whether
+        the control was statistically decided or budget-decided.
+
+        For partial failures (s < n): the exact CP lower bound requires the
+        incomplete beta function (scipy). Since scipy is outside the engine's
+        declared dependencies, this returns None in the partial-failure case.
+        The value is not practically needed there because a partial-failure
+        control is BUDGET_FAIL or STATISTICAL_FAIL (a reader already knows the
+        decision was adverse).
+
+        Returns None when n == 0 or when s < n.
+        Returns 0.0 for non-mandatory controls (alpha_per_control is not
+        assigned a meaningful value by the engine).
+        """
+        if self.n == 0 or self.s < self.n:
+            return None
+        return self.alpha_per_control ** (1.0 / self.n)
+
     # ---------------------------------------------------------------------------
     # Hoeffding stopping (non-zero-tolerance controls only)
     # ---------------------------------------------------------------------------
@@ -920,6 +953,7 @@ class BanditEngine:
         for ctrl in self._controls:
             basis = ctrl.current_decision_basis()
             is_clean_run = (ctrl.is_zero_tolerance and ctrl.n > 0 and ctrl.s == ctrl.n)
+            lower_bound = ctrl.achieved_pass_rate_lower_bound()
             result[ctrl.control_id] = {
                 "n": ctrl.n,
                 "s": ctrl.s,
@@ -932,6 +966,19 @@ class BanditEngine:
                 "decision_basis": basis,
                 "n_max": ctrl.n_max,
                 "alpha_per_control": ctrl.alpha_per_control,
+                # achieved_pass_rate_lower_bound: exact one-sided CP lower bound on the
+                # true pass rate at alpha_per_control significance, on a clean run (s==n).
+                # Present for both STATISTICAL_PASS (where it exceeds required_pass_rate)
+                # and BUDGET_PASS (where it does not). A certificate reader must be able
+                # to see the actual statistical strength regardless of decision basis.
+                # None when n==0 or when some probes failed (partial-failure lower bound
+                # requires scipy; not relevant for adverse decisions).
+                "achieved_pass_rate_lower_bound": (
+                    round(lower_bound, 6) if lower_bound is not None else None
+                ),
+                # violation_rate_bound: retained for zero-tolerance CLEAN_RUN_BOUNDED
+                # controls only. For non-zero-tolerance controls use
+                # achieved_pass_rate_lower_bound instead.
                 "violation_rate_bound": (
                     round(ctrl.violation_rate_upper_bound(), 6)
                     if is_clean_run

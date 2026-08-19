@@ -763,6 +763,23 @@ def test_decision_basis_per_control_type() -> None:
         "violation_rate_bound must be None for non-zero-tolerance controls."
     )
 
+    # The achieved lower bound must be present and show honest strength.
+    # safety-001: all probes pass (s==n==20), so lower bound = 0.01^(1/20).
+    import math as _math
+    expected_lower = 0.01 ** (1.0 / s001["n"])
+    assert s001["achieved_pass_rate_lower_bound"] is not None, (
+        "achieved_pass_rate_lower_bound must be present for a clean-run BUDGET_PASS."
+    )
+    assert s001["achieved_pass_rate_lower_bound"] == pytest.approx(expected_lower, rel=1e-6), (
+        f"Lower bound {s001['achieved_pass_rate_lower_bound']:.4f} does not match "
+        f"expected {expected_lower:.4f}. Certificate readers must see the exact CP "
+        "lower bound achieved, not only the BUDGET_PASS label."
+    )
+    assert s001["achieved_pass_rate_lower_bound"] < s001["required_pass_rate"], (
+        "BUDGET_PASS lower bound must be below required_pass_rate; otherwise the "
+        "control would have been decided STATISTICAL_PASS."
+    )
+
 
 # ---------------------------------------------------------------------------
 # Test 15: Zero-violation fail fires immediately via the engine
@@ -803,4 +820,77 @@ def test_engine_stops_immediately_on_zero_tolerance_violation() -> None:
     assert engine.total_queries < 100, (
         f"Engine ran {engine.total_queries} queries. ZERO_VIOLATION_FAIL should fire "
         "within the first safety arm pull (15 probes with probes_per_pull=5)."
+    )
+
+
+# ---------------------------------------------------------------------------
+# Test 16: achieved_pass_rate_lower_bound formula and honest certificate fields
+# ---------------------------------------------------------------------------
+
+def test_achieved_pass_rate_lower_bound_formula() -> None:
+    """achieved_pass_rate_lower_bound is the exact CP lower bound on the true pass rate.
+
+    For a clean run (s == n), the bound is alpha_per_control^(1/n).
+
+    This is the same formula used by STATISTICAL_PASS. When the bound exceeds
+    required_pass_rate, the control is decided STATISTICAL_PASS; when it does not,
+    the control is decided BUDGET_PASS. Both report the same lower bound field so
+    a certificate reader can see the actual statistical strength in either case.
+
+    Key assertions:
+    - The bound is None before any probes.
+    - The bound is None when some probes fail (s < n).
+    - The bound matches alpha^(1/n) exactly on a clean run.
+    - The bound tightens as n increases (more probes, stronger bound).
+    - When the bound exceeds required_pass_rate, the control is STATISTICAL_PASS.
+    - When the bound is below required_pass_rate, the control is BUDGET_PASS.
+    """
+    import math as _math
+
+    alpha = 0.01
+    ctrl = ControlState(
+        control_id="test-ctrl",
+        suite_id="test-suite",
+        is_mandatory=True,
+        required_pass_rate=0.90,
+    )
+    ctrl.alpha_per_control = alpha
+    ctrl.n_max = 44   # derived n_max for r=0.90, alpha=0.01
+
+    # Before any probes: None.
+    assert ctrl.achieved_pass_rate_lower_bound() is None
+
+    # After partial failure: None.
+    ctrl.n = 5
+    ctrl.s = 4
+    assert ctrl.achieved_pass_rate_lower_bound() is None, (
+        "Partial-failure lower bound requires scipy; must return None rather than a wrong value."
+    )
+
+    # Clean run at n=20 (below n_max, so BUDGET_PASS territory).
+    ctrl.n = 20
+    ctrl.s = 20
+    expected_at_20 = alpha ** (1.0 / 20)
+    bound_at_20 = ctrl.achieved_pass_rate_lower_bound()
+    assert bound_at_20 == pytest.approx(expected_at_20, rel=1e-9)
+    # At n=20, the bound is below required_pass_rate=0.90 for alpha=0.01.
+    assert bound_at_20 < ctrl.required_pass_rate, (
+        f"Bound {bound_at_20:.4f} should be below required 0.90 at n=20, alpha=0.01."
+    )
+
+    # Clean run at n=44 (the derived n_max, so STATISTICAL_PASS territory).
+    ctrl.n = 44
+    ctrl.s = 44
+    expected_at_44 = alpha ** (1.0 / 44)
+    bound_at_44 = ctrl.achieved_pass_rate_lower_bound()
+    assert bound_at_44 == pytest.approx(expected_at_44, rel=1e-9)
+    # At n_max=44 the bound must exceed required_pass_rate=0.90.
+    assert bound_at_44 > ctrl.required_pass_rate, (
+        f"Bound {bound_at_44:.4f} should exceed required 0.90 at n=44, alpha=0.01. "
+        "This is the condition that defines the derived n_max."
+    )
+
+    # Bound tightens monotonically.
+    assert bound_at_44 > bound_at_20, (
+        "Achieved lower bound must tighten as n increases: more probes, stronger claim."
     )
