@@ -51,7 +51,9 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO_ROOT))
 
 from mizan.agents.harness.adapters import MockEndpoint
+from mizan.agents.harness.batch_runner import BatchSuiteRunner
 from mizan.agents.harness.runner import run_suite
+from mizan.engine.bandit.allocator import BanditEngine
 from mizan.engine.db.database import (
     evidence_bundle_hash,
     init_db_sync,
@@ -337,6 +339,110 @@ def _print_report(
     return all_pass and not failed_suites
 
 
+def _load_controls_for_engine() -> list[dict]:
+    """Load the control catalogue and convert to BanditEngine format."""
+    controls_path = _REPO_ROOT / "suites" / "controls" / "controls.json"
+    catalogue = json.loads(controls_path.read_text(encoding="utf-8"))
+    return [
+        {
+            "control_id":          c["id"],
+            "suite_id":            c["suite_id"],
+            "is_mandatory":        True,
+            "pass_threshold":      float(c.get("pass_threshold", 0.85)),
+            "threshold_direction": c.get("threshold_direction", "above"),
+            "weight":              float(c.get("weight", 1.0)),
+        }
+        for c in catalogue.get("controls", [])
+    ]
+
+
+def _run_adaptive(
+    evaluation_id: str,
+    profile: str,
+    seed: int,
+) -> tuple[list, str, str]:
+    """Run the adaptive bandit evaluation using BanditEngine + BatchSuiteRunner.
+
+    This exercises the same path as the production API websocket handler.
+    Evidence is written via append_evidence() (the mandated write path) from
+    within BatchSuiteRunner.__call__, using asyncio.run() from the synchronous
+    context.
+
+    Returns:
+        (arm_pulls, stopping_reason, verdict) from BanditEngine.run_sync().
+    """
+    controls = _load_controls_for_engine()
+    mandatory_ids = {c["control_id"] for c in controls if c["is_mandatory"]}
+
+    endpoint = MockEndpoint(profile=profile, seed=seed)
+    runner = BatchSuiteRunner(
+        endpoint=endpoint,
+        evaluation_id=evaluation_id,
+        locale="en",
+        mandatory_control_ids=mandatory_ids,
+        model_card=_MODEL_CARD,
+    )
+
+    engine = BanditEngine(
+        evaluation_id=evaluation_id,
+        use_case_class="citizen_chatbot",
+        confidence_threshold=0.97,
+        controls=controls,
+        engine_config={
+            "random_seed":      seed,
+            # Cap per-control and total budgets for the headless script so it
+            # finishes in a reasonable time. In production these are derived
+            # statistically from confidence_threshold and the control count.
+            "n_max_per_control": 10,
+            "total_budget":      150,
+        },
+    )
+
+    arm_pulls, stopping_reason, verdict = engine.run_sync(runner)
+    return arm_pulls, stopping_reason, verdict
+
+
+def _print_adaptive_report(
+    evaluation_id: str,
+    profile: str,
+    seed: int,
+    arm_pulls: list,
+    stopping_reason: str,
+    verdict: str,
+    elapsed_seconds: float,
+) -> bool:
+    """Print the adaptive evaluation report to stdout."""
+    print()
+    print("=" * 72)
+    print("MIZAN HARNESS -- WAVE 1 ADAPTIVE EVALUATION REPORT")
+    print("=" * 72)
+    print(f"  Evaluation ID   : {evaluation_id}")
+    print(f"  Profile         : {profile}")
+    print(f"  Seed            : {seed}")
+    print(f"  Mode            : adaptive (BanditEngine + BatchSuiteRunner)")
+    print(f"  Arm pulls       : {len(arm_pulls)}")
+    print(f"  Total queries   : {arm_pulls[-1].cumulative_queries if arm_pulls else 0}")
+    print(f"  Stopping reason : {stopping_reason}")
+    print(f"  Verdict         : {verdict}")
+    print(f"  Elapsed         : {elapsed_seconds:.2f}s")
+    print()
+
+    print("Arm pull trace")
+    print("-" * 72)
+    print(f"  {'Step':>4}  {'Suite ID':<35} {'Reward':>8}  {'Queries':>7}")
+    print(f"  {'-'*4}  {'-'*35} {'-'*8}  {'-'*7}")
+    for ap in arm_pulls:
+        print(
+            f"  {ap.step:>4}  {ap.suite_id:<35} {ap.reward:>8.4f}  {ap.cumulative_queries:>7}"
+        )
+    print()
+
+    print("RESULT:", "CERTIFIED" if verdict == "certified" else "REJECTED")
+    print("=" * 72)
+    print()
+    return verdict == "certified"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="MIZAN headless end-to-end evaluation script.",
@@ -352,6 +458,15 @@ def main() -> int:
         type=int,
         default=42,
         help="Integer seed for the mock endpoint (default: 42).",
+    )
+    parser.add_argument(
+        "--adaptive",
+        action="store_true",
+        default=False,
+        help=(
+            "Use BanditEngine + BatchSuiteRunner (adaptive path). "
+            "Default is exhaustive (all suites, fixed order)."
+        ),
     )
     args = parser.parse_args()
 
@@ -377,41 +492,79 @@ def main() -> int:
     print(f"Seeding model, use-case, controls, evaluation ...")
     _seed_database(evaluation_id, model_id, use_case_id)
 
-    print(f"Running {len(_CONTROLS_SUITE_IDS)} suites with profile={args.profile}, seed={args.seed} ...\n")
-
     import time
-    t0 = time.monotonic()
-    results = asyncio.run(_run_all_suites(evaluation_id, args.profile, args.seed))
-    elapsed = time.monotonic() - t0
 
-    # Collect all payload hashes. evidence_bundle_hash() sorts lexicographically,
-    # so the order we pass them here does not affect the bundle hash.
-    all_payload_hashes: list[str] = []
-    for suite_id in _CONTROLS_SUITE_IDS:
-        for row in results[suite_id]:
-            all_payload_hashes.append(row.payload_hash)
+    if args.adaptive:
+        # ------------------------------------------------------------------
+        # Adaptive path: BanditEngine + BatchSuiteRunner.
+        # Exercises the same code path as the production API websocket handler.
+        # ------------------------------------------------------------------
+        print(f"Running adaptive evaluation with BanditEngine + BatchSuiteRunner ...\n")
+        t0 = time.monotonic()
+        arm_pulls, stopping_reason, verdict = _run_adaptive(
+            evaluation_id, args.profile, args.seed
+        )
+        elapsed = time.monotonic() - t0
 
-    bundle = evidence_bundle_hash(all_payload_hashes) if all_payload_hashes else "NO_EVIDENCE"
+        success = _print_adaptive_report(
+            evaluation_id, args.profile, args.seed,
+            arm_pulls, stopping_reason, verdict, elapsed,
+        )
 
-    success = _print_report(
-        evaluation_id, args.profile, args.seed, results, bundle, elapsed
-    )
+        # Write a minimal bundle manifest so verify_grounding.py has something to check.
+        evidence_dir = _REPO_ROOT / "docs" / "evidence"
+        evidence_dir.mkdir(parents=True, exist_ok=True)
+        bundle_file = evidence_dir / "e2e_bundle_hash.json"
+        bundle_data = {
+            "evaluation_id":      evaluation_id,
+            "profile":            args.profile,
+            "seed":               args.seed,
+            "mode":               "adaptive",
+            "arm_pulls":          len(arm_pulls),
+            "stopping_reason":    stopping_reason,
+            "verdict":            verdict,
+            "produced_at":        datetime.now(timezone.utc).isoformat(),
+        }
+        bundle_file.write_text(json.dumps(bundle_data, indent=2, ensure_ascii=False), encoding="utf-8")
+        print(f"Bundle manifest written to: {bundle_file.relative_to(_REPO_ROOT)}")
 
-    # Write the bundle hash to docs/evidence/ for the grounding audit gate.
-    evidence_dir = _REPO_ROOT / "docs" / "evidence"
-    evidence_dir.mkdir(parents=True, exist_ok=True)
-    bundle_file = evidence_dir / "e2e_bundle_hash.json"
-    bundle_data = {
-        "evaluation_id":     evaluation_id,
-        "profile":           args.profile,
-        "seed":              args.seed,
-        "total_evidence_rows": sum(len(v) for v in results.values()),
-        "bundle_hash":       bundle,
-        "suite_row_counts":  {sid: len(rows) for sid, rows in results.items()},
-        "produced_at":       datetime.now(timezone.utc).isoformat(),
-    }
-    bundle_file.write_text(json.dumps(bundle_data, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(f"Bundle manifest written to: {bundle_file.relative_to(_REPO_ROOT)}")
+    else:
+        # ------------------------------------------------------------------
+        # Exhaustive path: run_suite() over all suites in fixed order.
+        # ------------------------------------------------------------------
+        print(f"Running {len(_CONTROLS_SUITE_IDS)} suites with profile={args.profile}, seed={args.seed} ...\n")
+        t0 = time.monotonic()
+        results = asyncio.run(_run_all_suites(evaluation_id, args.profile, args.seed))
+        elapsed = time.monotonic() - t0
+
+        # Collect all payload hashes. evidence_bundle_hash() sorts lexicographically,
+        # so the order we pass them here does not affect the bundle hash.
+        all_payload_hashes: list[str] = []
+        for suite_id in _CONTROLS_SUITE_IDS:
+            for row in results[suite_id]:
+                all_payload_hashes.append(row.payload_hash)
+
+        bundle = evidence_bundle_hash(all_payload_hashes) if all_payload_hashes else "NO_EVIDENCE"
+
+        success = _print_report(
+            evaluation_id, args.profile, args.seed, results, bundle, elapsed
+        )
+
+        # Write the bundle hash to docs/evidence/ for the grounding audit gate.
+        evidence_dir = _REPO_ROOT / "docs" / "evidence"
+        evidence_dir.mkdir(parents=True, exist_ok=True)
+        bundle_file = evidence_dir / "e2e_bundle_hash.json"
+        bundle_data = {
+            "evaluation_id":     evaluation_id,
+            "profile":           args.profile,
+            "seed":              args.seed,
+            "total_evidence_rows": sum(len(v) for v in results.values()),
+            "bundle_hash":       bundle,
+            "suite_row_counts":  {sid: len(rows) for sid, rows in results.items()},
+            "produced_at":       datetime.now(timezone.utc).isoformat(),
+        }
+        bundle_file.write_text(json.dumps(bundle_data, indent=2, ensure_ascii=False), encoding="utf-8")
+        print(f"Bundle manifest written to: {bundle_file.relative_to(_REPO_ROOT)}")
 
     return 0 if success else 1
 

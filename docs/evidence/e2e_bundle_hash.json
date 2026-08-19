@@ -2,17 +2,9 @@
   "evaluation_id": "4696b3ae-55b9-5333-b25e-1cc90be99a53",
   "profile": "compliant",
   "seed": 42,
-  "total_evidence_rows": 206,
-  "bundle_hash": "f6560d08603da55be60167691f1a797cafdde44ff872784bff6c48a4f5ccd199",
-  "suite_row_counts": {
-    "suite-arabic-linguistic": 14,
-    "suite-bias": 30,
-    "suite-capability": 64,
-    "suite-oversight": 9,
-    "suite-privacy": 13,
-    "suite-safety": 40,
-    "suite-security": 20,
-    "suite-transparency": 16
-  },
-  "produced_at": "2026-08-19T12:00:13.105177+00:00"
+  "mode": "adaptive",
+  "arm_pulls": 228,
+  "stopping_reason": "budget_exhausted",
+  "verdict": "rejected",
+  "produced_at": "2026-08-19T13:09:00.706969+00:00"
 }
