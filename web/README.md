@@ -23,8 +23,10 @@ cd web && npm install && npm run dev
 
 ## Try it
 
-Three prepared submissions live in `public/samples/`, and the submit panel
-offers them for download. Drop one back into the panel to register it.
+Three prepared submissions live in `public/samples/`. The submit panel loads
+any of them in one click, or serves the file for download so it can be dropped
+back in like a real submission. After changing one, run `npm run bundle:samples`
+so the bundled copy matches the file.
 
 | File | Outcome |
 |---|---|
@@ -68,6 +70,12 @@ the repository settings.
 
 **Anything else.** `npm run build` writes `dist/`. Asset URLs are relative, so
 serving from a subdirectory works without configuration.
+
+**One file.** `npm run build:single` folds the build into a single HTML
+document for a host that serves one page and nothing else. In that form the
+typefaces come from the hosted stylesheet rather than the origin, and a
+sandboxed viewer may block file downloads, which is why each sample can also
+be loaded straight into the panel.
 
 ## Entity marks
 

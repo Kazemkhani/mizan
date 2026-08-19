@@ -8,6 +8,7 @@
 
 import React from 'react'
 import { useTranslation } from '../i18n'
+import { SAMPLE_SUBMISSIONS } from '../data/samples'
 import type { ModelRow, Submission } from '../lib/types'
 
 const SAMPLE_FILES = [
@@ -180,13 +181,25 @@ export function Submit({
                   <h3>{t(`submit.sample.${sample.key}.name`)}</h3>
                   <p>{t(`submit.sample.${sample.key}.detail`)}</p>
                 </div>
-                <a
-                  className="button button--quiet"
-                  href={`${import.meta.env.BASE_URL}samples/${sample.id}.mizan.json`}
-                  download
-                >
-                  {t('submit.sample.download')}
-                </a>
+                <div className="sample-list__actions">
+                  <button
+                    type="button"
+                    className="button button--primary button--small"
+                    onClick={() => {
+                      const bundled = SAMPLE_SUBMISSIONS[sample.id]
+                      if (bundled !== undefined) onSubmission(bundled, sample.id)
+                    }}
+                  >
+                    {t('submit.sample.use')}
+                  </button>
+                  <a
+                    className="button button--quiet button--small"
+                    href={`${import.meta.env.BASE_URL}samples/${sample.id}.mizan.json`}
+                    download
+                  >
+                    {t('submit.sample.download')}
+                  </a>
+                </div>
               </li>
             ))}
           </ul>
