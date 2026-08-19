@@ -8,7 +8,7 @@ export PATH="$HOME/.local/bin:$PATH"
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
 
 echo "==> Python dependencies"
-uv sync
+uv sync --extra dev
 
 echo "==> Interface dependencies"
 (cd web && npm install --no-audit --no-fund)
