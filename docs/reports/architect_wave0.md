@@ -257,3 +257,129 @@ AUDITOR should direct remediation findings for those files to ATELIER.
 | `uv run python -c "import mizan"` works | PASS |
 
 All Wave 0 acceptance criteria are met. Wave 1 workstreams may begin.
+
+---
+
+## F0-01 Remediation (post-initial-submission)
+
+### Finding
+
+The AUDITOR ran three attacks against the built database and all succeeded:
+- Attack 1: `UPDATE evidence SET passed = 1, score = 1.0` converted a failing
+  Arabic safety probe into a pass, leaving the stored hash undisturbed.
+- Attack 2: `UPDATE evidence SET payload = ..., payload_hash = ...` rewrote
+  the payload and hash together; stored and recomputed hashes diverged but
+  nothing detected it.
+- Attack 3: `DELETE FROM evidence WHERE id = ...` removed the row entirely.
+
+The schema had zero triggers despite the comment stating the table was
+append-only. Immutability existed only in prose.
+
+### Changes made
+
+**engine/db/schema.sql:**
+- Added `chain_prev_hash TEXT NOT NULL DEFAULT ''` to `evidence`. This is
+  the `payload_hash` of the immediately preceding row for the same evaluation
+  (empty string for the genesis row), forming a linked-list hash chain.
+- Added `trg_evidence_insert_validate` (`BEFORE INSERT`): validates that
+  `payload_hash` is exactly 64 characters; enforces genesis and chain-link
+  rules.
+- Added `trg_evidence_no_update` (`BEFORE UPDATE`): unconditional
+  `RAISE(ABORT, ...)`. Applies to every UPDATE regardless of column.
+- Added `trg_evidence_no_delete` (`BEFORE DELETE`): unconditional
+  `RAISE(ABORT, ...)`.
+- Added `trg_certificates_no_update` (`BEFORE UPDATE`): blocks changes to
+  `evaluation_id`, `model_id`, `use_case_id`, `verdict`,
+  `evidence_bundle_hash`, `certificate_data`, `issued_at`. Allows `pdf_path`
+  and `signature` to be set after initial issuance (Wave 3).
+- Added `trg_certificates_no_delete` (`BEFORE DELETE`): unconditional
+  `RAISE(ABORT, ...)`.
+- Added Postgres equivalents as comments next to each SQLite trigger.
+
+**tests/test_evidence_immutability.py (new file):**
+- 14 tests. Every attack from F0-01 has a dedicated test that asserts the
+  operation raises `sqlite3.IntegrityError` (the exception class SQLite maps
+  to `RAISE(ABORT, ...)` in triggers).
+- Legitimate inserts and the two permitted post-issuance updates
+  (`pdf_path`, `signature`) each have a passing test confirming the trigger
+  does not break the table.
+
+**scripts/verify_evidence.py (new file):**
+- Recomputes `SHA-256(payload)` for every evidence row and compares to the
+  stored `payload_hash`.
+- Traverses the `chain_prev_hash` linked list for each evaluation, detecting
+  gaps, orphans, forks, and cycles.
+- Recomputes each evaluation's bundle hash and cross-checks it against the
+  `certificates` table.
+- Reports missing triggers (a party with DB file access could drop them).
+- Prints a human-readable per-evaluation breakdown. Exits 0 on clean, 1 on
+  any failure.
+
+**docs/DECISIONS.md:**
+- D-011: trigger enforcement rationale.
+- D-012: payload_hash self-consistency; SQLite limitation; Postgres path.
+- D-013: hash chain design, capability, limitation, and next step.
+- D-014: honest trust boundary statement for pitch use.
+
+### Verification (commands run, real output)
+
+```
+$ uv run pytest -v
+...collected 22 items
+
+tests/test_evidence_immutability.py::test_legitimate_evidence_insert_succeeds PASSED
+tests/test_evidence_immutability.py::test_chained_evidence_inserts_succeed PASSED
+tests/test_evidence_immutability.py::test_attack_1_update_passed_blocked PASSED
+tests/test_evidence_immutability.py::test_attack_2_update_payload_and_hash_blocked PASSED
+tests/test_evidence_immutability.py::test_attack_3_delete_evidence_blocked PASSED
+tests/test_evidence_immutability.py::test_payload_hash_too_short_rejected PASSED
+tests/test_evidence_immutability.py::test_payload_hash_too_long_rejected PASSED
+tests/test_evidence_immutability.py::test_second_genesis_row_blocked PASSED
+tests/test_evidence_immutability.py::test_orphan_chain_prev_hash_blocked PASSED
+tests/test_evidence_immutability.py::test_certificate_delete_blocked PASSED
+tests/test_evidence_immutability.py::test_certificate_verdict_immutable PASSED
+tests/test_evidence_immutability.py::test_certificate_evidence_bundle_hash_immutable PASSED
+tests/test_evidence_immutability.py::test_certificate_pdf_path_update_allowed PASSED
+tests/test_evidence_immutability.py::test_certificate_signature_update_allowed PASSED
+...
+22 passed in 0.42s
+```
+
+```
+$ uv run python scripts/audit/register_lint.py \
+    mizan/ tests/ scripts/seed.py scripts/reset.py scripts/verify_evidence.py \
+    Makefile pyproject.toml engine/db/schema.sql
+Files scanned: 25
+Findings: 0
+Register discipline: clean.
+```
+
+```
+$ make reset && uv run python scripts/verify_evidence.py
+...Seed complete.
+MIZAN Evidence Integrity Audit
+============================================================
+Database : .../data/mizan.db
+
+No evidence rows found. Nothing to audit.
+```
+(Correct: seed.py populates models and use cases only; evaluation runs
+and evidence rows are created by Wave 1 harness executions.)
+
+### Trust boundary answer (D-014)
+
+When a federal entity asks "how do you know the evidence has not been
+edited?":
+
+MIZAN enforces immutability at two layers: database triggers that abort any
+UPDATE or DELETE, and a SHA-256 hash chain where each row commits to the
+preceding row's digest. Any modification or deletion is detectable by
+traversing the chain without trusting the database. An adversary who can
+write directly to the database file and is willing to rebuild the entire
+chain could defeat this without external detection. The production next step
+is publishing each evaluation's bundle hash to an append-only external log
+at certificate issuance, so that no party can silently alter historical
+evaluations.
+
+This is the answer that builds institutional trust. It is what D-014
+records and what the Wave 4 pitch script must use verbatim.

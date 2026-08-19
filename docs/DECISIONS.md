@@ -176,3 +176,119 @@ context-switching between the async event loop and synchronous DBAPI
 calls. Without it, `engine.connect()` raises `ValueError: the greenlet
 library is required`. The dependency is explicit rather than relying on
 SQLAlchemy's optional extra.
+
+---
+
+## D-011 Evidence and certificate immutability: database triggers
+
+**Decision.** Immutability of the `evidence` table and the core fields of
+the `certificates` table is enforced by `BEFORE UPDATE` and `BEFORE DELETE`
+triggers that unconditionally raise and abort. These are supplementary to,
+not a replacement of, the application-layer convention.
+
+**Finding that prompted this.** F0-01 (audit, Wave 0): the AUDITOR ran three
+attacks against the built database and all succeeded. The evidence table had
+zero triggers despite the schema comment stating it was append-only. A failing
+Arabic safety probe could be flipped to a pass by a single UPDATE, leaving the
+stored hash undisturbed. The certificate the system built on that evidence was
+consequently worthless as a trust artefact.
+
+**Rationale.** An application-layer convention stops code the current agent
+wrote. It does not stop a future agent who reads only the schema, a direct
+database query from an admin tool, or a Wave 1 workstream that has not read
+every comment. The trigger executes at the database layer regardless of who
+or what issues the SQL. The immutability guarantee is now in the database
+itself, not in a comment beside it.
+
+**SQLite notes.** `RAISE(ABORT, ...)` in SQLite triggers raises
+`sqlite3.IntegrityError` in Python (not `OperationalError`). Tests assert
+the correct exception class.
+
+**Postgres migration.** Replace the triggers with PL/pgSQL functions raising
+an exception. Additionally, `REVOKE UPDATE, DELETE ON evidence FROM <app_role>`
+at the privilege layer so that the guarantee survives a future code change that
+manages to bypass the trigger (e.g., by using a different connection role).
+These Postgres statements are documented as comments in `engine/db/schema.sql`
+next to each trigger definition.
+
+---
+
+## D-012 payload_hash self-consistency: application layer plus audit script
+
+**Decision.** The `evidence.payload_hash` column is validated for format
+(length = 64) by `trg_evidence_insert_validate`. The cryptographic value,
+meaning that `payload_hash == SHA-256(payload)`, is enforced at the
+application layer and verified by `scripts/verify_evidence.py`.
+
+**Why not a trigger.** SQLite has no built-in SHA-256 function. A trigger
+cannot compute `SHA-256(payload)` and compare it to `NEW.payload_hash` without
+loading an extension, which would be a deployment dependency. The 64-character
+length check catches obviously malformed values. The full cryptographic check
+runs in the verify script, which AUDITOR runs at every wave gate.
+
+**Postgres migration.** Use a generated column:
+```sql
+payload_hash_computed TEXT GENERATED ALWAYS AS
+    (encode(sha256(payload::bytea), 'hex')) STORED
+```
+and add `CHECK (payload_hash = payload_hash_computed)`. This enforces hash
+consistency at the database layer on every insert.
+
+---
+
+## D-013 Hash chain: chain_prev_hash column on evidence
+
+**Decision.** A `chain_prev_hash TEXT NOT NULL DEFAULT ''` column is added to
+`evidence`. Each row stores the `payload_hash` of the immediately preceding
+row for the same evaluation (empty string for the genesis row). The insert
+trigger validates the chain: genesis rows may only be inserted if no rows
+exist yet for the evaluation; non-genesis rows must reference a
+`payload_hash` that exists in the same evaluation.
+
+**Rationale.** Database triggers protect against application-layer errors and
+casual queries. They do not protect against someone with write access to the
+SQLite file who can drop the triggers and edit rows. The hash chain raises the
+cost of undetected tampering significantly: any deletion removes a link and
+breaks the chain at the next row; any payload edit that updates the hash
+breaks the chain at the downstream row. An auditor traversing the chain
+detects the break without trusting the database.
+
+**What the chain does not prevent.** A sophisticated adversary with write
+access can drop the triggers, delete a row, and update the `chain_prev_hash`
+of the successor row to maintain a consistent chain. The chain is not a
+cryptographic proof against a determined insider with direct database access.
+
+**The honest next step.** Publish a Merkle tree root of each evaluation's
+evidence bundle to an append-only external log (e.g., a blockchain timestamp
+service or a government-operated transparency log). Any excision or edit
+would then produce a root that does not match the published value, detectable
+by any third party without access to the database. This is the correct
+answer when a federal entity asks how MIZAN prevents insider tampering. It
+is not implemented in Wave 0 because it requires an authenticated external
+service, which violates the offline-first charter requirement. It is recorded
+here so the Wave 4 demo script can state it as the production next step
+without inventing it on the spot.
+
+---
+
+## D-014 Trust boundary: where the immutability guarantee sits today
+
+**Decision.** The following statement is the honest characterisation of the
+current trust boundary, and it must be used in any pitch answer to the
+question "how do you know the evidence has not been edited?"
+
+The MIZAN evidence store enforces immutability at two layers: database triggers
+that abort any UPDATE or DELETE, and a SHA-256 hash chain where each row
+commits to the preceding row's digest. Together they ensure that any
+modification or deletion is detectable by traversing the chain, without
+trusting the database. An adversary who can write directly to the SQLite file
+and is willing to rebuild the chain consistently could defeat this without
+external detection. The production next step is publishing the evaluation's
+bundle hash to an append-only external log at certificate issuance so that
+no party, including the MIZAN operator, can silently alter historical
+evaluations.
+
+**Why state this explicitly.** A federal CTO will ask exactly this question.
+An answer that claims the hash is unbreakable is a lie that gets found out.
+An answer that explains the actual boundary and names the next step is the
+answer that builds institutional trust, which is MIZAN's entire product claim.

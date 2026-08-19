@@ -1,7 +1,40 @@
 -- MIZAN Sovereign AI Model Registry
--- Schema v0.1.0  --  Wave 0 Foundation
+-- Schema v0.2.0  --  Wave 0 Foundation, F0-01 remediation
 --
--- Design principles:
+-- IMMUTABILITY MODEL
+-- Two layers of enforcement, each independent:
+--
+--   Layer 1: Database triggers (this file).
+--     evidence: BEFORE INSERT validates payload_hash format and hash chain.
+--               BEFORE UPDATE and BEFORE DELETE raise and abort unconditionally.
+--     certificates: BEFORE UPDATE allows only pdf_path and signature to be set
+--                   after initial issuance; blocks changes to all identity and
+--                   verdict fields. BEFORE DELETE raises and aborts.
+--     An agent who reads only the application code will still hit the trigger.
+--
+--   Layer 2: Application layer (mizan/engine/db/database.py).
+--     No UPDATE or DELETE is issued against evidence or the identity fields of
+--     certificates. This is a second line of defence, not the first.
+--
+-- HASH CHAIN
+--   Every evidence row carries chain_prev_hash, which is the payload_hash of
+--   the immediately preceding evidence row for the same evaluation (empty
+--   string for the genesis row). This creates a single-linked-list chain per
+--   evaluation. Any deletion or excision breaks the chain at the next row.
+--   scripts/verify_evidence.py traverses and audits the chain independently
+--   of the triggers.
+--   Trust boundary note: a party with write access to the database file can
+--   drop the triggers, edit rows, and recompute a self-consistent chain. The
+--   chain raises the cost of undetected tampering significantly; it does not
+--   eliminate it. See docs/DECISIONS.md D-014 for the next step.
+--
+-- POSTGRES EQUIVALENTS
+--   This file targets SQLite. Every SQLite-specific construct is accompanied
+--   by a comment giving the Postgres equivalent. A ministry deploying on
+--   Postgres should run the Postgres DDL (marked POSTGRES:) rather than this
+--   file. SOVEREIGN-TODO: generate the Postgres DDL as a separate file in Wave 3.
+--
+-- DESIGN PRINCIPLES
 --   1. Every table is Postgres-compatible. SQLite-specific types are avoided.
 --      The only SQLite concession is the use of TEXT for UUID columns; in
 --      Postgres these become UUID. A comment marks each such column.
@@ -9,9 +42,9 @@
 --      preferred over a locale-keyed JSON column because it makes SQL
 --      queries explicit and avoids silent key-miss errors. JSONB is the
 --      Postgres migration path if a third language is ever required.
---   3. The evidence table is append-only and content-addressed. No UPDATE
---      or DELETE is ever issued against it. Every row carries a SHA-256
---      hash of its payload so the record is self-verifiable.
+--   3. The evidence table is append-only and content-addressed. Every row
+--      carries a SHA-256 hash of its payload and a back-reference to the
+--      preceding row's hash. Immutability is enforced by triggers.
 --   4. The evaluations table records the full adjudication trail: every
 --      arm pull, the reward observed, the posterior state after each step,
 --      and the stopping reason. Nothing is summarised away.
@@ -158,11 +191,34 @@ CREATE INDEX IF NOT EXISTS idx_evaluations_status    ON evaluations(status);
 -- ============================================================
 -- evidence
 -- Append-only. One row per probe result.
--- The payload column holds the full probe-and-response record as JSON.
--- payload_hash is SHA-256(payload). A consumer can re-hash the payload
--- and compare to payload_hash to verify the record has not been altered.
--- No UPDATE or DELETE is ever issued against this table; the application
--- layer must enforce this at the data access level.
+--
+-- IMMUTABILITY: enforced by trg_evidence_no_update and trg_evidence_no_delete
+-- below. The triggers unconditionally RAISE(ABORT, ...) on any UPDATE or
+-- DELETE. An application bug or a careless query will hit this and stop.
+--
+-- CONTENT-ADDRESSING: payload_hash is SHA-256 of payload (UTF-8). The
+-- format is validated by trg_evidence_insert_validate. The value is
+-- verified against the stored payload by scripts/verify_evidence.py.
+-- SQLite has no built-in SHA-256 function, so the value itself cannot be
+-- computed in a trigger; format validation (length = 64) is the database
+-- check. Application-layer enforcement and the verify script provide the
+-- cryptographic guarantee.
+-- POSTGRES: Use a generated column:
+--   payload_hash TEXT GENERATED ALWAYS AS
+--     (encode(sha256(payload::bytea), 'hex')) STORED
+-- and add a CHECK (payload_hash ~ '^[0-9a-f]{64}$').
+--
+-- HASH CHAIN: chain_prev_hash is the payload_hash of the immediately
+-- preceding evidence row for the same evaluation. The first row carries
+-- an empty string (the genesis sentinel). The chain is enforced by
+-- trg_evidence_insert_validate:
+--   - A genesis row (chain_prev_hash = '') is only allowed if no evidence
+--     rows exist yet for this evaluation.
+--   - A non-genesis row must reference an existing payload_hash for the
+--     same evaluation.
+-- Traversing the chain detects any deletion or excision; see
+-- scripts/verify_evidence.py for the audit procedure.
+-- POSTGRES: Add a trigger function performing the same checks.
 -- ============================================================
 CREATE TABLE IF NOT EXISTS evidence (
     id              TEXT    NOT NULL PRIMARY KEY,
@@ -176,7 +232,12 @@ CREATE TABLE IF NOT EXISTS evidence (
     -- defined in docs/ARCHITECTURE.md section 6.
     payload         TEXT    NOT NULL,
     -- SHA-256 hex digest of payload (UTF-8 encoded). Content-addressed.
+    -- Must be exactly 64 lowercase hex characters. See column comment above.
     payload_hash    TEXT    NOT NULL,
+    -- Back-reference to the payload_hash of the preceding evidence row for
+    -- this evaluation (empty string for the genesis row). Forms a linked list
+    -- that makes deletion and excision detectable without trusting the database.
+    chain_prev_hash TEXT    NOT NULL DEFAULT '',
     -- Score in [0, 1] assigned by the suite scorer.
     score           REAL    NOT NULL,
     -- 1 if the probe passed the control threshold, 0 otherwise.
@@ -195,6 +256,69 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_evidence_hash         ON evidence(payload_
 CREATE        INDEX IF NOT EXISTS idx_evidence_evaluation   ON evidence(evaluation_id);
 CREATE        INDEX IF NOT EXISTS idx_evidence_control      ON evidence(control_id);
 
+-- ------------------------------------------------------------
+-- evidence BEFORE INSERT: validate payload_hash format and hash chain.
+-- Three consecutive SELECT CASE statements run in order; the first
+-- failing RAISE(ABORT, ...) stops execution.
+-- POSTGRES: Replace with a PL/pgSQL trigger function checking the same
+-- conditions; attach it with CREATE TRIGGER ... BEFORE INSERT ON evidence.
+-- ------------------------------------------------------------
+CREATE TRIGGER IF NOT EXISTS trg_evidence_insert_validate
+BEFORE INSERT ON evidence
+BEGIN
+    -- 1. payload_hash must be exactly 64 characters.
+    --    SQLite cannot compute SHA-256, so the cryptographic value is
+    --    verified by scripts/verify_evidence.py at every audit gate.
+    --    This check catches obviously malformed values at the DB layer.
+    SELECT CASE
+        WHEN LENGTH(NEW.payload_hash) != 64
+        THEN RAISE(ABORT, 'evidence.payload_hash must be 64 characters (SHA-256 hex)')
+    END;
+    -- 2. Genesis rows (chain_prev_hash = '') must be the first row for
+    --    their evaluation. A second genesis row would fork the chain.
+    SELECT CASE
+        WHEN NEW.chain_prev_hash = '' AND EXISTS (
+            SELECT 1 FROM evidence WHERE evaluation_id = NEW.evaluation_id
+        )
+        THEN RAISE(ABORT, 'evidence: chain_prev_hash may be empty only for the first row of an evaluation')
+    END;
+    -- 3. Non-genesis rows must reference an existing payload_hash for
+    --    the same evaluation. An orphan reference would break the chain.
+    SELECT CASE
+        WHEN NEW.chain_prev_hash != '' AND NOT EXISTS (
+            SELECT 1 FROM evidence
+            WHERE payload_hash    = NEW.chain_prev_hash
+              AND evaluation_id   = NEW.evaluation_id
+        )
+        THEN RAISE(ABORT, 'evidence: chain_prev_hash does not reference an existing payload_hash in the same evaluation')
+    END;
+END;
+
+-- ------------------------------------------------------------
+-- evidence BEFORE UPDATE: unconditional abort.
+-- Applies to every UPDATE regardless of which columns are targeted.
+-- POSTGRES: CREATE RULE evidence_no_update AS ON UPDATE TO evidence DO INSTEAD
+--   NOTHING; -- or a trigger raising an exception. Also: REVOKE UPDATE ON
+--   evidence FROM <application_role>; to block at the privilege layer.
+-- ------------------------------------------------------------
+CREATE TRIGGER IF NOT EXISTS trg_evidence_no_update
+BEFORE UPDATE ON evidence
+BEGIN
+    SELECT RAISE(ABORT, 'evidence is append-only: UPDATE is prohibited by charter');
+END;
+
+-- ------------------------------------------------------------
+-- evidence BEFORE DELETE: unconditional abort.
+-- POSTGRES: CREATE RULE evidence_no_delete AS ON DELETE TO evidence DO INSTEAD
+--   NOTHING; -- or a trigger raising an exception. Also: REVOKE DELETE ON
+--   evidence FROM <application_role>;
+-- ------------------------------------------------------------
+CREATE TRIGGER IF NOT EXISTS trg_evidence_no_delete
+BEFORE DELETE ON evidence
+BEGIN
+    SELECT RAISE(ABORT, 'evidence is append-only: DELETE is prohibited by charter');
+END;
+
 
 -- ============================================================
 -- certificates
@@ -202,6 +326,18 @@ CREATE        INDEX IF NOT EXISTS idx_evidence_control      ON evidence(control_
 -- hash so the certificate can be verified independently of the
 -- database. The bundle hash is SHA-256 of the concatenation of all
 -- payload_hash values for the evaluation, sorted lexicographically.
+--
+-- IMMUTABILITY STATE MACHINE:
+--   Certificates are written once, at evaluation completion. The core
+--   identity and verdict fields are immutable from that point. Two fields
+--   may be updated after issuance:
+--     pdf_path  -- set when the PDF renderer writes the file (Wave 3).
+--     signature -- set when the signing key is wired (Wave 3).
+--   All other fields are blocked by trg_certificates_no_update.
+--   DELETE is unconditionally blocked by trg_certificates_no_delete.
+--
+-- POSTGRES: Implement the same logic as a PL/pgSQL BEFORE UPDATE trigger.
+--   Also REVOKE DELETE ON certificates FROM <application_role>.
 -- ============================================================
 CREATE TABLE IF NOT EXISTS certificates (
     id                      TEXT    NOT NULL PRIMARY KEY,
@@ -219,11 +355,13 @@ CREATE TABLE IF NOT EXISTS certificates (
     -- Cryptographic signature over evidence_bundle_hash.
     -- SOVEREIGN-TODO: wire the real signing key in Wave 3.
     -- Until then, a deterministic HMAC-SHA256 stub is used.
+    -- MAY be updated after issuance (see immutability state machine above).
     signature               TEXT,
     -- Postgres: TIMESTAMPTZ
     issued_at               TEXT    NOT NULL,
     -- Filesystem path to the generated PDF, relative to the repo root.
     -- NULL until the PDF renderer writes it (Wave 3).
+    -- MAY be updated after issuance (see immutability state machine above).
     pdf_path                TEXT,
 
     CONSTRAINT certificates_verdict_values
@@ -235,6 +373,42 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_certificates_evaluation
 CREATE INDEX IF NOT EXISTS idx_certificates_model
     ON certificates(model_id);
 
+-- ------------------------------------------------------------
+-- certificates BEFORE UPDATE: block changes to identity and verdict fields.
+-- Allowed: pdf_path and signature (set post-issuance in Wave 3).
+-- Blocked: all other columns.
+-- POSTGRES: PL/pgSQL trigger raising an exception when any protected
+--   column changes. Use NEW.<col> IS DISTINCT FROM OLD.<col> for
+--   NULL-safe comparison.
+-- ------------------------------------------------------------
+CREATE TRIGGER IF NOT EXISTS trg_certificates_no_update
+BEFORE UPDATE ON certificates
+BEGIN
+    SELECT CASE
+        WHEN OLD.evaluation_id        != NEW.evaluation_id
+          OR OLD.model_id             != NEW.model_id
+          OR OLD.use_case_id          != NEW.use_case_id
+          OR OLD.verdict              != NEW.verdict
+          OR OLD.evidence_bundle_hash != NEW.evidence_bundle_hash
+          OR OLD.certificate_data     != NEW.certificate_data
+          OR OLD.issued_at            != NEW.issued_at
+        THEN RAISE(ABORT,
+            'certificates: identity and verdict fields are immutable after issuance; only pdf_path and signature may be updated')
+    END;
+END;
+
+-- ------------------------------------------------------------
+-- certificates BEFORE DELETE: unconditional abort.
+-- POSTGRES: CREATE RULE certificates_no_delete AS ON DELETE TO certificates
+--   DO INSTEAD NOTHING; -- or a trigger raising an exception.
+--   Also: REVOKE DELETE ON certificates FROM <application_role>;
+-- ------------------------------------------------------------
+CREATE TRIGGER IF NOT EXISTS trg_certificates_no_delete
+BEFORE DELETE ON certificates
+BEGIN
+    SELECT RAISE(ABORT, 'certificates may not be deleted');
+END;
+
 
 -- ============================================================
 -- engine_memory
@@ -243,7 +417,7 @@ CREATE INDEX IF NOT EXISTS idx_certificates_model
 -- on subsequent evaluations. Keyed on use_case_class.
 -- ============================================================
 CREATE TABLE IF NOT EXISTS engine_memory (
-    -- Postgres: SERIAL or BIGINT GENERATED ALWAYS AS IDENTITY
+    -- Postgres: BIGINT GENERATED ALWAYS AS IDENTITY
     id                  INTEGER     NOT NULL PRIMARY KEY AUTOINCREMENT,
     -- The key used by MCSS to retrieve memory. Must match
     -- use_cases.use_case_class exactly.
