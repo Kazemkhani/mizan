@@ -183,7 +183,8 @@ export const arInterface: Record<string, string> = {
   'evidence.empty': 'اختر اختباراً من التدفُّق لعرضه هنا.',
 
   'cert.title': 'الشهادة',
-  'cert.none': 'تظهر الشهادة هنا فور بلوغ التقييم حكماً نهائياً.',
+  // RASHID-REVIEW-REQUIRED: rewritten to point forward, English: "Submit a model on stage 1, choose a use case on stage 2, and run an assessment on stage 3. The certificate is generated when the engine reaches a decision."
+  'cert.none': 'أودِع نموذجاً في المرحلة الأولى، واختر حالة الاستخدام في المرحلة الثانية، ثم ابدأ التقييم في المرحلة الثالثة. تُصدَر الشهادة فور بلوغ المحرك حكماً نهائياً.',
   'cert.tier.statistical': 'المستوى الإحصائي: نال كل ضابط إلزامي حدَّ ثقة.',
   'cert.tier.budget': 'مستوى الميزانية: حُسم ضابط إلزامي واحد أو أكثر دون حدِّ ثقة، وكلٌّ منها مؤشَّر أدناه.',
   'cert.model': 'النموذج',
@@ -209,7 +210,8 @@ export const arInterface: Record<string, string> = {
   'remediate.title': 'معالجة الفجوات ثم العودة',
   'remediate.lede':
     'يصل كل نموذج ولديه فجوات، حتى النموذج الذي ينال الاعتماد: فعند الحجم الحالي لمجموعة الاختبارات تُحسم معظم الضوابط عند نفاد الاختبارات لا بحدِّ ثقة. تقرأ هذه المرحلة تلك الفجوات من نتيجة التقييم، وتحدِّد العمل اللازم لسدِّها، وتعرض محاكاةً لذلك العمل، ثم تعيد النسخة المُعاد تدريبها إلى المحرك.',
-  'remediate.none': 'نفِّذ تقييماً أولاً، فالفجوات تُقرأ من نتيجته.',
+  // RASHID-REVIEW-REQUIRED: rewritten to point forward, English: "Submit a model on stage 1, choose a use case on stage 2, and run an assessment on stage 3. The remediation plan is read directly from the gaps the engine found."
+  'remediate.none': 'أودِع نموذجاً في المرحلة الأولى، واختر حالة الاستخدام في المرحلة الثانية، ثم ابدأ التقييم في المرحلة الثالثة. تُستخلَص خطة المعالجة مباشرةً من الفجوات التي رصدها المحرك.',
   'remediate.phase.gaps': 'الفجوات المرصودة',
   'remediate.phase.plan': 'العمل المطلوب',
   'remediate.phase.training': 'إعادة التدريب',

@@ -72,6 +72,13 @@ interface WalkthroughProps {
   onFlushEvaluation?: () => void
   /** Called when the demonstrator presses "Run it again" on the final step. */
   onRunAgain?: () => void
+  /**
+   * Called when the reader finishes the tour by pressing "Start using it" on
+   * the final step. Distinct from onClose (which is skip/early exit) so the
+   * caller can navigate to Submit and reset state rather than leaving whatever
+   * stage the tour happened to end on.
+   */
+  onDone?: () => void
 }
 
 const PADDING = 10
@@ -87,6 +94,7 @@ export function Walkthrough({
   evaluationStatus,
   onFlushEvaluation,
   onRunAgain,
+  onDone,
 }: WalkthroughProps): React.ReactElement | null {
   const { t } = useTranslation()
   const [rect, setRect] = React.useState<Rect | null>(null)
@@ -290,7 +298,12 @@ export function Walkthrough({
               className="button button--primary button--small"
               disabled={waitingForEvaluation}
               onClick={() => {
-                if (isLast) { onClose(); return }
+                if (isLast) {
+                  // Use onDone when it is provided (navigates to Submit with a
+                  // clean state); fall back to onClose for early-exit callers.
+                  ;(onDone ?? onClose)()
+                  return
+                }
                 // Flush the evaluation when advancing beyond the evidence step
                 // so the certificate is ready by the time the spotlight lands.
                 if (index === EVIDENCE_STEP_INDEX && evaluationStatus !== 'done') {

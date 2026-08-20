@@ -151,6 +151,14 @@ function Shell(): React.ReactElement {
           onStartEvaluation={() => startEvaluationRef.current?.()}
           onFlushEvaluation={() => flushEvaluationRef.current?.()}
           evaluationStatus={evaluationStatus}
+          onDone={() => {
+            // "Start using it" on the final step: return to Submit with a clean
+            // slate so the reader's first action after the tour is meaningful.
+            resetEvaluationRef.current?.()
+            setEvaluationStatus('idle')
+            setStage(1)
+            setTourIndex(null)
+          }}
           onRunAgain={() => {
             resetEvaluationRef.current?.()
             setEvaluationStatus('idle')

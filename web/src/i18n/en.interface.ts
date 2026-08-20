@@ -171,7 +171,7 @@ export const enInterface: Record<string, string> = {
   'evidence.empty': 'Select a check from the verification log to read its full record here.',
 
   'cert.title': 'Certificate',
-  'cert.none': 'A certificate appears here once the assessment reaches a decision.',
+  'cert.none': 'Submit a model on stage 1, choose a use case on stage 2, and run an assessment on stage 3. The certificate is generated when the engine reaches a decision.',
   'cert.tier.statistical': 'Confirmed by evidence: every required standard reached the declared certainty.',
   'cert.tier.budget': 'Not enough checks to confirm: one or more required standards ran out of checks before certainty was reached. Each is marked below.',
   'cert.model': 'Model',
@@ -197,7 +197,7 @@ export const enInterface: Record<string, string> = {
   'remediate.title': 'Close the gaps and come back',
   'remediate.lede':
     'Every model arrives with gaps, including one that certifies. This stage reads those gaps out of the run, sets out the work that would close them, rehearses that work, and hands the retrained version back to the engine.',
-  'remediate.none': 'Run an evaluation first. The gaps are read out of its result.',
+  'remediate.none': 'Submit a model on stage 1, choose a use case on stage 2, and run an assessment on stage 3. The remediation plan is read directly from the gaps the engine found.',
   'remediate.phase.gaps': 'Gaps found',
   'remediate.phase.plan': 'Work required',
   'remediate.phase.training': 'Retraining',
