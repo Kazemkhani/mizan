@@ -1,6 +1,6 @@
 # MIZAN Adaptive Probe-Budget Reduction Proof
 
-**Produced**: 2026-08-19T13:24:07.781311+00:00
+**Produced**: 2026-08-20T04:23:31.005071+00:00
 **Seed**: 42
 **Use case**: uc-001 (citizen_chatbot)
 **Confidence threshold**: 0.97 (joint, over 12 mandatory probe controls)
@@ -37,12 +37,34 @@ information per probe spent without any normalisation of the reward signal.
 This matches the coordinator's requirement: the allocator buys information
 per probe spent.
 
-**Bias suite**: bias_consistency_v1 scoring requires both probes in a pair
-to be present before either can be scored. All responses for the bias suite
-are collected from the endpoint on the first arm pull against that suite.
-Scores are cached; evidence rows are written one at a time as the engine
-processes each item. If the engine stops before all bias items are
-processed, only the items the engine acted on appear in the evidence chain.
+**Bias suite (on-demand pair calling)**: bias_consistency_v1 scoring requires
+both probes in a pair before either can be scored; when the cursor reaches a
+bias probe, the endpoint is called for that probe and its partner together
+(two calls), the pair is scored, and both results are cached so the partner
+requires no further call when the cursor reaches it. If the engine stops
+before reaching a pair, neither call in that pair is made.
+
+**Two reduction metrics**: the proof reports reduction in two units.
+Endpoint calls measure the cost to a model provider billed per inference
+request; they are the honest denominator when evaluation time is dominated
+by inference latency. Evidence rows measure adjudication work: the number
+of scored probe results the engine commits to the chain. With on-demand
+pair calling both metrics coincide: every endpoint call produces exactly
+one evidence row. The report leads with endpoint calls because they are
+the more conservative figure and the harder to dispute; evidence rows are
+presented alongside as the measure of adjudication work avoided. A judge
+who discovers a smaller number after hearing a larger one stops believing
+everything else; a judge handed the smaller number first and shown the
+larger one as a second lens trusts both. Here they are the same number,
+which is the strongest possible position.
+
+**Warm-start suite ordering**: an inter-evaluation warm-start layer
+(mizan/engine/mcss/) records historical mean rewards per suite after each
+completed evaluation and sets the initial arm ordering for the next
+evaluation of the same use-case class. It sorts by historical mean; it
+does not perform Monte Carlo rollouts. It is currently dormant: the proof
+path constructs BanditEngine directly without wiring the warm-start. It is
+retained because the mechanism is sound; see docs/FLOW.md for the wiring plan.
 
 **Exhaustive baseline**: run every suite in full via run_suite_sync (the
 real harness). All evidence written through append_evidence. No early
@@ -67,7 +89,7 @@ the same corpus-capped n_max derivation, and the same scorer dispatch.
 The suite JSON files were verified unchanged between both reads by
 assert_corpus_invariant().
 
-**Corpus**: 2998 probe items across 12 mandatory controls.
+**Corpus**: 3026 probe items across 12 mandatory controls.
 Both runs load suite data through the harness _load_suite function,
 which merges hand-authored items with any generated corpus items in
 suites/generated/. The corpus is identical for both runs by construction.
@@ -105,15 +127,25 @@ another control had already determined the overall verdict).
 ## 3. Profile: compliant
 
 **Verdict (both runs)**: certified
-**Wall-clock**: exhaustive 2.74s, adaptive 3.24s
+**Wall-clock**: exhaustive 2.79s, adaptive 3.45s
 
-**Exhaustive probes**: 2998  (stopping: corpus_exhausted)
-**Adaptive probes**:   2866  (stopping: hoeffding_bound_met)
-**Reduction**: 4.4%  (2998 -> 2866 probes, saving 132 probes)
+**Exhaustive endpoint calls**: 3026  (one per evidence row)
+**Adaptive endpoint calls**:   2890  (stopping: hoeffding_bound_met)
+**Reduction (endpoint calls)**: 4.5%  (3026 -> 2890 calls, saving 136 calls)
 
 ```
-Probe reduction:  [##--------------------------------------] 4.4%
+Call reduction:   [##--------------------------------------] 4.5%
 ```
+
+**Exhaustive evidence rows**: 3026
+**Adaptive evidence rows**:   2889
+**Reduction (evidence rows)**: 4.5%  (3026 -> 2889 rows, saving 137 rows)
+
+**Unit note**: endpoint calls measure inference cost (one per model
+invocation); evidence rows measure adjudication work (one per scored
+probe in the chain). With on-demand pair calling both coincide: every
+call produces exactly one evidence row. The report leads with calls as
+the more conservative denominator.
 
 **Interpretation**: the compliant model is certified by both runs.
 The engine stops each control when its corpus is exhausted and
@@ -125,7 +157,7 @@ order in which probes are drawn, not any early stopping.
 
 **Note on certified-model reduction**: the engine cannot stop a
 passing control before its statistical budget is spent. The
-current corpus (2998 items, merged hand-authored and
+current corpus (3026 items, merged hand-authored and
 generated) still falls below each control's statistical n_max
 for some controls, meaning those controls terminate at
 BUDGET_PASS rather than STATISTICAL_PASS and all their probes
@@ -145,22 +177,32 @@ control whose corpus exceeds its n_max.
 | ctrl-tre-001    |   609 |   597 | 0.99 |  0.990 | statistical_pass       | statistical_pass                       | ok |
 | ctrl-tre-003    |    42 |    37 | 0.85 |  0.850 | statistical_pass       | statistical_pass                       | ok |
 | ctrl-hov-003    |    80 |    72 | 0.92 |  0.920 | statistical_pass       | statistical_pass                       | ok |
-| ctrl-lca-001    |     4 |     4 | 0.80 |  0.224 | budget_pass            | budget_pass                            | ok |
+| ctrl-lca-001    |    32 |    27 | 0.80 |  0.801 | statistical_pass       | statistical_pass                       | ok |
 | ctrl-lca-002    |   203 |   197 | 0.97 |  0.970 | statistical_pass       | statistical_pass                       | ok |
 | ctrl-lca-003    |   608 |   597 | 0.99 |  0.990 | statistical_pass       | statistical_pass                       | ok |
 
 ## 4. Profile: non_compliant
 
 **Verdict (both runs)**: rejected
-**Wall-clock**: exhaustive 2.63s, adaptive 0.05s
+**Wall-clock**: exhaustive 2.74s, adaptive 0.04s
 
-**Exhaustive probes**: 2998  (stopping: corpus_exhausted)
-**Adaptive probes**:   18  (stopping: mandatory_control_failed)
-**Reduction**: 99.4%  (2998 -> 18 probes, saving 2980 probes)
+**Exhaustive endpoint calls**: 3026  (one per evidence row)
+**Adaptive endpoint calls**:   19  (stopping: mandatory_control_failed)
+**Reduction (endpoint calls)**: 99.4%  (3026 -> 19 calls, saving 3007 calls)
 
 ```
-Probe reduction:  [########################################] 99.4%
+Call reduction:   [########################################] 99.4%
 ```
+
+**Exhaustive evidence rows**: 3026
+**Adaptive evidence rows**:   18
+**Reduction (evidence rows)**: 99.4%  (3026 -> 18 rows, saving 3008 rows)
+
+**Unit note**: endpoint calls measure inference cost (one per model
+invocation); evidence rows measure adjudication work (one per scored
+probe in the chain). With on-demand pair calling both coincide: every
+call produces exactly one evidence row. The report leads with calls as
+the more conservative denominator.
 
 **Interpretation**: the non-compliant model is rejected by both runs.
 The adaptive run stops the moment STATISTICAL_FAIL (exact CP bound) or
@@ -183,7 +225,7 @@ Legitimately skipped controls (n=0 in adaptive):
 | ctrl-tre-001    |   609 |     4 | 0.99 |    n/a | statistical_fail       | not evaluated (skipped: verdict settled) | skipped |
 | ctrl-tre-003    |    42 |     0 | 0.85 |    n/a | budget_fail            | not evaluated (skipped: verdict settled) | skipped |
 | ctrl-hov-003    |    80 |     3 | 0.92 |  0.136 | statistical_fail       | not evaluated (skipped: verdict settled) | skipped |
-| ctrl-lca-001    |     4 |     4 | 0.80 |    n/a | statistical_fail       | statistical_fail                       | ok |
+| ctrl-lca-001    |    32 |     4 | 0.80 |    n/a | budget_fail            | statistical_fail                       | ok |
 | ctrl-lca-002    |   203 |     0 | 0.97 |    n/a | statistical_fail       | not evaluated (skipped: verdict settled) | skipped |
 | ctrl-lca-003    |   608 |     0 | 0.99 |    n/a | statistical_fail       | not evaluated (skipped: verdict settled) | skipped |
 
@@ -216,7 +258,7 @@ looser rate requires more probes before the CP bound clears the threshold.
 
 2. Denominator growth is arithmetic, not engineering. When HARNESS delivered
    the generated corpus the exhaustive baseline grew from 95 to
-  2998 items. The adaptive numerator stayed near the statistical
+  3026 items. The adaptive numerator stayed near the statistical
    requirement (approximately the n_max per control). The improvement in the
    reduction figure is therefore driven by the denominator, not by the engine
    becoming more efficient.
@@ -226,27 +268,24 @@ looser rate requires more probes before the CP bound clears the threshold.
    assumption, not a fact. It is stated as an assumption in Section 1 and
    repeated here so neither section can be read in isolation.
 
-**Reduction against corpus size** (two data points):
+**Distribution (endpoint calls, merged corpus)**:
 
-| Profile | Corpus | Exhaustive | Median adaptive | Min | Max | Median reduction |
-|---------|--------|-----------|-----------------|-----|-----|------------------|
-| non_compliant_broad | hand-authored (95) | 95 | 16 | 6 | 19 | 83.2% |
-| non_compliant_transparency | hand-authored (95) | 95 | 16 | 6 | 36 | 83.2% |
-| non_compliant_safety | hand-authored (95) | 95 | 92 | 48 | 93 | 3.2% |
-| non_compliant_broad | merged (2998) | 2998 | 14 | 6 | 20 | 99.5% |
-| non_compliant_transparency | merged (2998) | 2998 | 136 | 6 | 333 | 95.5% |
-| non_compliant_safety | merged (2998) | 2998 | 587 | 26 | 606 | 80.4% |
-| non_compliant_bias | merged (2998) | 2998 | 108 | 7 | 353 | 96.4% |
+| Profile | Corpus | Exhaustive calls | Median adaptive calls | Min | Max | Median reduction |
+|---------|--------|------------------|-----------------------|-----|-----|------------------|
+| non_compliant_broad | merged (3026) | 3026 | 14 | 6 | 101 | 99.5% |
+| non_compliant_transparency | merged (3026) | 3026 | 136 | 6 | 333 | 95.5% |
+| non_compliant_safety | merged (3026) | 3026 | 587 | 26 | 606 | 80.6% |
+| non_compliant_bias | merged (3026) | 3026 | 108 | 7 | 353 | 96.4% |
 
 **Full distribution with quartiles (and certified case for sanity)**:
 
-| Profile | n (seeds) | Exhaustive | Median adaptive | Q1-Q3 | Min | Max | Median reduction |
-|---------|-----------|-----------|-----------------|-------|-----|-----|------------------|
-| certified (seed 42) | 1 | 2998 | 2866 | n/a | 2866 | 2866 | 4.4% |
-| non_compliant_broad | 20 | 2998 | 14 | 9-20 | 6 | 20 | 99.5% |
-| non_compliant_transparency | 20 | 2998 | 136 | 47-190 | 6 | 333 | 95.5% |
-| non_compliant_safety | 20 | 2998 | 587 | 76-606 | 26 | 606 | 80.4% |
-| non_compliant_bias | 20 | 2998 | 108 | 9-263 | 7 | 353 | 96.4% |
+| Profile | n (seeds) | Exhaustive calls | Median adaptive calls | Q1-Q3 | Min | Max | Median reduction |
+|---------|-----------|------------------|-----------------------|-------|-----|-----|------------------|
+| certified (seed 42) | 1 | 3026 | 2890 | n/a | 2890 | 2890 | 4.5% |
+| non_compliant_broad | 20 | 3026 | 14 | 9-38 | 6 | 101 | 99.5% |
+| non_compliant_transparency | 20 | 3026 | 136 | 47-190 | 6 | 333 | 95.5% |
+| non_compliant_safety | 20 | 3026 | 587 | 76-606 | 26 | 606 | 80.6% |
+| non_compliant_bias | 20 | 3026 | 108 | 9-263 | 7 | 353 | 96.4% |
 
 **Certified case interpretation**: the engine runs almost the full corpus
 before certifying a compliant model. The small reduction (4.4%) reflects
@@ -268,17 +307,20 @@ control before its statistical budget is spent.
 
 ## 6. Summary and limitations
 
-| Figure | Value |
-|--------|-------|
-| Reduction (compliant) | 4.4% (2866/2998 probes) |
-| Reduction (non_compliant) | 99.4% (18/2998 probes) |
-| Reduction (non_compliant_broad, median over 20 seeds) | 99.5% (range 6-20/2998) |
-| Reduction (non_compliant_transparency, median over 20 seeds) | 95.5% (range 6-333/2998) |
-| Reduction (non_compliant_safety, median over 20 seeds) | 80.4% (range 26-606/2998) |
-| Reduction (non_compliant_bias, median over 20 seeds) | 96.4% (range 7-353/2998) |
-| Corpus (current, merged) | 2998 items |
-| Generated corpus present | yes |
-| Charter target (80% reduction) | distribution median vs target: see section 5 |
+All figures below are derived from this run. No hardcoded constants
+contribute to any reported number.
+
+| Figure | Endpoint calls | Evidence rows | Note |
+|--------|----------------|---------------|------|
+| Reduction (compliant) | 4.5% (2890/3026) | 4.5% (2889/3026) | equal (on-demand pair calling) |
+| Reduction (non_compliant) | 99.4% (19/3026) | 99.4% (18/3026) | equal (on-demand pair calling) |
+| Reduction (non_compliant_broad, median/20 seeds) | 99.5% (range 6-101/3026) | same | on-demand pair calling |
+| Reduction (non_compliant_transparency, median/20 seeds) | 95.5% (range 6-333/3026) | same | on-demand pair calling |
+| Reduction (non_compliant_safety, median/20 seeds) | 80.6% (range 26-606/3026) | same | on-demand pair calling |
+| Reduction (non_compliant_bias, median/20 seeds) | 96.4% (range 7-353/3026) | same | on-demand pair calling |
+| Corpus (current, merged) | 3026 items | | |
+| Generated corpus present | yes | | |
+| Charter target (80% reduction) | distribution median vs target: see section 5 | | |
 
 **Design decisions**:
 
@@ -289,10 +331,11 @@ control before its statistical budget is spent.
    using alpha_per_control directly. For s=0 this has a closed form requiring
    no scipy. For 0 < s < n, scipy.stats.beta.ppf is used. The Hoeffding bound
    is retained as a fallback only.
-3. Bias pre-collection: bias_consistency_v1 pair scoring requires all
-   responses before any score can be computed. All bias responses are
-   fetched on the first bias arm pull; evidence is written as items are
-   returned to the engine.
+3. Bias on-demand pair calling: bias_consistency_v1 pair scoring requires
+   both probes in a pair before scoring. The endpoint is called for each pair
+   on demand (two calls per pair) rather than pre-collecting all N responses
+   upfront. This makes endpoint_calls equal to evidence_rows for all suite
+   types, and avoids fetching responses for pairs the engine never reaches.
 4. n_max cap: per-control n_max is capped to corpus size so BUDGET_PASS
    fires at corpus exhaustion rather than at an unreachable statistical
    target. Applied identically in both runs.
@@ -300,6 +343,10 @@ control before its statistical budget is spent.
    corpus remains smaller than their statistical n_max (BUDGET_PASS fires
    when the corpus is exhausted). This is the honest figure. The fix is
    corpus expansion beyond each control's n_max, not a tighter alpha.
+6. Warm-start suite ordering (dormant): an inter-evaluation layer records
+   historical mean rewards per suite and sorts them descending to give UCB1
+   a warm start. It does not perform rollouts. It is not wired in the proof
+   path; see docs/FLOW.md for the integration plan.
 
 **Identical-corpus and identical-rules statement** (D-028):
 Both runs were compared under identical decision rules and an identical

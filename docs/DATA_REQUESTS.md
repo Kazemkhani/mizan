@@ -206,3 +206,110 @@ portal can change its markup. Mitigation: explicit column validation in the
 parse step and a committed hash-verified cache that makes markup changes visible
 as loud failures rather than silent corruption.  
 **Owner:** BAYAN. Code: `agents/data/fetch_bayanat.py`.
+
+---
+
+## Post-audit integrity finding: L3 offline verifier defect
+
+**Finding date:** 2026-08-20 (external audit, L3 MAJOR)
+**Closed:** 2026-08-20
+
+### What the offline path actually did
+
+The offline path in `check_dataset()` (Ajman) and `check_bayanat_dataset()` (Bayanat) did
+three things and claimed one thing it had not done.
+
+What it did:
+
+1. Computed the SHA-256 of the cache file on disk. The hash was assigned to
+   `cache_hash` but only used in the `OFFLINE_OK` return string -- it was never
+   compared against anything.
+2. Parsed the cache file as JSON and checked internal consistency: for Ajman,
+   `cached_records == len(results)`; for Bayanat, `len(resources) > 0`.
+3. Returned `OFFLINE_OK` with the prefix `cache SHA-256 {cache_hash[:16]}...`
+
+What it did not do: read the manifest file (`*.manifest.json`) or compare the
+computed hash against the `sha256_cache_file` field recorded there at commit time.
+
+The internal consistency check is a necessary but not sufficient condition. An
+attacker can change any value inside a result row and keep `cached_records ==
+len(results)`. The altered file is internally consistent. The old code returned
+`OFFLINE_OK`. Demonstrated by test `test_ajman_offline_rejects_altered_cache`:
+changing `results[0]["value"]` to `"ATTACKER_INJECTED"` while keeping
+`cached_records = 3, len(results) = 3` produced `OFFLINE_OK` before the fix.
+
+The same attack on the Bayanat path: changing `resources[0]["rows"][0][2]` while
+keeping `len(resources) == 1` produced `OFFLINE_OK` before the fix.
+
+A missing manifest was also never detected. The old code did not check for the
+manifest file's existence at all in offline mode. An attacker who also deleted the
+manifest got `OFFLINE_OK`. The new code treats a missing manifest as `HASH_MISMATCH`.
+
+The closing summary line (`Result: all live fetches match their committed caches.`)
+was printed regardless of mode. In offline mode no live fetch occurred. The
+sentence described work that had not happened as though it had.
+
+### What made this worse than an ordinary bug
+
+The manifest exists specifically to allow offline verification to be meaningful.
+The point of committing `sha256_cache_file` at fetch time is that a reviewer at
+the venue, with no network, can check the committed hash against the file on disk
+and know the data is authentic. A verifier that skips that comparison and reports
+`OFFLINE_OK` converts that safeguard into decoration. The message sounds like
+assurance; it is the absence of any check wearing the words of a successful one.
+A silent pass is worse than a loud failure, and this was a silent pass on the
+path that matters most: the demonstration venue, no network, the day of the pitch.
+
+### What the fix does
+
+Offline mode now reads the manifest before returning any status. If the manifest
+is absent, the result is `HASH_MISMATCH`. If the manifest does not contain
+`sha256_cache_file`, the result is `HASH_MISMATCH`. If the computed hash of the
+cache file on disk does not equal the manifest's recorded hash, the result is
+`HASH_MISMATCH` with both hashes printed. Only when the hashes agree does the
+code proceed to the internal consistency check, and only when both pass does it
+return `OFFLINE_OK`.
+
+The `cache_dir` parameter was added to `check_dataset()` (matching the existing
+interface of `check_bayanat_dataset()`) so the function can be tested with
+temporary fixtures without patching global state.
+
+The summary line is now mode-aware: offline prints "all cache files verified
+against their manifest hashes. No live fetch was performed." Live mode retains
+the existing "all live fetches match their committed caches."
+
+### Tests
+
+Six tests in `tests/test_fetch_datasets_offline.py`. All six were run against
+the unfixed code first and five failed (the attacker and missing-manifest cases
+failed; the clean-Bayanat case accidentally passed because it happened to be
+the one case that is identical between the old and new code paths). All six pass
+after the fix. The test file is the authoritative record of the attack surface.
+
+### Other code audited for the same shape of defect
+
+The "silent pass on a fallback path" pattern was searched for in the rest of the
+owned code.
+
+`agents/data/fetch_bayanat.py`, `parse_tables()`: the column validation is
+guarded by `if tables:`. This guard is safe: `tables` is built by iterating
+`table_indices`, and if `table_indices` is empty the function raises immediately
+("No Data Explorer tables found in the page"). A non-empty `table_indices` always
+produces a non-empty `tables`. The `if tables:` guard is therefore never a bypass;
+it is unreachable dead code in the falsy branch. Not a silent-pass risk.
+
+`parse_tables()`, empty-row check: every table is checked for zero rows. An empty
+but well-formed table raises with explicit columns listed. A portal structural
+change that removes rows but keeps column headers fails loudly. This is the
+correct behaviour and matches the stated mitigation in the Bayanat access decision.
+
+`parse_tables()`, TotalCount extraction: if the portal stops embedding
+`"TotalCount":N` JSON blobs in the page, `all_tc` is empty and `total_counts` is
+`[]`. The downstream variable `first_tc` becomes the string `"unknown"`. This
+does not affect the hash comparison, which is what matters. The TotalCount is
+informational in the return string. Not a silent-pass risk for integrity; it is
+a monitoring gap that would make it harder to notice a dataset has grown. Recorded
+here for completeness.
+
+**Owner:** BAYAN. Changes: `agents/data/fetch_datasets.py`,
+`agents/data/fetch_bayanat.py`, `tests/test_fetch_datasets_offline.py`.

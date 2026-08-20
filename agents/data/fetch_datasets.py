@@ -142,9 +142,11 @@ def check_dataset(
     use_case_id: str,
     max_cached: int | None,
     offline: bool,
+    cache_dir: Path | None = None,
 ) -> tuple[str, str]:
     """Return (status, detail_string)."""
-    cache_path = CACHE_DIR / f"{dataset_id}.json"
+    _cache_dir = cache_dir if cache_dir is not None else CACHE_DIR
+    cache_path = _cache_dir / f"{dataset_id}.json"
 
     if not cache_path.exists():
         return Result.CACHE_MISSING, f"cache file missing: {cache_path}"
@@ -152,7 +154,42 @@ def check_dataset(
     cache_hash = sha256_of_file(cache_path)
 
     if offline:
-        # Offline mode: verify the committed cache file is internally consistent.
+        # Offline mode: compare the cache file SHA-256 against the hash recorded
+        # in the manifest. Internal consistency (record-count agreement) is a
+        # necessary but not sufficient check: an attacker can alter a value and
+        # keep cached_records == len(results). Only a manifest hash comparison
+        # can detect that. A missing manifest is also a failure: accepting a
+        # cache without any recorded hash to compare against is equivalent to
+        # not checking at all.
+        manifest_path = cache_path.parent / (cache_path.stem + ".manifest.json")
+        if not manifest_path.exists():
+            return (
+                Result.HASH_MISMATCH,
+                f"manifest file missing: {manifest_path.name}. "
+                f"Cannot verify cache integrity without a recorded hash. "
+                f"Re-run in live mode to fetch and regenerate the manifest.",
+            )
+        try:
+            manifest = json.loads(manifest_path.read_bytes())
+        except json.JSONDecodeError as exc:
+            return Result.HASH_MISMATCH, f"manifest file is not valid JSON: {exc}"
+        manifest_hash = manifest.get("sha256_cache_file", "")
+        if not manifest_hash:
+            return (
+                Result.HASH_MISMATCH,
+                f"manifest does not record sha256_cache_file: {manifest_path.name}",
+            )
+        if cache_hash != manifest_hash:
+            return (
+                Result.HASH_MISMATCH,
+                f"cache hash does not match manifest for {dataset_id}. "
+                f"Manifest records: {manifest_hash[:16]}... "
+                f"Actual file SHA-256: {cache_hash[:16]}... "
+                f"The cache has been altered since it was committed. "
+                f"Re-run in live mode to re-fetch and re-commit the authoritative data.",
+            )
+        # Manifest hash verified. Also check internal consistency as a secondary
+        # guard against a corrupted (not merely altered) file.
         try:
             cache_doc = json.loads(cache_path.read_bytes())
             cached_n = cache_doc.get("cached_records", 0)
@@ -164,7 +201,7 @@ def check_dataset(
                 )
         except json.JSONDecodeError as exc:
             return Result.HASH_MISMATCH, f"cache file is not valid JSON: {exc}"
-        return Result.OFFLINE_OK, f"cache SHA-256 {cache_hash[:16]}..."
+        return Result.OFFLINE_OK, f"manifest hash verified: {cache_hash[:16]}..."
 
     # Live mode: fetch from portal and compare.
     try:
@@ -275,7 +312,13 @@ def main() -> int:
     print(f"Datasets checked: {total_checked}")
     print(f"Failures: {failures}")
     if failures == 0:
-        print("Result: all live fetches match their committed caches.")
+        if args.offline:
+            print(
+                "Result: all cache files verified against their manifest hashes. "
+                "No live fetch was performed."
+            )
+        else:
+            print("Result: all live fetches match their committed caches.")
     else:
         print(
             "Result: FAIL. One or more datasets could not be verified. "

@@ -17,6 +17,13 @@ Usage:
 
 What is verified per evidence row:
   - SHA-256(stored payload) == stored payload_hash.
+  - The adjudication columns (passed, score, suite_id, control_id) agree with
+    the corresponding fields in the payload. This check is independent of the
+    hash: it detects the attack where a row carries a valid hash over a payload
+    that contradicts the column values from which the certificate is computed.
+    A trigger added in schema v0.3.0 blocks this attack at insert time; the
+    verify script detects it on rows written by an older schema version or by
+    a direct database write that bypassed the trigger.
 
 What is verified per evaluation:
   - The hash chain is a valid single-linked list from a genesis row
@@ -121,9 +128,11 @@ def audit(db_path: Path) -> int:
     print(f"Database : {db_path}")
     print()
 
-    # Fetch all evidence rows.
+    # Fetch all evidence rows, including the adjudication columns whose
+    # consistency with the payload is checked independently of the hash.
     ev_rows = conn.execute("""
-        SELECT id, evaluation_id, payload, payload_hash, chain_prev_hash
+        SELECT id, evaluation_id, payload, payload_hash, chain_prev_hash,
+               score, passed, suite_id, control_id
         FROM evidence
         ORDER BY evaluation_id, rowid
     """).fetchall()
@@ -149,6 +158,7 @@ def audit(db_path: Path) -> int:
 
     total_rows = len(ev_rows)
     total_hash_failures = 0
+    total_column_failures = 0
     total_chain_failures = 0
     total_bundle_failures = 0
 
@@ -176,6 +186,88 @@ def audit(db_path: Path) -> int:
             total_hash_failures += len(hash_fails)
         else:
             print(f"  Payload hash  : OK ({len(rows)}/{len(rows)} match)")
+
+        # 1b. Column-payload consistency verification.
+        #
+        # This check is independent of the hash. It detects the L1 attack:
+        # a row whose payload is honestly hashed but whose adjudication columns
+        # (passed, score, suite_id, control_id) contradict the payload values
+        # from which the certificate is computed. The hash check above reports
+        # CLEAN in that scenario; only this check catches the contradiction.
+        #
+        # A trigger in schema v0.3.0 blocks this at insert time. This check
+        # catches rows written under an older schema or by a direct database
+        # write that bypassed the trigger.
+        col_fails: list[str] = []
+        for r in rows:
+            try:
+                payload_data = json.loads(r["payload"])
+            except (json.JSONDecodeError, TypeError):
+                # Payload is not valid JSON. The hash check above will report
+                # a mismatch (the stored hash cannot match the garbled payload).
+                # Do not double-report here; just note it.
+                col_fails.append(
+                    f"    FAIL row {r['id']}: payload is not valid JSON "
+                    f"(column-payload consistency cannot be checked)"
+                )
+                continue
+
+            # Check passed.
+            payload_passed = payload_data.get("passed")
+            if payload_passed is None:
+                col_fails.append(
+                    f"    FAIL row {r['id']}: "
+                    f"payload missing required 'passed' field"
+                )
+            elif int(bool(payload_passed)) != r["passed"]:
+                col_fails.append(
+                    f"    FAIL row {r['id']}: "
+                    f"passed column={r['passed']} contradicts "
+                    f"payload.passed={payload_passed!r}"
+                )
+
+            # Check score.
+            payload_score = payload_data.get("score")
+            if payload_score is None:
+                col_fails.append(
+                    f"    FAIL row {r['id']}: "
+                    f"payload missing required 'score' field"
+                )
+            elif abs(float(payload_score) - float(r["score"])) > 1e-9:
+                col_fails.append(
+                    f"    FAIL row {r['id']}: "
+                    f"score column={r['score']} contradicts "
+                    f"payload.score={payload_score!r}"
+                )
+
+            # Check suite_id (when the payload declares it).
+            payload_suite_id = payload_data.get("suite_id")
+            if payload_suite_id is not None and payload_suite_id != r["suite_id"]:
+                col_fails.append(
+                    f"    FAIL row {r['id']}: "
+                    f"suite_id column={r['suite_id']!r} contradicts "
+                    f"payload.suite_id={payload_suite_id!r}"
+                )
+
+            # Check control_id (when the payload declares it).
+            payload_control_id = payload_data.get("control_id")
+            if payload_control_id is not None and payload_control_id != r["control_id"]:
+                col_fails.append(
+                    f"    FAIL row {r['id']}: "
+                    f"control_id column={r['control_id']!r} contradicts "
+                    f"payload.control_id={payload_control_id!r}"
+                )
+
+        if col_fails:
+            print(
+                f"  Column-payload: COMPROMISED ({len(col_fails)} "
+                f"contradiction(s); certificate verdict is not trustworthy)"
+            )
+            for msg in col_fails:
+                print(msg)
+            total_column_failures += len(col_fails)
+        else:
+            print(f"  Column-payload: OK ({len(rows)}/{len(rows)} consistent)")
 
         # 2. Hash chain verification.
         chain_ok, chain_msg, ordered = traverse_chain(rows)
@@ -232,16 +324,22 @@ def audit(db_path: Path) -> int:
     conn.close()
 
     # Summary.
-    total_failures = total_hash_failures + total_chain_failures + total_bundle_failures
+    total_failures = (
+        total_hash_failures
+        + total_column_failures
+        + total_chain_failures
+        + total_bundle_failures
+    )
     print("-" * 60)
     print("Summary")
-    print(f"  Evaluations checked    : {len(by_eval)}")
-    print(f"  Evidence rows checked  : {total_rows}")
-    print(f"  Hash mismatches        : {total_hash_failures}")
-    print(f"  Chain breaks           : {total_chain_failures}")
-    print(f"  Bundle hash mismatches : {total_bundle_failures}")
+    print(f"  Evaluations checked         : {len(by_eval)}")
+    print(f"  Evidence rows checked       : {total_rows}")
+    print(f"  Hash mismatches             : {total_hash_failures}")
+    print(f"  Column-payload contradictions: {total_column_failures}")
+    print(f"  Chain breaks                : {total_chain_failures}")
+    print(f"  Bundle hash mismatches      : {total_bundle_failures}")
     missing_count = len(missing) if missing else 0
-    print(f"  Missing triggers       : {missing_count}")
+    print(f"  Missing triggers            : {missing_count}")
     print()
     if total_failures == 0 and missing_count == 0:
         print("Status : CLEAN")

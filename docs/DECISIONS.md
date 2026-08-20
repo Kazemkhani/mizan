@@ -828,3 +828,114 @@ and an identical probe corpus; the reduction figure is therefore like-for-like."
 exposure, tests); GOVERNANCE (certificate_content.json schema, visual register separation);
 ATELIER (certificate display differentiation); DIRECTOR (proof report narrative, corpus
 limitation disclosure).
+
+---
+
+## D-029 Column-binding fix: adjudication columns bound to the hashed payload
+
+**Context.** L1 finding from the external audit. The SHA-256 covers the
+`payload` column only. The `score`, `passed`, `control_id`, and `suite_id`
+columns are outside it. Those columns are what the certificate is computed
+from. A row can therefore carry a valid hash over a payload that contradicts
+its own adjudication columns. `verify_evidence.py` reported CLEAN in this
+scenario. The attack was demonstrated against a copy of the built database:
+payload recorded `passed=False`, column was set to `passed=1`, hash was
+valid, and every integrity check reported CLEAN.
+
+**Decision.** The columns are declared to be a projection of the payload.
+The payload is the record of what actually happened; the columns are
+denormalised summaries for query performance. Two mechanisms enforce their
+agreement.
+
+1. Database trigger (`trg_evidence_insert_validate`, schema v0.3.0). Nine
+   checks run on every INSERT. The four new checks (4 through 9 in the
+   trigger body) use `json_extract()` to compare each adjudication column
+   against the corresponding payload field:
+
+   - `payload.passed` must be present and must equal the `passed` column
+     (cast to integer; SQLite returns JSON true/false as 1/0).
+   - `payload.score` must be present and must equal the `score` column
+     within a 1e-9 epsilon to defend against any sub-ulp float serialisation
+     difference (not observed in practice, but the epsilon costs nothing).
+   - If `payload.suite_id` is present it must equal the `suite_id` column.
+   - If `payload.control_id` is present it must equal the `control_id` column.
+
+   `json_extract()` is available in SQLite 3.9+ (released 2015). No extension
+   is required.
+
+   The trigger uses `DROP TRIGGER IF EXISTS` before `CREATE TRIGGER` so that
+   `init_db_sync()`'s `executescript()` call always installs the updated
+   definition, even on a database that was initialised under schema v0.2.0.
+   (All other triggers use `CREATE TRIGGER IF NOT EXISTS` because their
+   definitions have not changed.)
+
+2. `scripts/verify_evidence.py` column-payload consistency check. Added
+   alongside the existing hash and chain checks. Parses each row's payload
+   JSON and asserts agreement between the payload fields and the stored
+   columns. This check operates independently of the hash: it detects
+   contradictions in rows written under an older schema version or by a
+   direct write that bypassed the trigger. Previously such rows reported
+   `Status: CLEAN`; they now report `Status: COMPROMISED` with a per-row
+   message identifying the contradiction.
+
+**Trade-off: option considered and rejected.** The alternative was to expand
+the hash to cover a canonical serialisation of `payload + score + passed +
+control_id + suite_id`. This was rejected because: (a) it would change the
+hash semantics for all existing rows, invalidating every stored
+`payload_hash` and breaking the hash chain without any benefit in detection
+power; (b) the payload already contains all four fields when written by the
+mandated write path (`_build_payload()`), so requiring their presence and
+consistency achieves the same binding without redefining the hash.
+
+**What happens to rows written under the old schema.** The trigger cannot
+retroactively check rows that were inserted before schema v0.3.0. These rows
+remain in place and the hash check is unaffected. The `verify_evidence.py`
+column-payload check now provides the retroactive detection: AUDITOR runs
+it at every wave gate, so any inconsistent legacy row would be found and
+reported as COMPROMISED before the evaluation reaches certification.
+
+**Extended trust boundary (extends D-014).**
+
+The guarantee as of schema v0.3.0:
+
+- *What is now covered*: the `passed`, `score`, `suite_id`, and `control_id`
+  columns cannot be inserted with values that contradict the payload. The
+  hash covers the payload. The payload must contain the adjudication fields.
+  Therefore, a valid `payload_hash` transitively covers all four adjudication
+  columns. The certificate verdict is grounded in the same data the hash
+  protects.
+
+- *What an attacker with direct database write access can still do*:
+  (a) Drop the trigger, insert a contradicting row, and restore the trigger.
+  `verify_evidence.py` would detect the contradiction if run subsequently.
+  (b) Drop the trigger, insert a contradicting row, rewrite the payload to
+  match the column, and recompute the hash. This repairs the contradiction
+  and would cause `verify_evidence.py` to report CLEAN. The hash chain
+  would break at the next row because the row's `payload_hash` changed.
+  (c) Perform the full reconstruction including the hash chain. This requires
+  write access to every downstream row's `chain_prev_hash`. `verify_evidence.py`
+  would then report CLEAN. The only external detection mechanism is the
+  bundle hash in the certificate, which the attacker would also need to
+  update. The certificate's `evidence_bundle_hash` field is protected by the
+  `trg_certificates_no_update` trigger, but an attacker who can drop triggers
+  can bypass it.
+
+- *The honest answer for a federal reviewer*: the immutability guarantee is
+  enforced at the database layer and is independently auditable by traversing
+  the hash chain. It stops application bugs, careless queries, and any actor
+  without direct write access to the database file. It does not stop a
+  determined insider with both direct database access and the willingness to
+  reconstruct the full hash chain and certificate bundle hash. The production
+  next step (publishing the bundle hash to an append-only external log at
+  certificate issuance, as noted in D-013) closes that gap: no in-database
+  reconstruction would produce a bundle hash matching the externally published
+  value. That step is not implemented in Wave 0 because it requires an
+  authenticated external service, which conflicts with the offline-first
+  charter requirement.
+
+**Owner.** ARCHITECT (schema trigger, verify script, attacker tests).
+**Tests.** `tests/test_evidence_column_consistency.py` (four tests: three
+attacks, one baseline). All three attack tests failed before the fix and
+pass after it. `tests/test_evidence_immutability.py` updated to include
+the required adjudication fields in its payload fixtures; all 16 tests
+continue to pass.

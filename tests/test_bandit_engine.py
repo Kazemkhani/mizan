@@ -894,3 +894,79 @@ def test_achieved_pass_rate_lower_bound_formula() -> None:
     assert bound_at_44 > bound_at_20, (
         "Achieved lower bound must tighten as n increases: more probes, stronger claim."
     )
+
+
+# ---------------------------------------------------------------------------
+# Test 17: L6 regression -- undecided mandatory control must block certification
+# ---------------------------------------------------------------------------
+
+def test_undecided_mandatory_control_blocks_certification() -> None:
+    """A mandatory control that is undecided at budget exhaustion must block certification.
+
+    L6 regression: a single probe passes (p_hat == 1.0 >= required_pass_rate == 0.95)
+    but the control has not reached n_max, so no decision basis has fired.
+    decision() returns None.  An undecided mandatory control is the absence of
+    evidence, not evidence of compliance.  Certification must be unreachable.
+
+    This test must FAIL on the pre-fix final_verdict() (which certifies when
+    p_hat >= required_pass_rate regardless of whether the control is decided) and
+    PASS after the fix (which treats any undecided mandatory control as rejection).
+    """
+    # Single mandatory control requiring pass_rate >= 0.95.
+    # With K=1, conf=0.95: alpha_per_control = 0.05.
+    # Derived n_max = ceil(ln(0.05) / ln(0.95)) = ceil(58.4) = 59.
+    # We set total_budget=1 so the engine stops after one probe
+    # without reaching n_max, leaving the control undecided.
+    controls = [
+        {
+            "control_id": "ctrl-undecided-l6-001",
+            "suite_id":   "fixture-suite-safety",
+            "is_mandatory": True,
+            "pass_threshold": 0.95,
+            "threshold_direction": "at_least",
+        }
+    ]
+
+    # Every probe passes, so p_hat will be 1.0 >= 0.95 after one probe.
+    runner = MockSuiteRunner(
+        outcomes={"ctrl-undecided-l6-001": True},
+        probes_per_pull=1,
+    )
+
+    engine = BanditEngine(
+        evaluation_id="test-l6-undecided",
+        use_case_class="fixture_test_case",
+        confidence_threshold=0.95,
+        controls=controls,
+        engine_config={
+            "random_seed": 42,
+            "total_budget": 1,  # exhaust budget before n_max is reached
+        },
+    )
+
+    _, stopping_reason, verdict = engine.run_sync(runner)
+
+    # Guard: control must be undecided for the test to be meaningful.
+    state = engine.control_states()["ctrl-undecided-l6-001"]
+    assert state["decision_basis"] is None, (
+        f"Control was decided ({state['decision_basis']!r}) before the budget ran out. "
+        "Increase the total_budget cap or check the derived n_max."
+    )
+    assert state["n"] >= 1, "Engine must have conducted at least one probe."
+    assert state["p_hat"] >= 0.95, (
+        f"p_hat={state['p_hat']:.3f} is below required_pass_rate; "
+        "this test requires p_hat >= required_pass_rate to expose the L6 bug."
+    )
+    assert stopping_reason == "budget_exhausted", (
+        f"Expected budget_exhausted, got {stopping_reason!r}. "
+        "The test setup must stop the engine via budget exhaustion, not a decision."
+    )
+
+    # Core assertion: an undecided mandatory control must block certification.
+    assert verdict == "rejected", (
+        f"Got verdict {verdict!r} while a mandatory control is undecided. "
+        "Certification is unreachable while any mandatory control carries no decision "
+        "basis.  (L6 regression: the pre-fix code certifies when p_hat >= "
+        "required_pass_rate, treating empirical rate as a substitute for a "
+        "statistical bound.  That is wrong.)"
+    )

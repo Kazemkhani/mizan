@@ -1,5 +1,5 @@
 -- MIZAN Sovereign AI Model Registry
--- Schema v0.2.0  --  Wave 0 Foundation, F0-01 remediation
+-- Schema v0.3.0  --  Wave 0 Foundation, F0-01 remediation; L1 column-binding fix
 --
 -- IMMUTABILITY MODEL
 -- Two layers of enforcement, each independent:
@@ -266,13 +266,35 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_evidence_chain
     ON evidence(evaluation_id, chain_prev_hash);
 
 -- ------------------------------------------------------------
--- evidence BEFORE INSERT: validate payload_hash format and hash chain.
--- Three consecutive SELECT CASE statements run in order; the first
--- failing RAISE(ABORT, ...) stops execution.
+-- evidence BEFORE INSERT: validate payload_hash format, hash chain,
+-- and column-payload consistency.
+--
+-- L1 FIX (schema v0.3.0): checks 4-7 below bind the adjudication-bearing
+-- columns (passed, score, suite_id, control_id) to the hashed payload.
+-- The hash covers the payload column. The payload must contain these four
+-- fields, and the columns must be a projection of what the payload records.
+-- Without this binding, a row can carry a validly-hashed payload whose
+-- columns contradict it, causing a certificate to assert a pass on a probe
+-- the payload records as a failure. All integrity checks would report CLEAN.
+--
+-- SQLite limitation: SQLite has no built-in SHA-256, so the cryptographic
+-- consistency check (SHA-256(payload) == payload_hash) remains in the
+-- application layer and in scripts/verify_evidence.py. The column-payload
+-- consistency checks use json_extract(), which is available in SQLite 3.9+
+-- and does not require any extension.
+--
+-- DROP before CREATE ensures this trigger is always up to date when
+-- init_db_sync() runs executescript() against an existing database.
+-- All other triggers use CREATE IF NOT EXISTS because their definitions
+-- have not changed since their initial deployment; only this trigger has
+-- been updated in place.
+--
 -- POSTGRES: Replace with a PL/pgSQL trigger function checking the same
 -- conditions; attach it with CREATE TRIGGER ... BEFORE INSERT ON evidence.
+-- Use a generated column for the SHA-256 check (see D-012).
 -- ------------------------------------------------------------
-CREATE TRIGGER IF NOT EXISTS trg_evidence_insert_validate
+DROP TRIGGER IF EXISTS trg_evidence_insert_validate;
+CREATE TRIGGER trg_evidence_insert_validate
 BEFORE INSERT ON evidence
 BEGIN
     -- 1. payload_hash must be exactly 64 characters.
@@ -300,6 +322,51 @@ BEGIN
               AND evaluation_id   = NEW.evaluation_id
         )
         THEN RAISE(ABORT, 'evidence: chain_prev_hash does not reference an existing payload_hash in the same evaluation')
+    END;
+    -- 4. payload must contain a 'passed' field.
+    --    The certificate is built from the column; the payload is what the
+    --    hash protects. Binding them closes the gap where a valid hash can
+    --    cover a payload that contradicts the adjudication column.
+    --    json_extract returns NULL when the key is absent.
+    SELECT CASE
+        WHEN json_extract(NEW.payload, '$.passed') IS NULL
+        THEN RAISE(ABORT, 'evidence.payload must contain a ''passed'' field (columns are a projection of the hashed payload)')
+    END;
+    -- 5. passed column must agree with payload.passed.
+    --    json_extract returns JSON true/false as integer 1/0 in SQLite,
+    --    matching the CHECK (passed IN (0, 1)) constraint on the column.
+    SELECT CASE
+        WHEN NEW.passed != CAST(json_extract(NEW.payload, '$.passed') AS INTEGER)
+        THEN RAISE(ABORT, 'evidence.passed column contradicts payload.passed: adjudication columns must agree with the hashed payload')
+    END;
+    -- 6. payload must contain a 'score' field.
+    SELECT CASE
+        WHEN json_extract(NEW.payload, '$.score') IS NULL
+        THEN RAISE(ABORT, 'evidence.payload must contain a ''score'' field (columns are a projection of the hashed payload)')
+    END;
+    -- 7. score column must agree with payload.score.
+    --    Float comparison: both values originate from the same Python float
+    --    via json.dumps, so exact equality holds. An epsilon guard is used
+    --    to be defensive against any serialisation path that might introduce
+    --    sub-ulp differences, while still catching deliberate manipulation.
+    SELECT CASE
+        WHEN ABS(CAST(NEW.score AS REAL) - CAST(json_extract(NEW.payload, '$.score') AS REAL)) > 1e-9
+        THEN RAISE(ABORT, 'evidence.score column contradicts payload.score: adjudication columns must agree with the hashed payload')
+    END;
+    -- 8. suite_id column must agree with payload.suite_id when the payload
+    --    includes that field. The mandated write path (_build_payload) always
+    --    includes suite_id; this check catches rogue INSERT statements that
+    --    omit it or supply a different value.
+    SELECT CASE
+        WHEN json_extract(NEW.payload, '$.suite_id') IS NOT NULL
+         AND NEW.suite_id != json_extract(NEW.payload, '$.suite_id')
+        THEN RAISE(ABORT, 'evidence.suite_id column contradicts payload.suite_id: adjudication columns must agree with the hashed payload')
+    END;
+    -- 9. control_id column must agree with payload.control_id when present.
+    SELECT CASE
+        WHEN json_extract(NEW.payload, '$.control_id') IS NOT NULL
+         AND NEW.control_id != json_extract(NEW.payload, '$.control_id')
+        THEN RAISE(ABORT, 'evidence.control_id column contradicts payload.control_id: adjudication columns must agree with the hashed payload')
     END;
 END;
 

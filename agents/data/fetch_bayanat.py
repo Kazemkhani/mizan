@@ -201,6 +201,39 @@ def check_bayanat_dataset(
     cache_hash = _sha256_file(cache_path)
 
     if offline:
+        # Offline mode: compare the cache file SHA-256 against the hash recorded
+        # in the manifest. A non-empty resources list is a necessary but not
+        # sufficient check: an attacker can alter a row value and keep
+        # len(resources) > 0. Only the manifest hash comparison catches that.
+        # A missing manifest is treated as a failure for the same reason.
+        manifest_path = cache_path.parent / (cache_path.stem + ".manifest.json")
+        if not manifest_path.exists():
+            return (
+                BayanatResult.HASH_MISMATCH,
+                f"manifest file missing: {manifest_path.name}. "
+                f"Cannot verify cache integrity without a recorded hash. "
+                f"Re-run in live mode to fetch and regenerate the manifest.",
+            )
+        try:
+            manifest = json.loads(manifest_path.read_bytes())
+        except json.JSONDecodeError as exc:
+            return BayanatResult.HASH_MISMATCH, f"manifest file is not valid JSON: {exc}"
+        manifest_hash = manifest.get("sha256_cache_file", "")
+        if not manifest_hash:
+            return (
+                BayanatResult.HASH_MISMATCH,
+                f"manifest does not record sha256_cache_file: {manifest_path.name}",
+            )
+        if cache_hash != manifest_hash:
+            return (
+                BayanatResult.HASH_MISMATCH,
+                f"cache hash does not match manifest for {dataset_id}. "
+                f"Manifest records: {manifest_hash[:16]}... "
+                f"Actual file SHA-256: {cache_hash[:16]}... "
+                f"The cache has been altered since it was committed. "
+                f"Re-run in live mode to re-fetch and re-commit the authoritative data.",
+            )
+        # Manifest hash verified. Check internal consistency as a secondary guard.
         try:
             cache_doc = json.loads(cache_path.read_bytes())
             resources = cache_doc.get("resources", [])
@@ -214,7 +247,7 @@ def check_bayanat_dataset(
             return BayanatResult.HASH_MISMATCH, f"cache file is not valid JSON: {exc}"
         return (
             BayanatResult.OFFLINE_OK,
-            f"cache SHA-256 {cache_hash[:16]}... Resources: {n_resources}.",
+            f"manifest hash verified: {cache_hash[:16]}... Resources: {n_resources}.",
         )
 
     # Live mode.

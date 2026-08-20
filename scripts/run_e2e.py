@@ -53,6 +53,7 @@ sys.path.insert(0, str(_REPO_ROOT))
 from mizan.agents.harness.adapters import MockEndpoint
 from mizan.agents.harness.batch_runner import BatchSuiteRunner
 from mizan.agents.harness.runner import run_suite
+from mizan.api import certificate as certificate_issuer, store
 from mizan.engine.bandit.allocator import BanditEngine
 from mizan.engine.db.database import (
     evidence_bundle_hash,
@@ -360,7 +361,7 @@ def _run_adaptive(
     evaluation_id: str,
     profile: str,
     seed: int,
-) -> tuple[list, str, str]:
+) -> tuple[list, str, str, "BanditEngine"]:
     """Run the adaptive bandit evaluation using BanditEngine + BatchSuiteRunner.
 
     This exercises the same path as the production API websocket handler.
@@ -369,7 +370,8 @@ def _run_adaptive(
     context.
 
     Returns:
-        (arm_pulls, stopping_reason, verdict) from BanditEngine.run_sync().
+        (arm_pulls, stopping_reason, verdict, engine) where engine carries
+        control_states() for certificate issuance.
     """
     controls = _load_controls_for_engine()
     mandatory_ids = {c["control_id"] for c in controls if c["is_mandatory"]}
@@ -399,7 +401,7 @@ def _run_adaptive(
     )
 
     arm_pulls, stopping_reason, verdict = engine.run_sync(runner)
-    return arm_pulls, stopping_reason, verdict
+    return arm_pulls, stopping_reason, verdict, engine
 
 
 def _print_adaptive_report(
@@ -501,7 +503,7 @@ def main() -> int:
         # ------------------------------------------------------------------
         print(f"Running adaptive evaluation with BanditEngine + BatchSuiteRunner ...\n")
         t0 = time.monotonic()
-        arm_pulls, stopping_reason, verdict = _run_adaptive(
+        arm_pulls, stopping_reason, verdict, engine = _run_adaptive(
             evaluation_id, args.profile, args.seed
         )
         elapsed = time.monotonic() - t0
@@ -510,6 +512,43 @@ def main() -> int:
             evaluation_id, args.profile, args.seed,
             arm_pulls, stopping_reason, verdict, elapsed,
         )
+
+        # Persist verdict: update evaluation row and issue certificate.
+        # This mirrors what the production WebSocket handler does at completion.
+        total_queries = arm_pulls[-1].cumulative_queries if arm_pulls else 0
+        completed_at = datetime.now(timezone.utc).isoformat()
+        store.execute(
+            """
+            UPDATE evaluations
+               SET status = ?, verdict = ?, arm_pulls = ?, stopping_reason = ?,
+                   total_queries = ?, completed_at = ?
+             WHERE id = ?
+            """,
+            (
+                "completed",
+                verdict,
+                json.dumps([]),          # arm_pull detail not needed for CLI report
+                stopping_reason,
+                total_queries,
+                completed_at,
+                evaluation_id,
+            ),
+        )
+
+        control_decisions = engine.control_states()
+        certificate = certificate_issuer.issue(
+            evaluation_id=evaluation_id,
+            model_id=model_id,
+            use_case_id=use_case_id,
+            verdict=verdict,
+            control_decisions=control_decisions,
+            stopping_reason=stopping_reason,
+            total_queries=total_queries,
+            evaluation_profile=args.profile,
+            endpoint_url=None,
+        )
+        print(f"Certificate issued   : {certificate['id']}")
+        print(f"Evidence bundle hash : {certificate['evidence_bundle_hash']}")
 
         # Write a minimal bundle manifest so verify_grounding.py has something to check.
         evidence_dir = _REPO_ROOT / "docs" / "evidence"
@@ -523,10 +562,17 @@ def main() -> int:
             "arm_pulls":          len(arm_pulls),
             "stopping_reason":    stopping_reason,
             "verdict":            verdict,
+            "certificate_id":     certificate["id"],
+            "evidence_bundle_hash": certificate["evidence_bundle_hash"],
             "produced_at":        datetime.now(timezone.utc).isoformat(),
         }
         bundle_file.write_text(json.dumps(bundle_data, indent=2, ensure_ascii=False), encoding="utf-8")
         print(f"Bundle manifest written to: {bundle_file.relative_to(_REPO_ROOT)}")
+
+        # Exit 0 when the evaluation reached a verdict and a certificate was issued.
+        # A non-zero exit here signals a process failure (suite error, DB error),
+        # not a rejection verdict.  Rejection is a valid outcome and exits 0.
+        success = bool(certificate.get("id"))
 
     else:
         # ------------------------------------------------------------------

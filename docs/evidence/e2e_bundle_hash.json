@@ -1,9 +1,9 @@
 {
-  "evaluation_id": "db735721-732b-5435-a8f3-7444b49555a0",
-  "profile": "non_compliant",
+  "evaluation_id": "4696b3ae-55b9-5333-b25e-1cc90be99a53",
+  "profile": "compliant",
   "seed": 42,
   "total_evidence_rows": 3137,
-  "bundle_hash": "359e8e5af2822b5d08eaf1d28e46664fe566eb1f911e9cd9cb24af63aa614ae1",
+  "bundle_hash": "e2d95b9ef75c966ead547084c48ab477fc0eb7283034d77d92d28442dafa7058",
   "suite_row_counts": {
     "suite-arabic-linguistic": 847,
     "suite-bias": 288,
@@ -14,5 +14,5 @@
     "suite-security": 20,
     "suite-transparency": 659
   },
-  "produced_at": "2026-08-19T14:05:34.635801+00:00"
+  "produced_at": "2026-08-20T04:21:37.651912+00:00"
 }

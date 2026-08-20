@@ -1,9 +1,26 @@
-"""Monte Carlo Strategy Search over test suite orderings.
+"""Inter-evaluation suite-ordering warm-start layer.
+
+STATUS: dormant. The proof path (prove_reduction.py) constructs BanditEngine
+directly and does not wire the MCSS warm-start. The production path
+(run_e2e.py) and the API route run suites exhaustively and do not use the
+engine at all. This layer is not exercised by any current evaluation path.
+It is retained because the mechanism is sound and the wiring task is well-
+defined; see docs/FLOW.md for the integration plan.
+
+NAMING NOTE
+===========
+This module was initially named "Monte Carlo Strategy Search". That name
+implies rollout-based search over orderings, which this module does not do.
+The mechanism is a simpler inter-evaluation warm-start: historical mean
+rewards per suite are recorded after each evaluation and used to set the
+initial arm ordering for the next evaluation of the same use-case class.
+UCB1 then takes over once every arm has been pulled at least once. This is
+more accurately described as a reward-sorted warm-start.
 
 WHAT IS BEING LEARNT
 ====================
-MCSS learns the best *initial arm ordering* for each use-case class: which
-suite should be pulled first, second, and so on, to maximise expected
+The layer learns the best *initial arm ordering* for each use-case class:
+which suite should be pulled first, second, and so on, to maximise expected
 information gain per query. This is the state the engine enters each
 evaluation with before UCB1 takes over.
 
@@ -11,38 +28,32 @@ State space: a partial ordering over the arms (suites) for a given
 use-case class. The state that matters for learning is which suite was
 pulled in which position, and what mean reward it yielded in that position.
 
-Learning mechanism: after each completed evaluation, the MCSS layer
-updates a statistics table that maps (use_case_class, suite_id) to the
-historical mean information-gain-per-query for that suite in evaluations
-of this class. The next evaluation starts with arms ordered by this
-historical mean, descending. UCB1 then overrides this ordering once it
-has enough observations to improve on the warm-start.
+Learning mechanism: after each completed evaluation, the layer updates a
+statistics table that maps (use_case_class, suite_id) to the historical mean
+information-gain-per-query for that suite in evaluations of this class. The
+next evaluation starts with arms ordered by this historical mean, descending.
+UCB1 then overrides this ordering once it has enough observations to improve
+on the warm-start.
 
 COMPOUNDING CLAIM
 =================
-Evaluation N+1 of the same use-case class starts with a provably better
-arm ordering than evaluation N, until the ordering converges. Convergence
-is detectable: once the MCSS ordering matches the UCB1 exploitation order
-from the most recent evaluation, no further improvement is possible from
-ordering alone.
+Evaluation N+1 of the same use-case class starts with a better arm ordering
+than evaluation N, until the ordering converges. Convergence is detectable:
+once the warm-start ordering matches the UCB1 exploitation order from the
+most recent evaluation, no further improvement is possible from ordering alone.
 
-The improvement is measurable as: average probes-to-verdict for
-evaluations of the same class decreases as total_evaluations increases,
-when plotted against a random-ordering baseline. The prove_reduction.py
-script in Wave 2 will produce this graph.
+The improvement is measurable as: average probes-to-verdict for evaluations
+of the same class decreases as total_evaluations increases, when plotted
+against a random-ordering baseline.
 
-WHAT MCSS DOES NOT DO
-=====================
-MCSS does not search the exponential space of all orderings via rollouts.
-That would be a full Monte Carlo tree search and is not necessary here.
-The arm space is small (eight suites at most), the evaluation budget is
-finite, and UCB1 already handles the exploitation-exploration trade-off
-within each evaluation. MCSS adds only inter-evaluation learning of a
-good warm-start, not a within-evaluation search over orderings.
-
-The name reflects the charter framing. The mechanism is simpler than the
-name implies, which is the right trade-off: the compounding value is real
-and measurable, and the mechanism is explainable in one sentence.
+WHAT THIS LAYER DOES NOT DO
+============================
+This layer does not search the exponential space of all orderings via
+rollouts. That would be a full Monte Carlo tree search and is not implemented
+here. The arm space is small (eight suites at most), the evaluation budget is
+finite, and UCB1 already handles the exploitation-exploration trade-off within
+each evaluation. This layer adds only inter-evaluation learning of a good
+warm-start, not a within-evaluation search over orderings.
 
 PERSISTENCE
 ===========

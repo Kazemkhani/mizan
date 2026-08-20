@@ -1,10 +1,56 @@
 # MIZAN Design System Contract
-## Wave 0 Token and Base Specification
+## Wave 0 Token and Base Specification, amended in Wave 3 for UAE Design System compliance
 
-**Issued by:** ATELIER, Design Director, Sovereign Digital Products  
-**Target audience:** Wave 3 dashboard agents building against this contract  
-**Files owned by this contract:** `web/src/styles/tokens.css`, `web/src/styles/base.css`  
+**Issued by:** ATELIER, Design Director, Sovereign Digital Products
+**Amendment:** Wave 3 typography compliance with UAE Government Design System (TDRA)
+**Target audience:** Wave 3 dashboard agents building against this contract
+**Files owned by this contract:** `web/src/styles/tokens.css`, `web/src/styles/base.css`
 **Register:** British English throughout. No em-dashes. No emojis.
+
+---
+
+## 0. Amendment: UAE Design System Compliance
+
+The UAE Government Design System (`designsystem.gov.ae`) is binding on all Federal
+Government Entities. MIZAN is federal government digital infrastructure. The Wave 0
+typography stack was considered and intentional but does not comply with the binding
+standard. Full compliance is mandatory.
+
+### Superseded Wave 0 typography tokens
+
+| Token | Wave 0 value | Wave 3 (DLS compliant) value |
+|---|---|---|
+| `--font-heading` | `'Playfair Display', Georgia, serif` | `'Inter', 'Helvetica Neue', sans-serif` |
+| `--font-heading-ar` | `'Amiri', 'Traditional Arabic', serif` | `'Alexandria', 'Noto Kufi Arabic', sans-serif` |
+| `--font-body` | `'IBM Plex Sans', 'Helvetica Neue', sans-serif` | `'Roboto', 'Helvetica Neue', sans-serif` |
+| `--font-body-ar` | `'IBM Plex Sans Arabic', 'Tahoma', sans-serif` | `'Noto Kufi Arabic', 'Tahoma', sans-serif` |
+
+### Certificate editorial exception: pending ruling
+
+The `--font-heading-editorial` token (`'Playfair Display'`) is defined in `tokens.css`
+for potential use on the certificate view, which is simultaneously a service page and a
+printable document output. The exception case is documented in `docs/design/UI_AUDIT.md`.
+No component layer uses this token until the ruling is given.
+
+### Font loading: network dependency added
+
+The DLS mandates fonts that are not among the self-hosted files downloaded in Wave 0.
+A Google Fonts `@import` has been added to `tokens.css` for Inter, Roboto, Noto Kufi
+Arabic, and Alexandria.
+
+Before the offline pitch: download these families using the same procedure as Wave 0
+(see `docs/reports/atelier_wave0.md` section 3). Amiri and Playfair Display remain
+locally hosted for the certificate editorial exception.
+
+### What the UAE DLS mandates and what it does not
+
+The DLS mandates the four families above. It does not mandate:
+- The palette (our navy and gold tokens comply with the DLS colour authority requirement).
+- Spacing or radius system (our 8px base and restrained radius survive).
+- The dark surface commitment (the DLS governs colour usage, not dark/light mode mandate).
+
+The contrast audit pass is verified per section 2 of this document. The WCAG AA floor
+mandated by the UAE Digital Accessibility Policy is met throughout.
 
 ---
 

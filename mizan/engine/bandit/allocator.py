@@ -788,16 +788,22 @@ class BanditEngine:
     def final_verdict(self) -> str:
         """Compute the certification verdict from current control states.
 
-        Returns 'certified' only when every mandatory control passed.
-        A control that is undecided at budget exhaustion is evaluated on
-        its empirical pass rate versus required_pass_rate.
+        Returns 'certified' only when every mandatory control has a positive
+        decision (True) from one of the recognised pass bases.  Any other
+        state -- a decided failure or an undecided control -- yields 'rejected'.
+
+        Undecided controls (decision() is None) always block certification.
+        An undecided control means the budget was exhausted before a statistical
+        bound could be asserted.  Treating an empirically-passing-but-undecided
+        control as certified would permit certification on the basis of a p_hat
+        rather than a bound, violating the guarantee the certificate makes.
+        That was the L6 defect: a one-probe run with p_hat == 1.0 >= 0.95
+        could certify while the control carried no decision basis.
         """
         for ctrl in self._mandatory_controls:
             decision = ctrl.decision()
-            if decision is False:
-                return "rejected"
-            if decision is None and ctrl.p_hat < ctrl.required_pass_rate:
-                # Budget-exhausted, undecided, but empirically failing.
+            if decision is not True:
+                # False (decided fail) or None (undecided) both block certification.
                 return "rejected"
         return "certified"
 

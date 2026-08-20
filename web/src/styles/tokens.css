@@ -57,26 +57,36 @@
    ============================================================================= */
 
 /* =============================================================================
-   FONT DECLARATIONS: self-hosted woff2 for offline pitch reliability.
+   FONT DECLARATIONS: Wave 3 UAE DLS compliance amendment.
 
-   font-display: block is chosen deliberately for the live demo context.
-   With fonts served from localhost (the pitch machine), the block period
-   is imperceptible (< 5 ms from disk).  'block' ensures the correct face
-   appears on first paint with no flash of fallback text.  'swap' would
-   cause a visible substitution on the projector if any timing jitter occurs,
-   which reads as an error to a judging panel.  'block' is safer here because
-   font availability is guaranteed by the self-hosted files.
+   The UAE Government Design System (designsystem.gov.ae) is binding on all
+   Federal Government Entities.  Wave 3 brings the type stack into compliance.
 
-   Subsetting: NOT applied.  Google Fonts provides unicode-range-split files
-   (latin, latin-ext, arabic, etc.) and all subsets are downloaded.  The
-   browser loads only the subsets whose code points appear on the page.
-   Under-subsetting is safe; over-subsetting drops glyphs.  RASHID is
-   authoring Arabic-native content with unknown glyph coverage, so no further
-   subsetting was performed beyond what Google Fonts already provides.
+   DLS-mandated families (loaded via Google Fonts CDN):
+     Inter          English UI and headings
+     Roboto         English body
+     Noto Kufi Arabic  Arabic body
+     Alexandria     Arabic headings
 
-   Licence: SIL Open Font Licence 1.1 for all four families.
-   Verified from family repos; see web/public/fonts/LICENSE-*.txt.
+   PITCH-TODO: Before the offline pitch, download these four families to
+   web/public/fonts/ using the Wave 0 procedure (see atelier_wave0.md s.3)
+   and replace the @import below with self-hosted @font-face declarations.
+   font-display: block is correct for local files; use swap for CDN.
+
+   Legacy families kept locally for the certificate editorial exception
+   (pending coordinator ruling; see docs/design/UI_AUDIT.md):
+     Amiri          Arabic editorial face, certificate heading only if approved
+     Playfair Display  Latin editorial face, certificate heading only if approved
+
+   Subsetting: Google Fonts CDN splits by unicode-range automatically.
+   The browser fetches only the subsets needed for the visible code points.
+
+   Licences: SIL Open Font Licence 1.1 for all families.
    ============================================================================= */
+
+/* DLS-mandated families: Inter, Roboto, Noto Kufi Arabic, Alexandria. */
+/* PITCH-TODO: replace with self-hosted @font-face declarations before offline demo. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Noto+Kufi+Arabic:wght@300;400;500;700&family=Alexandria:wght@400;500;600;700&display=swap');
 
 /* Amiri */
 @font-face {
@@ -987,11 +997,19 @@
      strings; it will break date ranges, score sequences, and hashes.
    ─────────────────────────────────────────────────────────────────────────── */
 
-  --font-heading:    'Playfair Display', 'Georgia', 'Times New Roman', serif;
-  --font-heading-ar: 'Amiri', 'Traditional Arabic', 'Al Bayan', serif;
-  --font-body:       'IBM Plex Sans', 'Helvetica Neue', 'Arial', sans-serif;
-  --font-body-ar:    'IBM Plex Sans Arabic', 'Tahoma', 'Arial', sans-serif;
+  /* UAE DLS mandated families (Wave 3 compliance). */
+  --font-heading:    'Inter', 'Helvetica Neue', 'Arial', sans-serif;
+  --font-heading-ar: 'Alexandria', 'Noto Kufi Arabic', 'Tahoma', sans-serif;
+  --font-body:       'Roboto', 'Helvetica Neue', 'Arial', sans-serif;
+  --font-body-ar:    'Noto Kufi Arabic', 'Tahoma', 'Arial', sans-serif;
   --font-mono:       'IBM Plex Mono', 'Courier New', monospace;
+
+  /* Editorial face: Playfair Display for certificate heading (pending
+     coordinator ruling on the certificate document exception; see
+     docs/design/UI_AUDIT.md).  Not used in the component layer until
+     the ruling is given. */
+  --font-heading-editorial:    'Playfair Display', 'Georgia', 'Times New Roman', serif;
+  --font-heading-editorial-ar: 'Amiri', 'Traditional Arabic', 'Al Bayan', serif;
 
   /* Type scale, 1.25 ratio (product UI register).  Deliberately skips the
      20-28 px dead zone that makes everything read at uniform medium weight.   */

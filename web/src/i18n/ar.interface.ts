@@ -141,19 +141,31 @@ export const arInterface: Record<string, string> = {
   'evaluate.speed': 'السرعة',
   'evaluate.speed.steady': 'متأنية',
   'evaluate.speed.fast': 'سريعة',
+  // RASHID-REVIEW-REQUIRED: the following strings changed in Wave 3 plain-language pass.
+  // English changed: 'Checks performed' (was 'Probes conducted')
   'evaluate.probes': 'الاختبارات المُجراة',
+  // English changed: 'Standards assessed' (was 'Controls with evidence')
   'evaluate.controls.settled': 'الضوابط ذات الأدلة',
+  // English changed: 'Verification log' (was 'Probe stream')
   'evaluate.stream.title': 'تدفُّق الاختبارات',
+  // English changed: 'Checks appear here as the evaluation runs.' (was 'The stream fills as the engine draws probes.')
   'evaluate.stream.empty': 'يمتلئ التدفُّق كلما سحب المحرك اختباراً.',
+  // English changed: 'Standards status' (was 'Control board')
   'evaluate.controls.title': 'لوحة الضوابط',
+  // English changed: 'Select any standard to read the check behind it.' (was 'Select any control...')
   'evaluate.controls.hint': 'اختر أي ضابط لقراءة التبادل الذي يقف خلفه.',
   'evaluate.passed': 'ناجح',
   'evaluate.failed': 'راسب',
   'evaluate.awaiting': 'بانتظار الأدلة',
-  'evaluate.stopped.corpus_exhausted': 'توقَّف: نفدت مجموعة الاختبارات',
-  'evaluate.stopped.mandatory_control_failed': 'توقَّف: رسب ضابط إلزامي',
-  'evaluate.stopped.hoeffding_bound_met': 'توقَّف: حُسمت جميع الضوابط الإلزامية',
-  'evaluate.stopped.budget_exhausted': 'توقَّف: استُنفدت ميزانية الاختبارات',
+  // RASHID-REVIEW-REQUIRED: stopping reason strings rewritten in plain language.
+  // English: 'Evaluation complete: all available tests were conducted'
+  'evaluate.stopped.corpus_exhausted': 'اكتمل التقييم: أُجريت جميع الاختبارات المتاحة',
+  // English: 'Stopped: a required standard was not met'
+  'evaluate.stopped.mandatory_control_failed': 'توقَّف: لم يُستوفَ معيار إلزامي',
+  // English: 'Evaluation complete: all required standards reached the declared confidence'
+  'evaluate.stopped.hoeffding_bound_met': 'اكتمل التقييم: بلغت جميع المعايير الإلزامية مستوى الثقة المُعلَن',
+  // English: 'Evaluation complete: the test allocation was spent'
+  'evaluate.stopped.budget_exhausted': 'اكتمل التقييم: استُنفدت ميزانية الاختبارات',
   'evaluate.verdict.certified': 'معتمد',
   'evaluate.verdict.rejected': 'غير معتمد',
   'evaluate.view.certificate': 'فتح الشهادة',

@@ -15,7 +15,7 @@
 #   demo   -- run the choreographed demo flow
 #   prove  -- run the reduction proof script
 
-.PHONY: dev api web test seed reset lint clean
+.PHONY: dev api web test seed reset lint clean demo prove
 
 PYTHON := uv run python
 PYTEST := uv run pytest
@@ -71,11 +71,26 @@ clean:
 	find . -type d -name .pytest_cache -exec rm -rf {} + 2>/dev/null || true
 
 # ---------------------------------------------------------------------------
-# Wave 3 hooks (not yet wired; targets exist so later Makefile edits are minimal)
+# demo: run the Fatima Arabic Citizen Chatbot journey end to end.
+#
+# Performs the full pitch flow offline:
+#   1. Submit Fatima's model against the Arabic Citizen Chatbot use case.
+#   2. BanditEngine adjudicates via the deterministic mock endpoint.
+#   3. A verdict is reached (certified or rejected).
+#   4. A MIZAN compliance certificate is issued.
+#   5. Elapsed seconds are printed; the run must complete within 90 seconds.
+#
+# Exits non-zero and names the missing piece if any step fails.
 # ---------------------------------------------------------------------------
 demo:
-	@echo "Wave 4 target: not yet implemented."
+	$(PYTHON) scripts/run_demo.py
 
+# ---------------------------------------------------------------------------
+# prove: run the adaptive probe-budget reduction proof.
+#
+# Measures the reduction in probe budget achieved by BanditEngine versus an
+# exhaustive baseline on the same models, suites, corpus, and decision rules.
+# Writes the reduction report to docs/evidence/reduction_report.md.
+# ---------------------------------------------------------------------------
 prove:
-	@echo "Wave 2 target: not yet implemented."
-	@echo "Run: $(PYTHON) scripts/prove_reduction.py"
+	$(PYTHON) scripts/prove_reduction.py

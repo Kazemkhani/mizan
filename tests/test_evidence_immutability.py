@@ -49,7 +49,21 @@ _HASH_A = "a" * 64  # valid 64-char hex string
 _HASH_B = "b" * 64
 _HASH_C = "c" * 64
 _HASH_D = "d" * 64
-_PAYLOAD = json.dumps({"probe_id": "p1", "passed": False}, sort_keys=True)
+
+# _PAYLOAD must include the adjudication fields (passed, score, suite_id,
+# control_id) so that the schema v0.3.0 column-payload consistency trigger
+# passes when these tests insert with the default column values
+# (score=0.0, passed=0, suite_id='suite-t', control_id='ctrl-t').
+_PAYLOAD = json.dumps(
+    {
+        "control_id": "ctrl-t",
+        "passed": False,
+        "probe_id": "p1",
+        "score": 0.0,
+        "suite_id": "suite-t",
+    },
+    sort_keys=True,
+)
 _PAYLOAD_HASH = hashlib.sha256(_PAYLOAD.encode()).hexdigest()
 
 
@@ -346,7 +360,17 @@ def test_append_evidence_computes_hash_itself(db):
     value the function computed internally. The caller had no opportunity
     to supply a different hash.
     """
-    payload_dict = {"probe_id": "p-forge", "result": "fail", "score": 0.0}
+    # Include all adjudication fields so the schema v0.3.0 trigger passes.
+    # The trigger verifies that columns agree with the payload; the payload
+    # must therefore contain passed, score, suite_id, and control_id.
+    payload_dict = {
+        "probe_id": "p-forge",
+        "result": "fail",
+        "score": 0.0,
+        "passed": False,
+        "suite_id": "suite-t",
+        "control_id": "ctrl-t",
+    }
     expected_text = canonical_payload(payload_dict)
     expected_hash = sha256_of(expected_text)
 
