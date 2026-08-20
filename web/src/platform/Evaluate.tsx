@@ -215,8 +215,7 @@ export function Evaluate({
                     onClick={() => onSelect(step)}
                   >
                     <span className="stream__step mono">{String(step.step).padStart(3, '0')}</span>
-                    <span className="stream__suite">{step.suite_id.replace('suite-', '')}</span>
-                    <span className="stream__probe mono">{step.probe_id}</span>
+                    <span className="stream__control">{controlName(step.control_id)}</span>
                     <span className={`stream__mark ${step.passed ? 'is-pass' : 'is-fail'}`}>
                       {step.passed ? t('evaluate.passed') : t('evaluate.failed')}
                     </span>

@@ -63,7 +63,6 @@ export function Landing({
 
       <main id="top">
         <section className="hero">
-          <div className="hero__glow" aria-hidden="true" />
           <div className="hero__content">
             <p className="eyebrow">{t('landing.hero.eyebrow')}</p>
             <h1 className="hero__title">{t('landing.hero.title')}</h1>

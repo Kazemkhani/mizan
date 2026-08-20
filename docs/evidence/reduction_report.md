@@ -1,6 +1,6 @@
 # MIZAN Adaptive Probe-Budget Reduction Proof
 
-**Produced**: 2026-08-20T04:23:31.005071+00:00
+**Produced**: 2026-08-20T04:35:17.344014+00:00
 **Seed**: 42
 **Use case**: uc-001 (citizen_chatbot)
 **Confidence threshold**: 0.97 (joint, over 12 mandatory probe controls)
@@ -127,7 +127,7 @@ another control had already determined the overall verdict).
 ## 3. Profile: compliant
 
 **Verdict (both runs)**: certified
-**Wall-clock**: exhaustive 2.79s, adaptive 3.45s
+**Wall-clock**: exhaustive 2.79s, adaptive 3.37s
 
 **Exhaustive endpoint calls**: 3026  (one per evidence row)
 **Adaptive endpoint calls**:   2890  (stopping: hoeffding_bound_met)
@@ -184,7 +184,7 @@ control whose corpus exceeds its n_max.
 ## 4. Profile: non_compliant
 
 **Verdict (both runs)**: rejected
-**Wall-clock**: exhaustive 2.74s, adaptive 0.04s
+**Wall-clock**: exhaustive 2.82s, adaptive 0.04s
 
 **Exhaustive endpoint calls**: 3026  (one per evidence row)
 **Adaptive endpoint calls**:   19  (stopping: mandatory_control_failed)

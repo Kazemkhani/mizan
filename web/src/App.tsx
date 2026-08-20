@@ -102,7 +102,7 @@ function Shell(): React.ReactElement {
   return (
     <>
       <a className="skip-link" href="#main-content">
-        {t('common.continue')}
+        {t('skiplink')}
       </a>
 
       {view === 'landing' ? (

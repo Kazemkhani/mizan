@@ -347,4 +347,7 @@ export const arInterface: Record<string, string> = {
   'common.probes': 'اختباراً',
   'common.step': 'الخطوة',
   'common.continue': 'متابعة',
+  // RASHID-REVIEW-REQUIRED: new key added in Wave 3 for accessible skip navigation
+  // English: 'Skip to main content'
+  'skiplink': 'الانتقال إلى المحتوى الرئيسي',
 }

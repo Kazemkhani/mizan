@@ -75,17 +75,49 @@ _SUITE_BASE_DIRS = {
     "controls": _REPO_ROOT / "suites" / "controls",
 }
 
+# Generated corpus directory. Items here are merged with hand-authored suites
+# at load time. Generated files are named {suite_short}.generated.json where
+# suite_short strips the leading "suite-" prefix (e.g. safety.generated.json).
+# This mirrors the merge logic in mizan.agents.harness.runner._load_suite()
+# so that BatchSuiteRunner and the exhaustive runner see an identical corpus.
+_GENERATED_DIR: Path = _REPO_ROOT / "suites" / "generated"
+
 _BIAS_SUITES: frozenset[str] = frozenset({"suite-bias", "suite-arabic-bias"})
 
 
-def _load_suite_items(suite_id: str) -> list[dict[str, Any]]:
-    """Load items from a suite JSON file by suite_id.
+def _load_generated_items(suite_id: str) -> list[dict[str, Any]]:
+    """Return items from the generated corpus file for this suite, if one exists.
 
-    Mirrors the lookup logic in mizan.agents.harness.runner._load_suite().
-    Uses the small redteam/arabic corpus (not the generated 2,931-item corpus
-    which is prove_reduction.py's domain). A future migration can accept a
-    suite_paths override.
+    The generated file is named {suite_short}.generated.json where suite_short
+    strips the leading "suite-" prefix (e.g. "suite-safety" -> "safety.generated.json").
+    suite_id is injected into every item (via setdefault) so that the bias
+    prescoring path's probe["suite_id"] access succeeds.  This mirrors the
+    identical injection in mizan.agents.harness.runner._load_generated_items().
+    Returns an empty list when no file is present.
     """
+    suite_short = suite_id.removeprefix("suite-")
+    gen_path = _GENERATED_DIR / f"{suite_short}.generated.json"
+    if not gen_path.exists():
+        return []
+    try:
+        data = json.loads(gen_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return []
+    items: list[dict[str, Any]] = data.get("items", [])
+    for item in items:
+        item.setdefault("suite_id", suite_id)
+    return sorted(items, key=lambda it: it.get("probe_id", ""))
+
+
+def _load_suite_items(suite_id: str) -> list[dict[str, Any]]:
+    """Load items from a suite JSON file by suite_id, merging any generated corpus.
+
+    Hand-authored items come first, sorted by probe_id.  Generated items follow,
+    also sorted by probe_id.  This matches the merge order in
+    mizan.agents.harness.runner._load_suite() so that BatchSuiteRunner and the
+    exhaustive runner see an identical combined corpus.
+    """
+    hand_authored: list[dict[str, Any]] = []
     lookup = _SUITE_LOOKUP.get(suite_id)
     if lookup:
         subdir, filename = lookup
@@ -95,19 +127,27 @@ def _load_suite_items(suite_id: str) -> list[dict[str, Any]]:
             if candidate.exists():
                 data = json.loads(candidate.read_text(encoding="utf-8"))
                 if data.get("suite_id") == suite_id:
-                    return data.get("items", [])
-    # Fallback: scan all suite directories.
-    for base in _SUITE_BASE_DIRS.values():
-        for path in base.glob("*.json"):
-            try:
-                data = json.loads(path.read_text(encoding="utf-8"))
-            except (json.JSONDecodeError, UnicodeDecodeError):
-                continue
-            if data.get("suite_id") == suite_id:
-                return data.get("items", [])
-    raise FileNotFoundError(
-        f"BatchSuiteRunner: suite '{suite_id}' not found in suite directories."
-    )
+                    hand_authored = data.get("items", [])
+    if not hand_authored:
+        # Fallback: scan all suite directories.
+        for base in _SUITE_BASE_DIRS.values():
+            for path in base.glob("*.json"):
+                try:
+                    data = json.loads(path.read_text(encoding="utf-8"))
+                except (json.JSONDecodeError, UnicodeDecodeError):
+                    continue
+                if data.get("suite_id") == suite_id:
+                    hand_authored = data.get("items", [])
+                    break
+            if hand_authored:
+                break
+    if not hand_authored:
+        raise FileNotFoundError(
+            f"BatchSuiteRunner: suite '{suite_id}' not found in suite directories."
+        )
+
+    generated = _load_generated_items(suite_id)
+    return hand_authored + generated
 
 
 def _write_evidence(
