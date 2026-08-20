@@ -39,6 +39,8 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from mizan.agents.harness.adapters import MockEndpoint
 from mizan.agents.harness.batch_runner import BatchSuiteRunner
+from mizan.api import catalogue, certificate as certificate_issuer, store
+from mizan.api.routes import models_route
 from mizan.api.routes.evaluations_route import _EVAL_STATE
 from mizan.api.schemas import ArmPull, StreamEvent
 from mizan.engine.bandit.allocator import BanditEngine
@@ -112,8 +114,20 @@ class _WrappedRunner:
             "cumulative_queries": seq,
         }
         if results:
-            payload_dict["probe_id"] = results[0].get("probe_id", "")
-            payload_dict["passed"]   = results[0].get("passed", False)
+            first = results[0]
+            probe_payload = first.get("payload", {}) or {}
+            payload_dict.update({
+                "probe_id":     first.get("probe_id", ""),
+                "control_id":   first.get("control_id", ""),
+                "passed":       first.get("passed", False),
+                "score":        round(float(first.get("score", 0.0)), 4),
+                "locale":       probe_payload.get("locale", "en"),
+                "prompt":       probe_payload.get("prompt", "")[:600],
+                "response":     probe_payload.get("response", "")[:600],
+                "scorer":       probe_payload.get("scorer", ""),
+                "evidence_type": probe_payload.get("evidence_type", "probe_result"),
+                "payload_hash": first.get("payload_hash", ""),
+            })
 
         event = StreamEvent(
             event_type="arm_pull",
@@ -153,12 +167,25 @@ async def stream_evaluation(websocket: WebSocket, evaluation_id: str) -> None:
         # ------------------------------------------------------------------
         # Build engine components.
         # ------------------------------------------------------------------
-        controls_raw  = _load_controls()
-        controls_list = _make_controls_list(controls_raw)
+        use_case_id  = record.get("use_case_id", "")
+        use_case     = catalogue.use_case(use_case_id)
+
+        # The controls this use case demands, at the thresholds the register
+        # sets, rather than the whole register at the chatbot threshold.
+        controls_list = catalogue.engine_controls(use_case_id)
+        if not controls_list:
+            controls_list = _make_controls_list(_load_controls())
 
         mandatory_ids = {c["control_id"] for c in controls_list if c["is_mandatory"]}
 
-        endpoint = MockEndpoint(profile="compliant", seed=42)
+        # A submission with no live endpoint is served by the deterministic
+        # mock under the profile the submitter declared. The profile is
+        # recorded on the certificate face, so a reader can tell how the
+        # evaluation was served.
+        profile = record.get("evaluation_profile", "compliant")
+        if profile not in ("compliant", "non_compliant"):
+            profile = "compliant"
+        endpoint = MockEndpoint(profile=profile, seed=42)
 
         # Mark evaluation as running once the websocket connects.
         if evaluation_id in _EVAL_STATE:
@@ -174,15 +201,19 @@ async def stream_evaluation(websocket: WebSocket, evaluation_id: str) -> None:
 
         engine_config = record.get("engine_config") or {}
         engine_config.setdefault("random_seed", 42)
-        # Budget caps for the API demo. In production these are derived
-        # statistically from confidence_threshold and the control count.
-        engine_config.setdefault("n_max_per_control", 10)
-        engine_config.setdefault("total_budget", 150)
+        # No probe caps are imposed here. The caps that were previously set
+        # for the API demo (ten probes per control, one hundred and fifty in
+        # total) stopped controls short of the bound they would otherwise
+        # have earned, so an evaluation served through the API reported a
+        # different verdict from the same evaluation run offline. The budget
+        # the engine derives from the use case's confidence threshold is the
+        # one that governs, and a caller may still override it per
+        # evaluation through engine_config_overrides.
 
         engine = BanditEngine(
             evaluation_id=evaluation_id,
-            use_case_class="citizen_chatbot",
-            confidence_threshold=0.97,
+            use_case_class=(use_case or {}).get("use_case_class", "citizen_chatbot"),
+            confidence_threshold=float((use_case or {}).get("confidence_threshold", 0.97)),
             controls=controls_list,
             engine_config=engine_config,
         )
@@ -226,6 +257,10 @@ async def stream_evaluation(websocket: WebSocket, evaluation_id: str) -> None:
             await websocket.send_text(error_event.model_dump_json())
             if evaluation_id in _EVAL_STATE:
                 _EVAL_STATE[evaluation_id]["status"] = "failed"
+            store.execute(
+                "UPDATE evaluations SET status = ? WHERE id = ?",
+                ("failed", evaluation_id),
+            )
             return
 
         arm_pulls_result, stopping_reason, verdict = engine_task.result()
@@ -247,6 +282,8 @@ async def stream_evaluation(websocket: WebSocket, evaluation_id: str) -> None:
 
         control_decisions = engine.control_states()
 
+        completed_at = _now_iso()
+
         if evaluation_id in _EVAL_STATE:
             _EVAL_STATE[evaluation_id].update({
                 "status":           "completed",
@@ -254,9 +291,47 @@ async def stream_evaluation(websocket: WebSocket, evaluation_id: str) -> None:
                 "arm_pulls":        [a.model_dump() for a in arm_pulls_schema],
                 "stopping_reason":  stopping_reason,
                 "total_queries":    wrapped._seq,
-                "completed_at":     _now_iso(),
+                "completed_at":     completed_at,
                 "control_decisions": control_decisions,
             })
+
+        # The evaluation row is written at POST time and updated here, so the
+        # trail survives a restart and a later reader sees the same verdict
+        # the stream reported.
+        store.execute(
+            """
+            UPDATE evaluations
+               SET status = ?, verdict = ?, arm_pulls = ?, stopping_reason = ?,
+                   total_queries = ?, completed_at = ?
+             WHERE id = ?
+            """,
+            (
+                "completed",
+                verdict,
+                json.dumps([a.model_dump() for a in arm_pulls_schema]),
+                stopping_reason,
+                wrapped._seq,
+                completed_at,
+                evaluation_id,
+            ),
+        )
+
+        model_id = record.get("model_id", "")
+        models_route.set_status(
+            model_id, "certified" if verdict == "certified" else "rejected"
+        )
+
+        certificate = certificate_issuer.issue(
+            evaluation_id=evaluation_id,
+            model_id=model_id,
+            use_case_id=use_case_id,
+            verdict=verdict,
+            control_decisions=control_decisions,
+            stopping_reason=stopping_reason,
+            total_queries=wrapped._seq,
+            evaluation_profile=profile,
+            endpoint_url=record.get("endpoint_url"),
+        )
 
         # ------------------------------------------------------------------
         # Send the stop event.
@@ -270,6 +345,8 @@ async def stream_evaluation(websocket: WebSocket, evaluation_id: str) -> None:
                 "stopping_reason": stopping_reason,
                 "total_queries":   wrapped._seq,
                 "control_decisions": control_decisions,
+                "certificate_id":  certificate["id"],
+                "evidence_bundle_hash": certificate["evidence_bundle_hash"],
             },
             sequence=wrapped._seq + 1,
             timestamp=_now_iso(),

@@ -49,7 +49,7 @@ from pathlib import Path
 from typing import Any
 
 from mizan.agents.harness.scorers import score_probe
-from mizan.engine.db.database import append_evidence
+from mizan.engine.db.database import append_evidence, canonical_payload, sha256_of
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 
@@ -342,11 +342,17 @@ class BatchSuiteRunner:
             passed=int(passed),
         )
 
+        # payload and payload_hash are carried alongside the four fields the
+        # ProbeSource protocol requires, so a caller streaming the run can
+        # show the exchange that produced the score without a second query.
+        # The engine reads only the four; the extra keys are inert to it.
         return {
-            "control_id": control_id,
-            "probe_id":   probe_id,
-            "passed":     passed,
-            "score":      score,
+            "control_id":   control_id,
+            "probe_id":     probe_id,
+            "passed":       passed,
+            "score":        score,
+            "payload":      payload,
+            "payload_hash": sha256_of(canonical_payload(payload)),
         }
 
     def __call__(self, suite_id: str, control_ids: list[str]) -> list[dict]:
@@ -388,10 +394,12 @@ class BatchSuiteRunner:
                 )
                 self._bias_cursors[suite_id] = cursor
                 return [{
-                    "control_id": item["control_id"],
-                    "probe_id":   item["probe_id"],
-                    "passed":     item["passed"],
-                    "score":      item["score"],
+                    "control_id":   item["control_id"],
+                    "probe_id":     item["probe_id"],
+                    "passed":       item["passed"],
+                    "score":        item["score"],
+                    "payload":      item["payload"],
+                    "payload_hash": sha256_of(canonical_payload(item["payload"])),
                 }]
 
         self._bias_cursors[suite_id] = cursor

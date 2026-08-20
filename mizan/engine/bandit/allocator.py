@@ -741,6 +741,15 @@ class BanditEngine:
         self._step: int = 0
         self._total_queries: int = 0
 
+        # Arms whose suite has no probe left to draw. A suite runner signals
+        # exhaustion by returning an empty list. Without this set the loop
+        # reselects the same dry arm for ever: no probe is drawn, so no
+        # control advances and no budget is spent, and the evaluation never
+        # terminates. Any use case whose corpus is smaller than its budget
+        # reaches that state, which is every use case at the present corpus
+        # size (see docs/RISKS.md R6).
+        self._exhausted_arms: set[int] = set()
+
     # ---------------------------------------------------------------------------
     # Stopping helpers
     # ---------------------------------------------------------------------------
@@ -796,6 +805,14 @@ class BanditEngine:
     # Arm selection
     # ---------------------------------------------------------------------------
 
+    def _selectable_arms(self) -> list[int]:
+        """Arms that still cover an undecided mandatory control and hold probes."""
+        return [
+            i for i, arm in enumerate(self._arms)
+            if self._arm_has_undecided_mandatory_controls(arm)
+            and i not in self._exhausted_arms
+        ]
+
     def _arm_has_undecided_mandatory_controls(self, arm: ArmState) -> bool:
         """True when the arm covers at least one undecided mandatory control."""
         for ctrl in self._controls_by_suite.get(arm.suite_id, []):
@@ -815,11 +832,12 @@ class BanditEngine:
         random via self._rng (deterministic under fixed seed).
 
         Arms with all mandatory controls already decided are skipped in both
-        phases.
+        phases, as are arms whose suite has run out of probes.
         """
         available = [
             i for i, arm in enumerate(self._arms)
             if self._arm_has_undecided_mandatory_controls(arm)
+            and i not in self._exhausted_arms
         ]
         if not available:
             # All mandatory controls decided; fallback (should not normally be reached
@@ -947,6 +965,14 @@ class BanditEngine:
                 stopping_reason = reason or "budget_exhausted"
                 break
 
+            if not self._selectable_arms():
+                # Every arm covering an undecided mandatory control has run
+                # dry. Stopping here is a distinct outcome from budget
+                # exhaustion and is reported as such, because the limit was
+                # the corpus rather than the spend the operator authorised.
+                stopping_reason = "corpus_exhausted"
+                break
+
             arm_idx = self.select_arm()
             suite_id = self._arms[arm_idx].suite_id
 
@@ -962,6 +988,13 @@ class BanditEngine:
                 continue
 
             probes = suite_runner(suite_id, control_ids)
+            if not probes:
+                # The suite is exhausted. Retire the arm rather than
+                # reselecting it: an empty draw advances neither a control
+                # nor the budget, so a retry cannot change the outcome.
+                self._exhausted_arms.add(arm_idx)
+                continue
+
             arm_pull = self.pull(arm_idx, probes)
             arm_pulls.append(arm_pull)
 

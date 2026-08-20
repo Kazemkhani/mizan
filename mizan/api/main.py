@@ -19,6 +19,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from mizan import __version__
 from mizan.api.routes import (
     certificates_route,
+    datasets_route,
     evaluations_route,
     evidence_route,
     health,
@@ -64,6 +65,7 @@ _PREFIX = "/api/v1"
 app.include_router(health.router,              prefix=_PREFIX)
 app.include_router(models_route.router,        prefix=_PREFIX)
 app.include_router(use_cases_route.router,     prefix=_PREFIX)
+app.include_router(datasets_route.router,      prefix=_PREFIX)
 app.include_router(evaluations_route.router,   prefix=_PREFIX)
 app.include_router(evidence_route.router,      prefix=_PREFIX)
 app.include_router(certificates_route.router,  prefix=_PREFIX)

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://mizan.local/schemas/submission-1.0.json",
+  "mizan_submission_version": "1.0",
+  "name_en": "Sahl Arabic Service Assistant",
+  "name_ar": "مساعد سهل للخدمات باللغة العربية",
+  "provider": "Sahl AI Systems",
+  "version": "2.4.0",
+  "endpoint_url": null,
+  "evaluation_profile": "compliant",
+  "model_card": {
+    "model_name_en": "Sahl Arabic Service Assistant",
+    "model_name_ar": "مساعد سهل للخدمات باللغة العربية",
+    "model_type": "Instruction-tuned large language model, 8B parameters",
+    "training_data_description_en": "Publicly published UAE government service documentation in Arabic and English, federal open data portals, and a licensed Modern Standard Arabic corpus. Personal data was removed before training by an automated filter and a sampled manual review.",
+    "training_data_description_ar": "وثائق الخدمات الحكومية الإماراتية المنشورة علناً بالعربية والإنجليزية، وبوابات البيانات المفتوحة الاتحادية، ومدونة مرخَّصة بالعربية الفصحى. وقد أُزيلت البيانات الشخصية قبل التدريب عبر مرشِّح آلي ومراجعة يدوية بالعينة.",
+    "uae_governance_alignment": {
+      "transparency": "The assistant discloses that it is an AI system at the opening of every session and on request.",
+      "accountability": "A named accountable owner in the entity's digital services department signs off each release.",
+      "human_centred": "Every session offers a route to a human agent, and the route is offered without being asked for when the citizen expresses distress.",
+      "fairness": "Outputs are tested for parity across nationality, gender and age bands before each release.",
+      "safety": "Refusal behaviour is regression tested in Arabic and English against a fixed harmful-request set."
+    },
+    "processes_personal_data": false,
+    "pdpl_compliance_notes_en": "The assistant does not collect, store or process personal data as defined under UAE PDPL 2021. Conversations are held in volatile memory for the duration of the session and are not written to disk. No Emirates ID number, telephone number or address is retained or echoed back.",
+    "pdpl_compliance_notes_ar": "لا يجمع المساعد أي بيانات شخصية ولا يخزنها ولا يعالجها وفق قانون حماية البيانات الشخصية الإماراتي لعام 2021. وتُحفظ المحادثات في الذاكرة المؤقتة طوال الجلسة فقط ولا تُكتب على القرص. ولا يحتفظ بأي رقم هوية إماراتية أو رقم هاتف أو عنوان ولا يعيد إظهاره.",
+    "intended_use_cases": ["uc-001"],
+    "known_limitations_en": "Coverage is limited to Modern Standard Arabic; Emirati and other Gulf dialects are understood but answered in Modern Standard Arabic. The assistant does not give legal, medical or financial advice, and does not decide entitlement. Knowledge of fee schedules is current only to the last published update of the source portal.",
+    "known_limitations_ar": "تقتصر التغطية على العربية الفصحى، وتُفهم اللهجة الإماراتية وسائر اللهجات الخليجية لكن يجاب عنها بالفصحى. ولا يقدم المساعد استشارات قانونية أو طبية أو مالية ولا يبتّ في الاستحقاق. وتقتصر معرفته بجداول الرسوم على آخر تحديث منشور في البوابة المصدر."
+  }
+}

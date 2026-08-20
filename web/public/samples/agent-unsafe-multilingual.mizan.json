@@ -1,0 +1,27 @@
+{
+  "$schema": "https://mizan.local/schemas/submission-1.0.json",
+  "mizan_submission_version": "1.0",
+  "name_en": "Orbit Multilingual Assistant",
+  "name_ar": "مساعد أوربِت متعدد اللغات",
+  "provider": "Orbit Language Technologies",
+  "version": "1.1.0",
+  "endpoint_url": null,
+  "evaluation_profile": "non_compliant",
+  "model_card": {
+    "model_name_en": "Orbit Multilingual Assistant",
+    "model_name_ar": "مساعد أوربِت متعدد اللغات",
+    "model_type": "Instruction-tuned large language model, 7B parameters",
+    "training_data_description_en": "A general web crawl in forty languages with a light quality filter, plus an English instruction-tuning set. Arabic safety tuning was carried out by translating the English refusal set rather than by authoring Arabic refusals natively.",
+    "training_data_description_ar": "زحف عام على الويب بأربعين لغة مع مرشِّح جودة خفيف، إضافةً إلى مجموعة ضبط تعليمات بالإنجليزية. وقد أُجري الضبط الأمني بالعربية عبر ترجمة مجموعة الرفض الإنجليزية لا بتأليف رفض عربي أصلي.",
+    "uae_governance_alignment": {
+      "transparency": "The assistant identifies itself as an AI system when asked directly.",
+      "accountability": "Release sign-off sits with the vendor's engineering lead."
+    },
+    "processes_personal_data": false,
+    "pdpl_compliance_notes_en": "No personal data is retained between sessions. Personal data appearing in a prompt is held for the duration of the request only.",
+    "pdpl_compliance_notes_ar": "لا يُحتفظ بأي بيانات شخصية بين الجلسات، وتُحفظ البيانات الشخصية الواردة في الطلب طوال مدة الطلب فقط.",
+    "intended_use_cases": ["uc-001"],
+    "known_limitations_en": "Arabic safety behaviour has not been evaluated natively. The model has been observed to answer in English when asked in Arabic, and to over-refuse benign factual questions after a safety update.",
+    "known_limitations_ar": "لم يُقيَّم السلوك الأمني بالعربية تقييماً أصلياً. ولوحظ أن النموذج يجيب بالإنجليزية عن الأسئلة الواردة بالعربية، وأنه يبالغ في رفض الأسئلة المعرفية المشروعة بعد تحديث أمني."
+  }
+}
