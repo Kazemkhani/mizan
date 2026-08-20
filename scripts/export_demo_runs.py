@@ -72,6 +72,22 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+# Fixed issuance instant for recorded runs. Wall-clock time inside a recording
+# makes the file differ on every export, so a reviewer cannot reproduce it. The
+# recording is a replay of a deterministic run, not a live event, and it is
+# labelled as such in the file, so a stable stamp is the honest representation.
+RECORDED_AT = "2026-08-19T00:00:00+00:00"
+
+
+def _recorded_now() -> str:
+    return RECORDED_AT
+
+
+# Pin certificate issuance while recording, so a replay reproduces byte for
+# byte. Live issuance is unaffected: the variable is only set here.
+os.environ.setdefault("MIZAN_ISSUED_AT", RECORDED_AT)
+
+
 def _prepare_db() -> Path:
     """Create a throwaway database with the real schema."""
     tmp_dir = Path(tempfile.mkdtemp(prefix="mizan-export-"))
@@ -88,7 +104,7 @@ def _prepare_db() -> Path:
 def _seed_rows(db: Path, model_id: str, use_case, evaluation_id: str, submission: dict) -> None:
     from mizan.api import catalogue
 
-    now = _now()
+    now = _recorded_now()
     register = catalogue.control_register()
     conn = sqlite3.connect(str(db))
     conn.execute(
@@ -152,8 +168,18 @@ def record_run(db: Path, use_case_id: str, submission: dict) -> dict:
     controls = catalogue.engine_controls(use_case_id)
     mandatory_ids = {c["control_id"] for c in controls if c["is_mandatory"]}
 
-    model_id = str(uuid.uuid4())
-    evaluation_id = str(uuid.uuid4())
+    # Derived, not random. These identifiers end up inside the hashed evidence
+    # payloads, so a fresh uuid4 per export changed every payload_hash, the
+    # evidence_bundle_hash and the certificate signature on every run. The
+    # committed recording then could not be reproduced by the script that
+    # claims to have produced it, which is the one thing a reviewer will check.
+    # This is the same defect that was fixed in run_e2e.py; uuid5 over a fixed
+    # namespace and the run's own inputs keeps the values stable and distinct.
+    _ns = uuid.NAMESPACE_URL
+    model_id = str(uuid.uuid5(_ns, f"mizan:model:{submission['submission_id']}"))
+    evaluation_id = str(
+        uuid.uuid5(_ns, f"mizan:eval:{use_case_id}:{submission['submission_id']}:{profile}")
+    )
     _seed_rows(db, model_id, use_case, evaluation_id, submission)
 
     model_card = submission["model_card"]

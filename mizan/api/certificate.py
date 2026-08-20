@@ -31,6 +31,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+import os
 import uuid
 from datetime import datetime, timezone
 from functools import lru_cache
@@ -235,8 +236,15 @@ def issue(
         ),
     }
 
-    certificate_id = str(uuid.uuid4())
-    issued_at = _now()
+    # Derived from the evaluation rather than random, so re-issuing the same
+    # adjudication yields the same certificate identifier. Issuance is already
+    # idempotent per evaluation at the database level; making the identifier
+    # derived keeps that idempotence visible in the value itself, and lets a
+    # recorded run be reproduced byte for byte by the script that produced it.
+    certificate_id = str(uuid.uuid5(uuid.NAMESPACE_URL, f"mizan:certificate:{evaluation_id}"))
+    # MIZAN_ISSUED_AT pins the stamp when recording a replay. Unset in normal
+    # operation, where a certificate is a live event and takes the wall clock.
+    issued_at = os.environ.get("MIZAN_ISSUED_AT") or _now()
 
     store.execute(
         """
