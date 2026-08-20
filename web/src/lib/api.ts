@@ -46,6 +46,16 @@ export interface EvaluationOutcome {
 
 export interface RunHandle {
   cancel: () => void
+  /**
+   * For recorded runs only. Cancels any remaining step animation and emits
+   * onDone immediately with the pre-loaded result. Used by the guided tour to
+   * settle to a final state before spotlighting the certificate or remediation
+   * panel, without making the reader wait through the full animation.
+   *
+   * Has no effect on live evaluations (the result genuinely does not exist
+   * yet). On a live run the caller should gate advancement instead.
+   */
+  flush?: () => void
 }
 
 /** Detect whether an engine is reachable. Never throws. */
@@ -230,6 +240,17 @@ function startRecordedEvaluation(
     cancel: () => {
       cancelled = true
       window.clearTimeout(timer)
+    },
+    flush: () => {
+      if (cancelled) return
+      cancelled = true
+      window.clearTimeout(timer)
+      callbacks.onDone({
+        verdict: run.verdict,
+        stopping_reason: run.stopping_reason,
+        control_decisions: run.control_decisions,
+        certificate: run.certificate,
+      })
     },
   }
 }

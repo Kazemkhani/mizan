@@ -199,7 +199,7 @@ export function Evaluate({
       )}
 
       <div className="evaluate__body">
-        <div className="stream">
+        <div className="stream" data-tour="stream">
           <h3>{t('evaluate.stream.title')}</h3>
           {steps.length === 0 ? (
             <p className="empty">{t('evaluate.stream.empty')}</p>

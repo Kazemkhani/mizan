@@ -26,6 +26,64 @@ interface SubmitProps {
   onRegister: () => void
 }
 
+/**
+ * Human labels for model card fields. Keys absent from this map are not shown.
+ * Object values are expanded into labelled sub-rows. Booleans render as Yes / No.
+ */
+const MODEL_CARD_LABELS: Record<string, string> = {
+  uae_governance_alignment:   'Alignment with UAE AI governance principles',
+  processes_personal_data:    'Processes personal data',
+  pdpl_compliance_notes_en:   'Notes on PDPL compliance',
+  intended_use:               'Intended use',
+  limitations:                'Known limitations',
+  risks:                      'Known risks',
+  mitigation:                 'Risk mitigation',
+  training_data:              'Training data',
+  evaluation_data:            'Evaluation data',
+  license:                    'Licence',
+  contact:                    'Contact',
+}
+
+/** Labels for nested object keys inside uae_governance_alignment. */
+const GOVERNANCE_LABELS: Record<string, string> = {
+  transparency:   'Transparency',
+  accountability: 'Accountability',
+  fairness:       'Fairness',
+  safety:         'Safety',
+  privacy:        'Privacy',
+}
+
+function renderModelCardValue(key: string, value: unknown): React.ReactNode {
+  if (typeof value === 'boolean') {
+    return <span>{value ? 'Yes' : 'No'}</span>
+  }
+  if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+    const labels = key === 'uae_governance_alignment' ? GOVERNANCE_LABELS : {}
+    return (
+      <dl className="submission-card__sub">
+        {Object.entries(value as Record<string, unknown>).map(([subKey, subVal]) => {
+          const subLabel = labels[subKey] ?? subKey
+          return (
+            <div key={subKey}>
+              <dt>{subLabel}</dt>
+              <dd>{String(subVal)}</dd>
+            </div>
+          )
+        })}
+      </dl>
+    )
+  }
+  if (Array.isArray(value)) {
+    return (
+      <ul className="submission-card__list">
+        {value.map((item, i) => <li key={i}>{String(item)}</li>)}
+      </ul>
+    )
+  }
+  const str = String(value)
+  return str === '' ? <span className="dim">(not provided)</span> : <span>{str}</span>
+}
+
 /** Validate the shape of an uploaded file, tolerating the extra sample keys. */
 function parseSubmission(raw: unknown): Submission | null {
   if (typeof raw !== 'object' || raw === null) return null
@@ -141,23 +199,44 @@ export function Submit({
                 </dd>
               </div>
             </dl>
-            <details className="submission-card__card">
-              <summary>{`${cardFields.length} model card fields`}</summary>
-              <dl>
-                {cardFields.map(([key, value]) => (
-                  <div key={key}>
-                    <dt className="mono">{key}</dt>
-                    <dd>
-                      {typeof value === 'object'
-                        ? JSON.stringify(value)
-                        : String(value) === ''
-                          ? '(empty)'
-                          : String(value)}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            </details>
+            {cardFields.length > 0 && (
+              <details className="submission-card__card">
+                <summary>{`${cardFields.length} model card fields`}</summary>
+                <dl>
+                  {cardFields
+                    .filter(([key]) => MODEL_CARD_LABELS[key] !== undefined)
+                    .map(([key, value]) => (
+                      <div key={key}>
+                        <dt>{MODEL_CARD_LABELS[key]}</dt>
+                        <dd>{renderModelCardValue(key, value)}</dd>
+                      </div>
+                    ))}
+                  {cardFields.filter(([key]) => MODEL_CARD_LABELS[key] === undefined).length > 0 && (
+                    <div className="submission-card__unlabelled">
+                      <dt className="subtle small">Additional fields</dt>
+                      <dd>
+                        <dl className="submission-card__sub">
+                          {cardFields
+                            .filter(([key]) => MODEL_CARD_LABELS[key] === undefined)
+                            .map(([key, value]) => (
+                              <div key={key}>
+                                <dt className="mono small">{key}</dt>
+                                <dd className="small">
+                                  {typeof value === 'object'
+                                    ? JSON.stringify(value)
+                                    : String(value) === ''
+                                      ? '(not provided)'
+                                      : String(value)}
+                                </dd>
+                              </div>
+                            ))}
+                        </dl>
+                      </dd>
+                    </div>
+                  )}
+                </dl>
+              </details>
+            )}
             <button
               type="button"
               className="button button--primary"

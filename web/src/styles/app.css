@@ -619,8 +619,15 @@
   max-block-size: 16rem;
   overflow-y: auto;
 }
-.submission-card__card dt { color: var(--text-accent); }
+.submission-card__card dt { color: var(--text-primary); font-weight: var(--weight-medium); }
 .submission-card__card dd { color: var(--text-secondary); overflow-wrap: anywhere; }
+/* Nested object sub-list (e.g. uae_governance_alignment rows) */
+.submission-card__sub { display: grid; gap: var(--space-2); margin-block-start: var(--space-2); padding-inline-start: var(--space-4); border-inline-start: 2px solid var(--border-hairline); }
+.submission-card__sub dt { color: var(--text-tertiary); font-size: var(--text-xs); }
+.submission-card__sub dd { color: var(--text-secondary); }
+.submission-card__list { list-style: disc; padding-inline-start: var(--space-5); color: var(--text-secondary); }
+.submission-card__unlabelled { border-block-start: 1px solid var(--border-hairline); padding-block-start: var(--space-3); margin-block-start: var(--space-3); }
+.dim { color: var(--text-tertiary); font-style: italic; }
 
 .sample-list { list-style: none; display: grid; gap: var(--space-4); }
 .sample-list li {
@@ -1013,12 +1020,15 @@
 
 /* -------------------------------------------------------------- walkthrough */
 
-.tour { position: fixed; inset: 0; z-index: var(--z-modal); }
-.tour__scrim { position: absolute; inset: 0; background: rgba(4, 13, 26, 0.72); }
+.tour { position: fixed; inset: 0; z-index: var(--z-modal); cursor: default; }
+/* Single dim layer. The old .tour__scrim was a second rgba(0.72) overlay that
+   stacked with this box-shadow, producing 1-(0.28)^2 = 92% effective dim.
+   One layer at 0.60 keeps the surrounding interface legible (text contrast
+   verified: --text-secondary #A1ADBF on dimmed #06111F = 6.75:1, AA+). */
 .tour__spotlight {
   position: absolute;
   border-radius: var(--radius-md);
-  box-shadow: 0 0 0 9999px rgba(4, 13, 26, 0.72), 0 0 0 2px var(--colour-gold-500);
+  box-shadow: 0 0 0 9999px rgba(4, 13, 26, 0.60), 0 0 0 2px var(--colour-gold-500);
   transition: all var(--transition-enter);
   pointer-events: none;
 }
@@ -1032,6 +1042,28 @@
   box-shadow: var(--shadow-xl);
   display: grid;
   gap: var(--space-3);
+  cursor: auto;
+}
+/* Short connector between card and spotlight. */
+.tour__card--below::before,
+.tour__card--above::after {
+  content: '';
+  position: absolute;
+  inset-inline-start: var(--space-8);
+  inline-size: 2px;
+  background: var(--colour-gold-500);
+  border-radius: 1px;
+  pointer-events: none;
+}
+/* When card is below the spotlight: connector on the top edge, pointing up. */
+.tour__card--below::before {
+  inset-block-end: 100%;
+  block-size: var(--space-5);
+}
+/* When card is above the spotlight: connector on the bottom edge, pointing down. */
+.tour__card--above::after {
+  inset-block-start: 100%;
+  block-size: var(--space-5);
 }
 .tour__card--centre {
   inset-block-start: 50%;

@@ -37,6 +37,10 @@ function Shell(): React.ReactElement {
   const [datasets, setDatasets] = React.useState<DatasetBinding[]>(recordedDocument().datasets)
   const [stage, setStage] = React.useState<Stage>(1)
   const [tourIndex, setTourIndex] = React.useState<number | null>(null)
+  const [evaluationStatus, setEvaluationStatus] = React.useState<string>('idle')
+  const startEvaluationRef = React.useRef<(() => void) | null>(null)
+  const resetEvaluationRef = React.useRef<(() => void) | null>(null)
+  const flushEvaluationRef = React.useRef<(() => void) | null>(null)
 
   React.useEffect(() => {
     let active = true
@@ -122,6 +126,10 @@ function Shell(): React.ReactElement {
             onStage={setStage}
             onExit={exit}
             onStartTour={() => setTourIndex(0)}
+            onExposeStart={(fn) => { startEvaluationRef.current = fn }}
+            onExposeReset={(fn) => { resetEvaluationRef.current = fn }}
+            onExposeFlush={(fn) => { flushEvaluationRef.current = fn }}
+            onStatusChange={setEvaluationStatus}
           />
         </div>
       )}
@@ -140,6 +148,15 @@ function Shell(): React.ReactElement {
           index={tourIndex}
           onIndex={setTourIndex}
           onClose={() => setTourIndex(null)}
+          onStartEvaluation={() => startEvaluationRef.current?.()}
+          onFlushEvaluation={() => flushEvaluationRef.current?.()}
+          evaluationStatus={evaluationStatus}
+          onRunAgain={() => {
+            resetEvaluationRef.current?.()
+            setEvaluationStatus('idle')
+            setStage(1)
+            setTourIndex(0)
+          }}
         />
       )}
     </>

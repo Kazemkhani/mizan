@@ -313,6 +313,10 @@ export const arInterface: Record<string, string> = {
   'tour.back': 'السابق',
   'tour.skip': 'تخطي الدليل',
   'tour.done': 'ابدأ الاستخدام',
+  // RASHID-REVIEW-REQUIRED: new key, English: "Assessment running..."
+  'tour.running': 'التقييم جارٍ...',
+  // RASHID-REVIEW-REQUIRED: new key, English: "Run it again"
+  'tour.run_again': 'تشغيل مجدَّداً',
   'tour.progress': '{n} من {total}',
   'tour.welcome.title': 'مرحباً بك في ميزان',
   'tour.welcome.body':

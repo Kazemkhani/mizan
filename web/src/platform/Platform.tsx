@@ -48,6 +48,18 @@ interface PlatformProps {
   onStage: (stage: Stage) => void
   onExit: () => void
   onStartTour: () => void
+  /** Called once after mount with a stable reference to the start function. */
+  onExposeStart?: (fn: () => void) => void
+  /** Called once after mount with a stable reference to the evaluation reset function. */
+  onExposeReset?: (fn: () => void) => void
+  /**
+   * Called once after mount with a stable reference to the evaluation flush
+   * function. Flush is a recorded-mode shortcut: it cancels any remaining
+   * step animation and emits onDone immediately.
+   */
+  onExposeFlush?: (fn: () => void) => void
+  /** Called whenever evaluation status changes, for external observers such as the tour. */
+  onStatusChange?: (status: RunStatus) => void
 }
 
 export function Platform({
@@ -58,6 +70,10 @@ export function Platform({
   onStage,
   onExit,
   onStartTour,
+  onExposeStart,
+  onExposeReset,
+  onExposeFlush,
+  onStatusChange,
 }: PlatformProps): React.ReactElement {
   const { t, locale } = useTranslation()
 
@@ -88,7 +104,42 @@ export function Platform({
 
   React.useEffect(() => () => handleRef.current?.cancel(), [])
 
+  // Keep a ref to onStatusChange so callbacks inside start() do not stale-close.
+  const onStatusChangeRef = React.useRef(onStatusChange)
+  React.useEffect(() => { onStatusChangeRef.current = onStatusChange })
+
+  // Keep the stable refs current and expose them to the tour.
+  React.useEffect(() => {
+    startRef.current = () => start()
+  })
+  React.useEffect(() => {
+    onExposeStart?.(() => startRef.current())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  React.useEffect(() => {
+    resetRef.current = () => reset()
+  })
+  React.useEffect(() => {
+    onExposeReset?.(() => resetRef.current())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  React.useEffect(() => {
+    flushRef.current = () => flush()
+  })
+  React.useEffect(() => {
+    onExposeFlush?.(() => flushRef.current())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const useCase = useCases.find((u) => u.id === useCaseId) ?? null
+
+  /** Wraps setStatus and notifies the external observer (e.g. the tour). */
+  const notifyStatus = (next: RunStatus) => {
+    setStatus(next)
+    onStatusChangeRef.current?.(next)
+  }
 
   const acceptSubmission = (next: Submission, id: string | null) => {
     setSubmission(next)
@@ -98,7 +149,7 @@ export function Platform({
     setSteps([])
     setOutcome(null)
     setSelected(null)
-    setStatus('idle')
+    notifyStatus('idle')
   }
 
   const register = async () => {
@@ -124,6 +175,11 @@ export function Platform({
     }
   }
 
+  // Stable refs so the tour can call start/reset/flush without stale closures.
+  const startRef = React.useRef<() => void>(() => { /* not yet ready */ })
+  const resetRef = React.useRef<() => void>(() => { /* not yet ready */ })
+  const flushRef = React.useRef<() => void>(() => { /* not yet ready */ })
+
   const start = (override?: { modelId: string; submissionId: string | null; profile: 'compliant' | 'non_compliant' }) => {
     if (useCaseId === null) return
     handleRef.current?.cancel()
@@ -131,7 +187,7 @@ export function Platform({
     setOutcome(null)
     setSelected(null)
     setErrorMessage(null)
-    setStatus('running')
+    notifyStatus('running')
     handleRef.current = startEvaluation(
       mode,
       {
@@ -148,7 +204,7 @@ export function Platform({
         },
         onDone: (result) => {
           setOutcome(result)
-          setStatus('done')
+          notifyStatus('done')
           setModels((current) =>
             current.map((m) =>
               m.id === (override?.modelId ?? modelId)
@@ -159,10 +215,30 @@ export function Platform({
         },
         onError: (message) => {
           setErrorMessage(message)
-          setStatus('error')
+          notifyStatus('error')
         },
       },
     )
+  }
+
+  /** Clears the evaluation state without touching the submission. Used by the tour restart. */
+  const reset = () => {
+    handleRef.current?.cancel()
+    setSteps([])
+    setOutcome(null)
+    setSelected(null)
+    setErrorMessage(null)
+    notifyStatus('idle')
+  }
+
+  /**
+   * Skips remaining step animation and emits onDone immediately. Only
+   * effective for recorded runs where the result is pre-loaded. Used by the
+   * tour to reach the certificate/remediation views without making the reader
+   * wait through the full animation.
+   */
+  const flush = () => {
+    handleRef.current?.flush?.()
   }
 
   /**

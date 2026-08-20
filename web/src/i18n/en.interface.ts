@@ -85,7 +85,7 @@ export const enInterface: Record<string, string> = {
   'console.mode.live': 'Connected to the evaluation engine',
   'console.mode.recorded': 'Replaying a recorded run',
   'console.mode.recorded.detail':
-    'No engine is reachable from this page, so MIZAN replays evaluations that the real engine recorded against the real probe corpus. Every step, verdict and hash shown was produced by the engine.',
+    'You are watching a recorded assessment. MIZAN really ran these checks; this page replays the saved result rather than running them again now. Nothing shown here was written by hand.',
   'console.mode.live.detail':
     'This page is talking to a MIZAN API. Evaluations you start run for real and write evidence to the registry.',
 
@@ -131,9 +131,9 @@ export const enInterface: Record<string, string> = {
   'usecase.select': 'Select',
   'usecase.datasets': 'Grounded in data published by',
 
-  'evaluate.title': 'Adjudication',
+  'evaluate.title': 'Assessment',
   'evaluate.lede':
-    'The engine chooses the next probe by which one settles the decision fastest, and retires a control the moment its evidence settles it.',
+    'The engine runs checks against the model one at a time. It picks the check most likely to settle each standard fastest, and stops testing a standard the moment it has enough evidence.',
   'evaluate.start': 'Start the evaluation',
   'evaluate.restart': 'Run it again',
   'evaluate.running': 'Evaluation running',
@@ -160,29 +160,29 @@ export const enInterface: Record<string, string> = {
   'evaluate.view.remediation': 'Close the gaps',
 
   'evidence.title': 'The exchange behind this score',
-  'evidence.prompt': 'Probe',
+  'evidence.prompt': 'Check',
   'evidence.response': 'Model response',
-  'evidence.response.attestation': 'Decided on the model card rather than by a probe.',
-  'evidence.scorer': 'Scorer',
+  'evidence.response.attestation': 'Decided from the model card, not from a live check.',
+  'evidence.scorer': 'How this was marked',
   'evidence.score': 'Score',
   'evidence.hash': 'Evidence hash (SHA-256)',
-  'evidence.control': 'Control',
+  'evidence.control': 'Standard',
   'evidence.close': 'Close',
-  'evidence.empty': 'Select a probe in the stream to open it here.',
+  'evidence.empty': 'Select a check from the verification log to read its full record here.',
 
   'cert.title': 'Certificate',
-  'cert.none': 'A certificate appears here once an evaluation reaches a verdict.',
-  'cert.tier.statistical': 'Statistical tier: every mandatory control earned a confidence bound.',
-  'cert.tier.budget': 'Budget tier: one or more mandatory controls were settled without a confidence bound. Each is marked below.',
+  'cert.none': 'A certificate appears here once the assessment reaches a decision.',
+  'cert.tier.statistical': 'Confirmed by evidence: every required standard reached the declared certainty.',
+  'cert.tier.budget': 'Not enough checks to confirm: one or more required standards ran out of checks before certainty was reached. Each is marked below.',
   'cert.model': 'Model',
   'cert.usecase': 'Use case',
   'cert.issued': 'Issued',
   'cert.bundle': 'Evidence bundle hash',
   'cert.signature': 'Signature',
-  'cert.controls': 'Control results',
-  'cert.control.basis': 'Decision basis',
-  'cert.control.probes': 'Probes',
-  'cert.control.bound': 'Lower bound earned',
+  'cert.controls': 'Standard results',
+  'cert.control.basis': 'How this was decided',
+  'cert.control.probes': 'Checks',
+  'cert.control.bound': 'Certainty reached',
   'cert.control.required': 'Required',
   'cert.datasets': 'Datasets consulted',
   'cert.asserts': 'What this certificate asserts',
@@ -193,10 +193,10 @@ export const enInterface: Record<string, string> = {
   'cert.served': 'Evaluation served by',
 
   // -------------------------------------------------------- remediation
-  'remediate.eyebrow': 'After the verdict',
+  'remediate.eyebrow': 'After the decision',
   'remediate.title': 'Close the gaps and come back',
   'remediate.lede':
-    'Every model arrives with gaps, including one that certifies: at the present corpus size most controls are settled when the probes run out rather than by a confidence bound. This stage reads those gaps out of the run, sets out the work that would close them, rehearses that work, and hands the retrained version back to the engine.',
+    'Every model arrives with gaps, including one that certifies. This stage reads those gaps out of the run, sets out the work that would close them, rehearses that work, and hands the retrained version back to the engine.',
   'remediate.none': 'Run an evaluation first. The gaps are read out of its result.',
   'remediate.phase.gaps': 'Gaps found',
   'remediate.phase.plan': 'Work required',
@@ -204,35 +204,35 @@ export const enInterface: Record<string, string> = {
   'remediate.phase.ready': 'Back to the engine',
   'remediate.projection': 'Projection. Nothing on this panel is evidence, and none of it can issue a certificate.',
   'remediate.simulated': 'Simulated run. MIZAN does not train models and does not observe training. This rehearses the sequence a remediation cycle follows.',
-  'remediate.gaps.measured': 'Measured. Every figure below was read from the control states the engine produced and the probes it drew.',
+  'remediate.gaps.measured': 'Measured. Every figure below was read from the standard results and the checks the engine ran.',
   'remediate.gaps.total': 'Gaps found',
   'remediate.gaps.failing': 'Failing behaviour',
-  'remediate.gaps.unproven': 'Unproven controls',
+  'remediate.gaps.unproven': 'Unconfirmed standards',
   'remediate.gaps.mandatory': 'Mandatory among them',
   'remediate.gaps.next': 'See the work required',
-  'remediate.gap.needs': 'Probes needed',
+  'remediate.gap.needs': 'Checks needed',
   'remediate.gap.open': 'Open the exchange',
   'remediate.kind.failing': 'Failed',
   'remediate.kind.intermittent': 'Intermittent',
   'remediate.kind.unproven': 'Not demonstrated',
-  'remediate.kind.untested': 'Never probed',
+  'remediate.kind.untested': 'Never checked',
   'remediate.reading.failing':
-    'The model was decided against on this control. The behaviour has to change before a certificate is possible.',
+    'The model did not meet this standard. The behaviour has to change before a certificate is possible.',
   'remediate.reading.intermittent':
-    'The model passed most probes and failed some. An intermittent failure on a mandatory control is a failure.',
+    'The model passed most checks and failed some. An intermittent failure on a required standard is a failure.',
   'remediate.reading.unproven':
-    'No violation was observed, but the corpus ran out before the required rate could be demonstrated at the declared confidence. The behaviour may be sound; the evidence is not yet there.',
+    'No violation was observed, but the available checks ran out before the required certainty was reached. The behaviour may be sound; the evidence is not yet there.',
   'remediate.reading.untested':
-    'This control drew no probe in this evaluation. Nothing is known about it either way.',
+    'This standard was not checked in this assessment. Nothing is known about it either way.',
   'remediate.severity.critical': 'Critical',
   'remediate.severity.high': 'High',
   'remediate.severity.moderate': 'Moderate',
   'remediate.plan.lede':
-    'One piece of work per control domain, because that is the unit a fix is bought in: a model does not acquire Arabic refusal behaviour one control at a time. Corpus sizes are planning estimates at {ratio} items per probe the register requires, {items} items in total.',
+    'One piece of work per standard domain, because that is the unit a fix is bought in: a model does not acquire Arabic refusal behaviour one standard at a time. Check counts are planning estimates at {ratio} items per check the register requires, {items} items in total.',
   'remediate.plan.next': 'Run the retraining',
-  'remediate.fix.controls': 'Controls it would settle',
-  'remediate.fix.probes': 'Probes required',
-  'remediate.fix.corpus': 'Corpus proposed',
+  'remediate.fix.controls': 'Standards it would settle',
+  'remediate.fix.probes': 'Checks required',
+  'remediate.fix.corpus': 'Training checks proposed',
   'remediate.fix.target': 'Rate it must clear',
   'remediate.fix.source':
     'Drawn from the government data bound to {useCase}, so the vocabulary and register match what the model will meet in service.',
@@ -241,7 +241,7 @@ export const enInterface: Record<string, string> = {
     'Observed rate against the rate the register requires. The second figure is the requirement, not a result: only a fresh evaluation can say what the retrained version achieves.',
   'remediate.handback.title': 'Back to the engine',
   'remediate.handback.body':
-    'A projection cannot certify anything. Submit the retrained version as a new version and let the engine adjudicate it: a certificate is valid for the exact version assessed, so a retrained model is a new submission, not an amendment to the old one.',
+    'A projection cannot certify anything. Submit the retrained version as a new version and let the engine assess it: a certificate is valid for the exact version assessed, so a retrained model is a new submission, not an amendment to the old one.',
   'remediate.handback.action': 'Submit the retrained version',
   'remediate.rerun.note':
     'Re-evaluating the retrained version. It carries the fixes set out in the remediation plan.',
@@ -301,6 +301,8 @@ export const enInterface: Record<string, string> = {
   'tour.back': 'Back',
   'tour.skip': 'Skip the walkthrough',
   'tour.done': 'Start using it',
+  'tour.running': 'Assessment running...',
+  'tour.run_again': 'Run it again',
   'tour.progress': '{n} of {total}',
   'tour.welcome.title': 'Welcome to MIZAN',
   'tour.welcome.body':
@@ -314,18 +316,18 @@ export const enInterface: Record<string, string> = {
   'tour.usecase.title': 'The use case decides the standard',
   'tour.usecase.body':
     'Pick the use case the model is intended for. A citizen-facing Arabic chatbot demands the broadest control set and the highest confidence of the five.',
-  'tour.evaluate.title': 'Watch it adjudicate',
+  'tour.evaluate.title': 'Watch the assessment run',
   'tour.evaluate.body':
-    'Start the evaluation. Probes arrive on the left, controls settle on the right. Nothing is precomputed: each control is retired the moment its evidence settles it.',
-  'tour.evidence.title': 'Open any probe',
+    'Press Start. Checks arrive on the left; standards settle on the right. Nothing is precomputed: each standard is retired the moment the engine has enough evidence.',
+  'tour.evidence.title': 'Open any check',
   'tour.evidence.body':
-    'Select a probe in the stream, or a control on the board, to read the exact prompt, the answer the model gave and the hash of the record.',
+    'Select any check in the verification log, or any standard on the board, to read the exact prompt, the answer the model gave, and the fingerprint of the record.',
   'tour.remediation.title': 'Then close the gaps',
   'tour.remediation.body':
-    'A verdict is not the end. The remediation stage reads the gaps out of the run, sets out the work that would close them, rehearses it, and sends the retrained version back through the engine. The gaps are measured; the plan and the retraining are marked as projection, because MIZAN does not train models.',
+    'A decision is not the end. The remediation stage reads the gaps out of the run, sets out the work that would close them, rehearses it, and sends the retrained version back through the engine. The gaps are measured; the plan and the retraining are marked as projection, because MIZAN does not train models.',
   'tour.certificate.title': 'The certificate',
   'tour.certificate.body':
-    'When the verdict lands, the certificate is issued in both languages, control by control, with the statistical strength each control actually earned.',
+    'When the decision lands, the certificate is issued in both languages, standard by standard, with the certainty each standard actually reached.',
 
   // ------------------------------------------------------------------ misc
   'skiplink': 'Skip to main content',
@@ -333,7 +335,7 @@ export const enInterface: Record<string, string> = {
   'common.optional': 'Optional',
   'common.mandatory': 'Mandatory',
   'common.advisory': 'Advisory',
-  'common.probes': 'probes',
+  'common.probes': 'checks',
   'common.step': 'Step',
   'common.continue': 'Continue',
 }
