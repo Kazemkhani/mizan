@@ -11,47 +11,48 @@
 
 ## UAE Design System Compliance: Typography Amendment
 
-**Received mid-audit:** The UAE Government Design System (TDRA, `designsystem.gov.ae`) is
-binding on all Federal Government Entities. MIZAN, as federal government digital
-infrastructure, must comply. The DLS mandates:
+**Binding standard:** The UAE Government Design System (TDRA, `designsystem.gov.ae`) applies
+to all Federal Government Entities. MIZAN is federal government digital infrastructure.
+
+**What the DLS mandates (source: `designsystem.gov.ae/guidelines/typography`, read 2026-08-20):**
 
 - English body: Roboto
-- English UI / headings: Inter
 - Arabic body: Noto Kufi Arabic
 - Arabic headings: Alexandria
 
-The Wave 0 type stack (Playfair Display / Amiri / IBM Plex Sans / IBM Plex Sans Arabic) was
-carefully argued for institutional quality and is not disputed on aesthetic grounds. It does
-not comply with the binding federal standard. Non-compliance creates a direct contradiction:
-a product that adjudicates whether AI models meet federal standards, presented in an interface
-that violates the federal design standard, refutes itself in the first impression.
+**The Inter question (coordinator query, resolved):**
 
-**Decision: full DLS compliance for the portal.** All five stages adopt Inter (English
-headings), Roboto (English body), Alexandria (Arabic headings), Noto Kufi Arabic (Arabic body).
-The anti-slop rule banning Inter as a display face yields to the binding mandatory standard.
+Inter appears in the `@aegov/design-system` Tailwind plugin configuration page
+(`designsystem.gov.ae/docs/extending-the-configuration`), listed as the default English UI
+and heading face in the plugin's preset. It is absent from the normative typography guidelines
+page. These are two different authority layers.
 
-### The certificate exception: case made, ruling requested
+The design doctrine bans Inter as a headline or display face on the grounds that it is the
+single strongest tells in AI-generated frontend output. The doctrine permits Inter as a body
+face beneath a real display face, but that case does not arise here.
 
-The certificate view (`data-theme="inverse"`, stage 4) is simultaneously a rendered HTML
-page and the product's primary printable document output. The argument for a certificate
-exception rests on three foundations:
+**Ruling:** Inter is a plugin-default, not a guidelines mandate. The normative typography
+page does not list Inter for English headings. With no mandate, the doctrine applies. Inter
+is not used. Roboto (the only DLS English family in the typography guidelines) covers both
+English body and English headings. Weight and scale differentiate heading from body text.
 
-1. The UAE DLS section 1.1 governs "websites and digital services." A signed PDF certificate
-   downloaded and filed by a compliance officer is, in its final form, a document artefact
-   with its own typographic traditions, comparable to how court orders and medical certificates
-   maintain editorial conventions regardless of the issuing portal's design standards.
-2. The certificate is the product's climax and its most audited surface. A Playfair Display
-   title communicates "this is a formal document" at a glance, a signal the user needs to
-   distinguish the certificate from the service UI.
-3. The DLS has no specific guidance on printed document outputs, only on service pages.
+**Full type stack (Wave 3 implementation):**
 
-The argument against: the certificate is also rendered on-screen as an HTML page, and a
-strict reading includes all surfaces. The case is principled but not unambiguous.
+| Token | Family | Source |
+|---|---|---|
+| `--font-heading` | Roboto | DLS English; doctrine requires omitting Inter |
+| `--font-body` | Roboto | DLS normative guideline |
+| `--font-heading-ar` | Alexandria | DLS normative guideline |
+| `--font-body-ar` | Noto Kufi Arabic | DLS normative guideline |
 
-**Defaulting to full compliance in this implementation.** The `--font-heading-editorial`
-token is defined in `tokens.css` and points to Playfair Display. It is not used in the
-component layer until the ruling is given. If the exception is approved, the single change
-is `CertificateView.tsx` applying `var(--font-heading-editorial)` to `.certificate__title`.
+The Wave 0 type stack (Playfair Display / Amiri / IBM Plex Sans) was well-argued for
+institutional quality and is not disputed on aesthetic grounds. It does not comply with the
+binding federal standard. Full compliance is the ruling; the Wave 0 faces are removed.
+
+The certificate editorial exception case was made but is not strong enough to override
+explicit coordinator instruction to default to compliance. Playfair Display and Amiri are
+removed from the token layer and from `web/public/fonts/`. If a future ruling opens the
+exception, restore from the Wave 0 font manifest in `docs/reports/atelier_wave0.md`.
 
 ### GRADE-style evidence tier presentation
 
