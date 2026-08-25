@@ -15,6 +15,12 @@ updates:
       actions:
         patterns:
           - "*"
+    # Major action migrations need an explicit review of release notes and
+    # permissions. Dependabot security updates are not affected by this rule.
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
 
   - package-ecosystem: npm
     directory: /web
@@ -31,8 +37,14 @@ updates:
       web:
         patterns:
           - "*"
+    # Keep routine maintenance low-noise. React, TypeScript, and other major
+    # upgrades are reviewed as dedicated migrations with runtime coverage.
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
 
-  - package-ecosystem: pip
+  - package-ecosystem: uv
     directory: /
     schedule:
       interval: weekly
@@ -40,9 +52,16 @@ updates:
       time: "06:30"
       timezone: Etc/UTC
     open-pull-requests-limit: 5
+    # Update the resolved environment without needlessly raising this
+    # application's declared minimum compatible versions.
+    versioning-strategy: lockfile-only
     labels:
       - dependencies
     groups:
       python:
         patterns:
           - "*"
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
