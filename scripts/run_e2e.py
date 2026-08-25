@@ -58,8 +58,6 @@ from mizan.engine.bandit.allocator import BanditEngine
 from mizan.engine.db.database import (
     evidence_bundle_hash,
     init_db_sync,
-    sha256_of,
-    canonical_payload,
 )
 
 
@@ -421,7 +419,7 @@ def _print_adaptive_report(
     print(f"  Evaluation ID   : {evaluation_id}")
     print(f"  Profile         : {profile}")
     print(f"  Seed            : {seed}")
-    print(f"  Mode            : adaptive (BanditEngine + BatchSuiteRunner)")
+    print("  Mode            : adaptive (BanditEngine + BatchSuiteRunner)")
     print(f"  Arm pulls       : {len(arm_pulls)}")
     print(f"  Total queries   : {arm_pulls[-1].cumulative_queries if arm_pulls else 0}")
     print(f"  Stopping reason : {stopping_reason}")
@@ -487,11 +485,11 @@ def main() -> int:
     if db_path.exists():
         db_path.unlink()
 
-    print(f"\nInitialising database ...")
+    print("\nInitialising database ...")
     init_db_sync()
 
     print(f"Evaluation ID   : {evaluation_id}  (uuid5, deterministic from profile+seed)")
-    print(f"Seeding model, use-case, controls, evaluation ...")
+    print("Seeding model, use-case, controls, evaluation ...")
     _seed_database(evaluation_id, model_id, use_case_id)
 
     import time
@@ -501,7 +499,7 @@ def main() -> int:
         # Adaptive path: BanditEngine + BatchSuiteRunner.
         # Exercises the same code path as the production API websocket handler.
         # ------------------------------------------------------------------
-        print(f"Running adaptive evaluation with BanditEngine + BatchSuiteRunner ...\n")
+        print("Running adaptive evaluation with BanditEngine + BatchSuiteRunner ...\n")
         t0 = time.monotonic()
         arm_pulls, stopping_reason, verdict, engine = _run_adaptive(
             evaluation_id, args.profile, args.seed

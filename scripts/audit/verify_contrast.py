@@ -163,7 +163,6 @@ def main() -> int:
         if border_token in tokens and chip_token in tokens:
             advisory.append((border_token, "--surface-raised", f"{state} chip boundary against the row", True, None))
 
-    advisory_results: list[str] = []
     findings: list[str] = []
     checked = 0
 

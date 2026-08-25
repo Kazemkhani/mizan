@@ -69,11 +69,9 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
-import math
 import os
 import sqlite3
 import statistics
-import sys
 import tempfile
 import time
 import uuid
@@ -81,7 +79,6 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
-from uuid import uuid4
 
 # ---------------------------------------------------------------------------
 # CRITICAL: set MIZAN_DATABASE_URL before any mizan imports.
@@ -92,7 +89,7 @@ _tmp_db.close()
 _TMP_DB_PATH = _tmp_db.name
 os.environ["MIZAN_DATABASE_URL"] = f"sqlite+aiosqlite:///{_TMP_DB_PATH}"
 
-# noqa: E402: all imports below are intentionally deferred until after env var is set.
+# All imports below are intentionally deferred until after the environment is set.
 from mizan.agents.harness.adapters import MockEndpoint          # noqa: E402
 from mizan.agents.harness.runner import run_suite_sync          # noqa: E402
 from mizan.agents.harness.scorers import score_probe            # noqa: E402
@@ -1131,7 +1128,6 @@ def run_exhaustive(
         )
         ctrl_states[cid] = ctrl_obj
 
-    mandatory_ids = set(ctrl_states)
     for row in all_rows:
         ctrl = ctrl_states.get(row.control_id)
         if ctrl is not None:
@@ -1468,7 +1464,7 @@ def generate_report(
         "",
         f"**Produced**: {now}",
         f"**Seed**: {seed}",
-        f"**Use case**: uc-001 (citizen_chatbot)",
+        "**Use case**: uc-001 (citizen_chatbot)",
         f"**Confidence threshold**: {_CONFIDENCE} (joint, over {k} mandatory probe controls)",
         "",
         "## 0. Mechanism",
@@ -1763,10 +1759,10 @@ def generate_report(
             "",
             "**Full distribution with quartiles (and certified case for sanity)**:",
             "",
-            f"| Profile | n (seeds) | Exhaustive calls | Median adaptive calls | Q1-Q3 | Min | Max |"
-            f" Median reduction |",
-            f"|---------|-----------|------------------|-----------------------|-------|-----|-----|"
-            f"------------------|",
+            "| Profile | n (seeds) | Exhaustive calls | Median adaptive calls | Q1-Q3 | Min | Max |"
+            " Median reduction |",
+            "|---------|-----------|------------------|-----------------------|-------|-----|-----|"
+            "------------------|",
         ]
         if ex_c and ad_c:
             lines.append(
@@ -1843,8 +1839,8 @@ def generate_report(
     lines += [
         f"| Corpus (current, merged) | {sum(corpus_sizes.values())} items | | |",
         f"| Generated corpus present | {'yes' if _USE_GENERATED_CORPUS else 'no'} | | |",
-        f"| Prototype target (80% reduction) | distribution median vs target:"
-        f" see section 5 | | |",
+        "| Prototype target (80% reduction) | distribution median vs target:"
+        " see section 5 | | |",
         "",
         "**Design decisions**:",
         "",
@@ -1908,7 +1904,7 @@ def main() -> None:
 
     print(f"MIZAN prove_reduction.py  seed={seed}")
     print(f"Temporary database: {_TMP_DB_PATH}")
-    print(f"Batch size: 1 probe per arm pull")
+    print("Batch size: 1 probe per arm pull")
     if _USE_GENERATED_CORPUS:
         print("Generated corpus: present (suites/generated/ files will be merged by harness).")
     else:

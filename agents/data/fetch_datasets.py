@@ -54,7 +54,7 @@ from pathlib import Path
 # Import the Bayanat HTML fetcher (same package).
 # Support running from repo root (python3 agents/data/fetch_datasets.py)
 # and as a module (python3 -m agents.data.fetch_datasets).
-import importlib, os as _os
+import importlib
 _here = Path(__file__).resolve().parent
 if str(_here.parent.parent) not in sys.path:
     sys.path.insert(0, str(_here.parent.parent))

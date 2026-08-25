@@ -44,11 +44,9 @@ import hashlib
 import html as html_module
 import json
 import re
-import sys
 import urllib.error
 import urllib.request
 from pathlib import Path
-from typing import Optional
 
 TIMEOUT_SECONDS = 30
 MIN_PAGE_BYTES = 10_000  # A valid dataset page is several hundred KB
@@ -107,7 +105,7 @@ def parse_tables(
         raise ValueError(
             "No Data Explorer tables found in the page. "
             "The portal markup may have changed. "
-            f'Expected pattern: id="accordionTableOne-N".'
+            'Expected pattern: id="accordionTableOne-N".'
         )
 
     # Extract TotalCount values from the embedded JSON blobs.

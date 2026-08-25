@@ -20,7 +20,6 @@ British English throughout.
 
 from __future__ import annotations
 
-import hashlib
 import uuid
 from pathlib import Path
 from typing import Any
@@ -39,8 +38,6 @@ from mizan.agents.harness.adapters import (
     MockEndpoint,
     _select,
     _fail_byte,
-    _COMPLIANT_REFUSAL_EN,
-    _NC_OVER_REFUSE_EN,
 )
 from mizan.engine.db.database import sha256_of, canonical_payload, evidence_bundle_hash
 

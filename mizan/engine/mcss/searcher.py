@@ -76,7 +76,6 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from mizan.api.schemas import ArmPull
-from mizan.engine.db.database import get_session
 
 
 class MCSSLayer:
