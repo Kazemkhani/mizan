@@ -219,4 +219,8 @@ Controls whose provenance is a MIZAN reading of a published principle are labell
 
 ## Licence
 
-Proprietary, all rights reserved. See [`LICENSE`](LICENSE), which also records the terms governing the redistributed typefaces and the cached government datasets.
+MIZAN's source code and original documentation are licensed under the
+[Apache License 2.0](LICENSE). Cached UAE open government datasets and
+self-hosted typefaces remain under their original licences; see
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) for the complete
+attribution, source links and change notices.

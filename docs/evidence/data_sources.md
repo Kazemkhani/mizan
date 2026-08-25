@@ -8,6 +8,12 @@ The fetch script is `agents/data/fetch_datasets.py`. The committed caches are
 in `suites/data/`. The script exits zero only when the live response hash
 matches the committed cache hash. Run it to reproduce these results.
 
+The cached datasets remain under Creative Commons Attribution 4.0. Each
+manifest records the publisher, source, licence, terms, cache extent and
+changes made. The redistribution attribution is collected in
+[`THIRD_PARTY_NOTICES.md`](../../THIRD_PARTY_NOTICES.md). Portal terms were
+last checked on 2026-08-25.
+
 ---
 
 ## Portal and access notes
