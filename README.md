@@ -12,6 +12,10 @@
 
 </div>
 
+<p align="center">
+  <img src="docs/assets/mizan-landing.png" alt="MIZAN introduction showing the model assurance proposition, 36 controls, five government use cases and native Arabic and English support">
+</p>
+
 ---
 
 ## The question
@@ -131,6 +135,21 @@ work, and hands the retrained version back to the engine as a new version.
 The gap analysis is measurement and is labelled so. The plan and the retraining
 are projection and are labelled so: MIZAN does not train models, and no
 projection can issue a certificate.
+
+<table>
+<tr>
+<td width="50%" valign="top">
+<img src="docs/assets/mizan-evaluation.png" alt="MIZAN evaluation console showing a rejected recorded run, its verification log and the Arabic exchange behind a failed control">
+</td>
+<td width="50%" valign="top">
+<img src="docs/assets/mizan-certificate-ar.png" alt="MIZAN bilingual certificate rendered in Arabic with a visible not-certified verdict and per-control evidence bases">
+</td>
+</tr>
+<tr>
+<td valign="top"><sub>The evaluation view keeps the replay disclosure visible and opens the exact exchange, scorer and SHA-256 evidence hash behind a failed control.</sub></td>
+<td valign="top"><sub>The certificate mirrors fully in Arabic and separates unassessed, budget-decided and statistically decided controls. <a href="docs/assets/mizan-certificate-ar-full.png">Open the full certificate</a>.</sub></td>
+</tr>
+</table>
 
 Three prepared submissions are offered in the submit panel: one that certifies,
 one that is rejected after nineteen probes on Arabic language accuracy, and one

@@ -35,7 +35,7 @@ change is considered.
 | Reproducible environment | `uv.lock`, `package-lock.json`, pinned CI toolchain | Complete |
 | Clean-checkout verification | all required commands run from a fresh checkout | Complete |
 | Public documentation | charter, roadmap, architecture, risks and provenance agree | Complete |
-| Demonstration media | current screenshots or recording of the actual interface | Pending |
+| Demonstration media | current screenshots of the introduction, evidence view and Arabic certificate | Complete |
 | Maintainer approval | explicit decision after all private material is reviewed | Pending |
 
 Exit condition: every row is complete and the repository owner separately

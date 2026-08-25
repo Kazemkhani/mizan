@@ -257,7 +257,7 @@ and know the data is authentic. A verifier that skips that comparison and report
 `OFFLINE_OK` converts that safeguard into decoration. The message sounds like
 assurance; it is the absence of any check wearing the words of a successful one.
 A silent pass is worse than a loud failure, and this was a silent pass on the
-path that matters most: the demonstration venue, no network, the day of the pitch.
+path that matters most: the demonstration venue with no network access.
 
 ### What the fix does
 
