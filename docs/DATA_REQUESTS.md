@@ -1,9 +1,8 @@
-# Data Requests for the Operator
+# Data source requests
 
-Charter Addendum 01 section 2, point 5. When a dataset needed for a use-case
-binding cannot be reached from the build environment, it is recorded here in
-full rather than invented. Each entry carries everything the operator needs to
-fetch it by hand, and each is surfaced at the next checkpoint.
+When a dataset needed for a use-case binding cannot be reached from the build
+environment, it is recorded here in full rather than invented. Each entry
+carries the information a maintainer needs to retrieve and verify it manually.
 
 A dataset is never fabricated to fill a row in this table. An empty binding
 is an honest gap; a plausible-looking invented one is a fabricated benchmark.
@@ -167,7 +166,7 @@ bayanat.ae in the 12 datasets listed on the first page of the portal.**
 view. None are in the Security and Justice category. A keyword search for
 incident or crime data was not attempted because the listing returns 200 with
 the static page; search triggers JavaScript that the fetcher cannot execute.
-Operator may search the portal manually if a federal incident dataset is needed.
+A maintainer may search the portal manually if a federal incident dataset is needed.
 
 The Ajman police statistics dataset remains the binding for uc-004.
 

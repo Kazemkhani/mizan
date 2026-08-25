@@ -46,7 +46,7 @@ from mizan.engine.db.database import init_db_sync
 # Demo constants
 # ---------------------------------------------------------------------------
 
-# Ninety-second budget is the charter definition of done for make demo.
+# Ninety-second budget is the documented acceptance limit for make demo.
 _BUDGET_SECONDS: float = 90.0
 
 _DEMO_NS = uuid.UUID("6ba7b810-9dad-11d1-80b4-00c04fd430c8")

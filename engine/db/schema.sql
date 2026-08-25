@@ -380,7 +380,7 @@ END;
 CREATE TRIGGER IF NOT EXISTS trg_evidence_no_update
 BEFORE UPDATE ON evidence
 BEGIN
-    SELECT RAISE(ABORT, 'evidence is append-only: UPDATE is prohibited by charter');
+    SELECT RAISE(ABORT, 'evidence is append-only: UPDATE is prohibited by design');
 END;
 
 -- ------------------------------------------------------------
@@ -392,7 +392,7 @@ END;
 CREATE TRIGGER IF NOT EXISTS trg_evidence_no_delete
 BEFORE DELETE ON evidence
 BEGIN
-    SELECT RAISE(ABORT, 'evidence is append-only: DELETE is prohibited by charter');
+    SELECT RAISE(ABORT, 'evidence is append-only: DELETE is prohibited by design');
 END;
 
 

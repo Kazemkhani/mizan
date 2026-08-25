@@ -1,270 +1,188 @@
 <title>MIZAN Evaluation Flow</title>
 
-# MIZAN: Evaluation Flow
+# MIZAN evaluation flow
 
-This document answers the question a judge or an integrator asks first:
-what runs in what order, and how do the four mechanisms compose?
+This document describes the code path that runs today. Read it before the
+individual module contracts in [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
-Read it before reading individual module docstrings or `docs/ARCHITECTURE.md`.
-
-**Current status (as of Wave 1 mid-point):** Two evaluation paths exist
-and they are not the same path. The proof script (`scripts/prove_reduction.py`)
-runs the adaptive engine with per-probe stopping. The production script
-(`scripts/run_e2e.py`) and the API route both run every suite exhaustively
-without the engine. The measured reduction comes from the proof path; a judge
-exercising the demo exercises the exhaustive path. This gap is named rather
-than smoothed over; closing it is the primary wiring task of this section.
-
----
-
-## The four mechanisms and their jobs
-
-**UCB1 (BanditEngine):** decides where to spend the next probe.
-It selects the suite arm that has the highest expected information gain
-toward the certification decision, given what has been learnt so far.
-
-**Stopping bounds (ControlState):** decide whether a control is finished.
-After each arm pull, the engine recomputes the Clopper-Pearson lower bound
-(for passing controls) and the Hoeffding upper bound (for failing controls)
-against the required pass rate. A control is decided when the bound clears
-the threshold or when budget is exhausted.
-
-**Control register (use\_cases.json and the controls table):** decides what
-"finished" means for each control. It supplies `pass_threshold`,
-`threshold_direction`, `is_mandatory`, and `suite_id`. From these the engine
-derives `required_pass_rate`, `n_max`, and `alpha_per_control`. The register
-is read once at evaluation start; it does not change mid-evaluation.
-
-**MCSS (MCSSLayer):** decides where to start next time. After a completed
-evaluation it absorbs the arm-pull record and updates historical mean reward
-per suite. The next evaluation of the same use-case class starts with arms
-ordered by descending historical mean, so UCB1 inherits a warm-start rather
-than a random start. MCSS runs once before and once after each evaluation;
-it does not run during one.
-
----
-
-## Two current paths
-
-### Path A: proof path (prove\_reduction.py)
-
-This is the path that produces the measured reduction figures.
+## System path
 
 ```mermaid
 flowchart TD
-    subgraph INIT ["Initialisation"]
-        A[Load controls from register] --> B[Derive n_max and alpha_per_control per control]
-        B --> C[Load MCSS warm-start from engine_memory]
-        C --> D[Construct BanditEngine with MCSS ordering]
-        D --> E[Construct BatchSuiteRunner\none probe per arm pull\nevidence via append_evidence]
-    end
-
-    subgraph LOOP ["Adaptive evaluation loop (one probe per arm pull)"]
-        E --> F{check_stopping\nbefore each arm pull}
-        F -->|fail detected| STOP_FAIL[Stop: mandatory_control_failed]
-        F -->|all decided| STOP_OK[Stop: hoeffding_bound_met]
-        F -->|budget gone| STOP_B[Stop: budget_exhausted]
-        F -->|continue| G[select_arm\nPhase 1 MCSS warm-start\nPhase 2 UCB1]
-        G --> H[BatchSuiteRunner: draw ONE probe\nfrom selected suite cursor\nscore it, append_evidence\nreturn single-item result]
-        H --> I[pull: update ControlState\nrecompute bounds\nupdate ArmState UCB score\nrecord ArmPull]
-        I --> F
-    end
-
-    subgraph TERM ["Termination"]
-        STOP_FAIL --> J[final_verdict]
-        STOP_OK --> J
-        STOP_B --> J
-        J --> K[Persist results\nUpdate MCSS memory]
-    end
+    A[Register model and model card] --> B[Select use case]
+    B --> C[Load required controls and thresholds]
+    C --> D[Create evaluation record]
+    D --> E[Open evaluation WebSocket]
+    E --> F[BanditEngine selects suite]
+    F --> G[BatchSuiteRunner draws one probe]
+    G --> H[Endpoint returns response]
+    H --> I[Scorer produces result]
+    I --> J[(Append-only evidence and hash chain)]
+    J --> K[Control bounds and arm state update]
+    K --> L{Stopping rule met?}
+    L -->|no| F
+    L -->|yes| M[Persist verdict and control decisions]
+    M --> N[Issue bilingual certificate]
+    J -. bundle hash .-> N
 ```
 
-**Granularity**: one arm pull equals one probe. Stopping bounds are
-re-evaluated between every probe. A control can stop the moment its bound
-clears; the remaining probes for that control are never drawn.
+The API WebSocket, `scripts/run_e2e.py --adaptive` and the proof script all use
+`BanditEngine` with `BatchSuiteRunner`. The command-line runner also retains an
+explicit exhaustive mode so the adaptive result can be compared with a full
+fixed-order corpus run.
 
-This is how the non-compliant model rejection rate moves from 57.9 percent
-(budget exhaustion only) to 83.2 percent (early stop on bound). [source:
-docs/evidence/reduction\_report.md]
+## 1. Registration
 
-`BanditEngine` is constructed at lines 1001 and 1140 of
-`scripts/prove_reduction.py`. It appears nowhere in the API or in
-`scripts/run_e2e.py`.
+`POST /api/v1/models` records the model identity, intended endpoint, declared
+evaluation profile and structured model card. The current demonstration does
+not call the declared endpoint. A missing live adapter resolves to the
+deterministic `MockEndpoint`, and the serving mode is recorded on the
+certificate so a mock evaluation cannot be mistaken for a live one.
 
-### Path B: production path (run\_e2e.py and API, pre-wiring)
+## 2. Evaluation creation
 
-This is the path a user or judge exercises today.
+`POST /api/v1/evaluations` validates that the model and use case exist, inserts
+the evaluation row and loads the use-case control set. Each control supplies:
 
-```mermaid
-flowchart LR
-    A[Evaluation started\nAPI POST or run_e2e.py] --> B[Loop over all suite IDs\nin fixed alphabetical order]
-    B --> C[run_suite: call endpoint\nfor every probe in suite\nscore all, append_evidence all]
-    C --> B
-    B -->|all suites done| D[Compute evidence_bundle_hash\nWrite result]
+- `control_id` and `suite_id`;
+- whether it is mandatory;
+- its pass threshold and threshold direction;
+- its weight and evidence type; and
+- the confidence threshold inherited from the use case.
+
+The engine derives the per-control required pass rate, statistical budget and
+joint-confidence allocation from these fields. Callers can provide documented
+engine overrides, but the default budget comes from the register.
+
+The route returns before probes run. The evaluation starts when the client opens
+`WS /api/v1/ws/evaluations/{id}/stream`.
+
+## 3. Adaptive loop
+
+The WebSocket handler constructs a `BatchSuiteRunner` and `BanditEngine`, then
+runs the synchronous engine in a worker thread while forwarding events through
+an asynchronous queue.
+
+Before each arm pull, the engine checks:
+
+1. whether any mandatory control has failed;
+2. whether every mandatory control has been decided; and
+3. whether the total evaluation budget is exhausted.
+
+If evaluation continues, suite selection has two phases.
+
+### Initial coverage
+
+Every unvisited suite covering an undecided mandatory control receives an
+initial pull in a deterministic order. `BanditEngine` supports an MCSS-derived
+warm-start ordering when one is supplied.
+
+The API and headline reduction proof do not currently load or persist that
+warm-start. Cross-evaluation compounding is therefore a research path, not a
+property of the live API or the published reduction figure.
+
+### UCB1 allocation
+
+After initial coverage, UCB1 chooses the suite with the greatest upper
+confidence index. A seeded random generator breaks exact ties, so repeated runs
+with the same inputs remain reproducible.
+
+`BatchSuiteRunner.__call__(suite_id, control_ids)` draws one probe from the
+suite cursor, calls the endpoint, scores the response and appends one evidence
+row. Stopping is reconsidered between probes, so a decided control does not
+needlessly consume the rest of its corpus.
+
+## 4. Control decisions
+
+After every probe, the matching `ControlState` updates its sample count, pass
+count and bounds. Decision bases remain distinct:
+
+- a statistical pass or failure comes from a configured confidence bound;
+- a budget pass or failure means the available probe budget ended first;
+- a zero-violation decision uses the exact binomial path;
+- an attestation decision comes from declared documentary evidence rather than
+  model output; and
+- an undecided control remains visible as undecided.
+
+The certificate and interface must preserve this distinction. A budget-limited
+pass is not silently promoted to a statistically demonstrated pass.
+
+## 5. Evidence path
+
+Every probe result passes through `append_evidence()`. The data layer computes
+the canonical payload hash rather than accepting a caller-supplied value. Each
+row includes the previous row hash for the same evaluation, and database
+triggers reject updates and deletions.
+
+This detects changes made through the normal database boundary and makes an
+evidence bundle reproducible. It does not stop an administrator with direct file
+access from replacing the database and recomputing the chain. External hash
+publication remains roadmap work.
+
+## 6. Termination and certificate
+
+At termination the WebSocket handler:
+
+1. computes the final verdict and per-control decision record;
+2. persists status, arm pulls, stopping reason and query count;
+3. updates the registered model status;
+4. issues the bilingual certificate; and
+5. emits a final `stop` event containing the certificate identifier and evidence
+   bundle hash.
+
+The current certificate signature is a prototype boundary. Deployment-grade,
+externally verifiable signing and key management are not yet implemented.
+
+## 7. Proof and comparison paths
+
+`scripts/prove_reduction.py` runs adaptive and exhaustive evaluation against the
+same corpus and decision rules, then asserts verdict and control-level parity.
+Its report distinguishes endpoint calls from evidence rows and publishes full
+seed distributions where applicable.
+
+`scripts/run_e2e.py` exposes both modes:
+
+```bash
+uv run python scripts/run_e2e.py --adaptive
+uv run python scripts/run_e2e.py
 ```
 
-**No stopping.** All suites run to completion regardless of control state.
-**No UCB1.** Suite selection order is fixed.
-**No MCSS.** No warm-start, no inter-evaluation learning.
-**No engine in the API.** The evaluation route stores records in-memory and
-returns fixture data. The websocket route sends three synthetic `StreamEvent`
-objects and closes.
+The adaptive form mirrors the API's engine and runner. The default form runs all
+suites in fixed order and exists as a reproducible baseline, not as the path
+served by the evaluation WebSocket.
 
-### Gap statement
+## 8. Static interface mode
 
-The adaptive engine is not a component with a missing connector. It is not
-in the production path at all. The proof script, the test suite, and the
-production path are three separate implementations of the evaluation loop
-with no shared runner. A judge who exercises the demo exercises Path B.
-The Fatima journey (budget reallocation live, confidence bounds tightening,
-early stops firing with a stated reason) requires Path A in the production
-API. It currently has no producer.
+The production web build can be deployed without the Python engine. In that
+mode it replays evaluation traces exported by
+`scripts/export_demo_runs.py`. The interface labels the traces as recorded and
+does not imply that the browser is executing a live evaluation.
 
----
+## 9. Adapter contract
 
-## Target architecture (post-wiring)
+The engine consumes a probe source with this shape:
 
-Once the wiring task below is complete, Path A and the production API share
-the same runner implementation. The diagram in this section describes the
-target state; the gap section above describes today.
-
-```mermaid
-flowchart TD
-    subgraph API ["API layer"]
-        R[POST /api/v1/evaluations\nCreate DB row, return 202] --> WS
-        WS[WS /api/v1/ws/evaluations/id/stream\nDrives BanditEngine\nEmits StreamEvent per arm pull]
-    end
-
-    subgraph ENGINE ["Engine layer (shared with prove_reduction.py)"]
-        WS --> BE[BanditEngine\nUCB1 + stopping bounds]
-        BE --> BSR[BatchSuiteRunner\nmizan/agents/harness/batch_runner.py\none probe per arm pull\nappend_evidence mandatory write path]
-    end
-
-    subgraph EVIDENCE ["Evidence layer"]
-        BSR --> EV[(Evidence table\nappend-only, hash chain)]
-        EV --> BE
-        BE --> CERT[Certificate\nevidence_bundle_hash\nbilingual, per-control verdict]
-    end
-
-    subgraph MCSS ["Inter-evaluation learning"]
-        CERT --> MCSS2[MCSSLayer.update\nMCSSLayer.save\nengine_memory persisted]
-    end
-```
-
-`scripts/run_e2e.py --adaptive` exercises the same `BanditEngine` and
-`BatchSuiteRunner` that the API uses, so the end-to-end script is a
-reproducible offline version of what the API does.
-
----
-
-## Sequence by time (target state)
-
-### Phase 0: submission (once)
-
-1. `POST /api/v1/evaluations` creates a database row (status `running`)
-   for a `(model_id, use_case_id)` pair.
-
-2. The control register is read. For the selected use case, every control
-   record supplies: `control_id`, `suite_id`, `is_mandatory`,
-   `pass_threshold`, `threshold_direction`.
-
-3. The engine derives per control:
-   - `required_pass_rate = _derive_required_pass_rate(pass_threshold, direction)`
-   - `n_max = _min_probes_for_statistical_pass(required_pass_rate, alpha_per_control)`
-   - `alpha_per_control = (1 - confidence_threshold) / K_mandatory`
-
-4. `MCSSLayer.load()` reads `engine_memory` for this use-case class and
-   returns a warm-start ordering (or declaration order if no prior evaluation).
-
-5. `BanditEngine` is constructed with `mcss_ordering` fixed.
-   `BatchSuiteRunner` is constructed with the evaluation's endpoint and
-   mandatory control IDs.
-
-### Phase 1: adaptive evaluation loop
-
-The loop calls `check_stopping()` before each arm pull:
-
-1. Any mandatory control has `decision() == False`: stop (`mandatory_control_failed`).
-2. All mandatory controls have `is_decided() == True`: stop (`hoeffding_bound_met`).
-3. `total_queries >= total_budget`: stop (`budget_exhausted`).
-
-When the loop continues, `select_arm()` runs:
-
-**Phase 1 (warm-start).** While any unvisited arm covers an undecided
-mandatory control, select the first such arm in MCSS priority order.
-Deterministic; no random tie-breaking.
-
-**Phase 2 (UCB1).** Once all arms are visited, select by maximum UCB1 index
-(exploration bonus `sqrt(log(t)/n_i)`, constant `c = sqrt(2)`). Ties broken
-by seeded RNG for determinism.
-
-`BatchSuiteRunner.__call__(suite_id, control_ids)` is called. It draws
-**one probe** from the suite's cursor, calls the model endpoint, scores the
-response, and writes one evidence row via `append_evidence()`.
-
-`pull(arm_index, probe_results)` updates `ControlState` (n, s, bounds) and
-`ArmState` (pulls, UCB score). One `ArmPull` is recorded and emitted as a
-`StreamEvent` over the websocket.
-
-### Loop invariant (target state)
-
-After every arm pull (one probe), the following are current:
-
-- `p_hat_k = s_k / n_k` for every control.
-- Clopper-Pearson lower bound `p_lower_k` (STATISTICAL\_PASS check).
-- Hoeffding half-width `epsilon_k` (STATISTICAL\_FAIL fallback check).
-- UCB1 index for every arm.
-
-The following are NOT recomputed until the next arm pull:
-
-- MCSS memory (updated at evaluation termination only).
-
-### Phase 2: termination
-
-1. `final_verdict()`: certified or rejected.
-2. Certificate row written with `evidence_bundle_hash`.
-3. `MCSSLayer.update(arm_pulls)` and `MCSSLayer.save()`.
-
----
-
-## What is currently unexercised
-
-**CLEAN\_RUN\_BOUNDED.** Zero-tolerance controls (required\_pass\_rate ==
-1.0) use the Clopper-Pearson upper bound path. GOVERNANCE Wave 1 converted
-all seven zero-tolerance probe controls to `evidence_type: "attestation"`.
-The path is implemented and tested but unreachable in the current control
-register. It remains correct for future use cases.
-
-**MCSS compounding benefit.** The end-to-end measurement that mean
-probes-to-verdict decreases across successive evaluations of the same
-use-case class is a Wave 2 deliverable (`scripts/prove_reduction.py`
-produces the graph stub).
-
----
-
-## Adapter contract
-
-The interface between `BanditEngine` and `HARNESS` is a callable with the
-signature:
-
-```
+```text
 suite_runner(suite_id: str, control_ids: list[str]) -> list[dict]
 ```
 
-Each returned dict must contain: `control_id` (str), `probe_id` (str),
-`passed` (bool or int), `score` (float).
+Each returned item contains at least `control_id`, `probe_id`, `passed` and
+`score`. `BatchSuiteRunner` is the canonical implementation. Test doubles use
+the same contract to exercise allocation and stopping without an endpoint or
+database.
 
-In the proof path, `BatchSuiteRunner.__call__` implements this interface.
-In production, the same class (extracted to
-`mizan/agents/harness/batch_runner.py`) is the canonical implementation.
-`MockSuiteRunner` in `tests/test_bandit_engine.py` implements it for tests.
+## 10. Current operational limits
 
-Three separate implementations of one unnamed interface is how the paths
-diverged. The name is now: `ProbeSource`. Specification is in
-`docs/ARCHITECTURE.md` section 8.
+- Evaluation orchestration uses in-process state alongside SQLite, so it is not
+  safe for multiple API workers or process restarts during a run.
+- The WebSocket path currently uses deterministic mock endpoints rather than the
+  submitted live endpoint URL.
+- MCSS warm-start ordering is implemented and measured separately but is not
+  wired into the API or headline reduction proof.
+- PostgreSQL migrations, external key management, identity and tenant isolation
+  remain production-readiness work.
+- Corpus size is insufficient for many passing controls to earn the configured
+  statistical bound; the certificate reports those as budget decisions.
 
----
-
-*Maintained by ARCHITECT. Any change to the evaluation loop, stopping
-criteria, MCSS update timing, or the `ProbeSource` interface must be
-reflected here before the wave gate. If the composition described here
-diverges from the code, the code is the authority.*
+Changes to the evaluation loop, stopping rules, evidence path or probe-source
+contract must update this document in the same pull request.

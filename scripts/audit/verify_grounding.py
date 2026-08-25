@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Data grounding and honesty gates. Charter Addendum 01 sections 2 and 5.
+"""Data grounding and public-claim honesty gates.
 
 Three checks, all hard gates:
 
@@ -68,13 +68,13 @@ def mask(text: str) -> str:
 
 def check_risks() -> list[Finding]:
     if not RISKS.exists():
-        return [Finding("G1", "docs/RISKS.md", "missing; Addendum section 5 requires it")]
+        return [Finding("G1", "docs/RISKS.md", "missing; public claims require a risk register")]
     text = RISKS.read_text(encoding="utf-8")
     findings = []
     headings = [l for l in text.splitlines() if l.startswith("### ")]
     if len(headings) < 3:
         findings.append(Finding("G1", "docs/RISKS.md",
-                                f"only {len(headings)} risks named; the addendum names three as a floor"))
+                                f"only {len(headings)} risks named; three is the minimum coverage floor"))
     blocks = re.split(r"^### ", text, flags=re.MULTILINE)[1:]
     for b in blocks:
         title = b.splitlines()[0].strip()
