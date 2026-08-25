@@ -170,7 +170,6 @@ class TestDeterminism:
         """
         import subprocess
         import sys
-        import stat
 
         # Snapshot mtimes before the run.
         before: dict[str, float] = {}

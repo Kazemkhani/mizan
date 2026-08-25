@@ -21,6 +21,26 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      - name: Detect proof-sensitive changes
+        id: proof_scope
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [ "$EVENT_NAME" != "pull_request" ]; then
+            echo "required=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git fetch --no-tags --depth=1 origin "$BASE_SHA"
+          if git diff --quiet "$BASE_SHA" HEAD -- \
+            .github/workflows/gates.yml Makefile pyproject.toml uv.lock \
+            mizan engine agents suites scripts tests docs/evidence; then
+            echo "required=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "required=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Install uv
         uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
         with:
@@ -33,6 +53,9 @@ jobs:
       - name: Install dependencies
         run: uv sync --frozen --extra dev
 
+      - name: Python lint
+        run: uv run ruff check .
+
       - name: Tests
         run: uv run python -m pytest -q
 
@@ -40,6 +63,7 @@ jobs:
       # deterministic. Kept out of the default run so `make test` stays usable,
       # but it still runs here: a test excluded everywhere is a test deleted.
       - name: Slow tests, full corpus regeneration
+        if: steps.proof_scope.outputs.required == 'true'
         run: uv run python -m pytest -q -m slow
 
       - name: Register discipline, E001 to E005
@@ -52,12 +76,14 @@ jobs:
         run: python3 scripts/audit/verify_grounding.py
 
       - name: Evidence integrity
+        if: steps.proof_scope.outputs.required == 'true'
         run: |
           uv run python scripts/seed.py
           uv run python scripts/run_e2e.py --profile compliant --seed 42
           uv run python scripts/verify_evidence.py
 
       - name: Determinism, same seed must give the same bundle hash
+        if: steps.proof_scope.outputs.required == 'true'
         run: |
           A=$(uv run python scripts/run_e2e.py --profile compliant --seed 42 | grep -A2 "bundle hash" | tail -1 | tr -d ' ')
           B=$(uv run python scripts/run_e2e.py --profile compliant --seed 42 | grep -A2 "bundle hash" | tail -1 | tr -d ' ')
@@ -66,6 +92,7 @@ jobs:
           test "$A" = "$B" || { echo "DETERMINISM BROKEN"; exit 1; }
 
       - name: The measured proof
+        if: steps.proof_scope.outputs.required == 'true'
         run: uv run python scripts/prove_reduction.py
 
   interface:

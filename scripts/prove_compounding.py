@@ -29,7 +29,6 @@ from __future__ import annotations
 import argparse
 import os
 import statistics
-import sys
 import tempfile
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -46,15 +45,10 @@ _TMP_DB_PATH = _tmp_db.name
 os.environ.setdefault("MIZAN_DATABASE_URL", f"sqlite+aiosqlite:///{_TMP_DB_PATH}")
 
 from mizan.agents.harness.adapters import MockEndpoint          # noqa: E402
-from mizan.agents.harness.runner import _load_suite             # noqa: E402
 from mizan.agents.harness.scorers import score_probe            # noqa: E402
 from mizan.engine.bandit.allocator import (                     # noqa: E402
     BanditEngine,
-    _derive_required_pass_rate,
-    _min_probes_for_statistical_pass,
-    ControlState,
 )
-from mizan.api.schemas import ArmPull                           # noqa: E402
 
 _REPO_ROOT    = Path(__file__).resolve().parents[1]
 _EVIDENCE_DIR = _REPO_ROOT / "docs" / "evidence"
@@ -690,7 +684,7 @@ def main() -> None:
                         help="Model profile to evaluate.")
     args = parser.parse_args()
 
-    print(f"MIZAN prove_compounding.py")
+    print("MIZAN prove_compounding.py")
     print(f"Profile: {args.profile}  N_evals: {args.n_evals}  N_seeds: {args.n_seeds}")
 
     try:
@@ -722,7 +716,7 @@ def main() -> None:
             profile         = args.profile,
             report_path     = report_path,
         )
-        print(f"\nReport written to: docs/evidence/compounding_position.md")
+        print("\nReport written to: docs/evidence/compounding_position.md")
 
     finally:
         try:

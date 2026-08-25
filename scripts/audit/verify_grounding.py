@@ -71,7 +71,7 @@ def check_risks() -> list[Finding]:
         return [Finding("G1", "docs/RISKS.md", "missing; public claims require a risk register")]
     text = RISKS.read_text(encoding="utf-8")
     findings = []
-    headings = [l for l in text.splitlines() if l.startswith("### ")]
+    headings = [line for line in text.splitlines() if line.startswith("### ")]
     if len(headings) < 3:
         findings.append(Finding("G1", "docs/RISKS.md",
                                 f"only {len(headings)} risks named; three is the minimum coverage floor"))

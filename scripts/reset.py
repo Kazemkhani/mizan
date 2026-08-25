@@ -17,14 +17,13 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import os
 import sys
 from pathlib import Path
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO_ROOT))
 
-from mizan.engine.db.database import _DATABASE_URL, _DEFAULT_DB_PATH, engine, init_db
+from mizan.engine.db.database import _DATABASE_URL, _DEFAULT_DB_PATH, init_db
 
 
 async def reset(seed: bool = True) -> None:

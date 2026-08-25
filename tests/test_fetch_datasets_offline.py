@@ -29,7 +29,6 @@ import json
 import sys
 from pathlib import Path
 
-import pytest
 
 # Allow running from repo root.
 _HERE = Path(__file__).resolve().parent

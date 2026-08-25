@@ -14,7 +14,6 @@ import mizan
 from httpx import AsyncClient, ASGITransport
 
 from mizan.api.main import app
-from mizan.api.schemas import HealthOut
 
 
 def test_package_importable() -> None:

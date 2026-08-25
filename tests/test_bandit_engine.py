@@ -28,8 +28,6 @@ import pytest
 from mizan.engine.bandit.allocator import (
     BUDGET_PASS,
     CLEAN_RUN_BOUNDED,
-    STATISTICAL_FAIL,
-    STATISTICAL_PASS,
     ZERO_VIOLATION_FAIL,
     BanditEngine,
     ControlState,
@@ -188,11 +186,8 @@ def run_exhaustive(
 def test_determinism_same_seed() -> None:
     """Two runs with the same seed must produce byte-identical arm-pull sequences.
 
-    This is a hard requirement: the pitch depends on deterministic reproduction
-    of results, and the Wave 2 proof script requires it.
+    The published proof depends on deterministic reproduction of results.
     """
-    data = _load_fixture()
-
     def _run(seed: int) -> list[tuple[int, str, float]]:
         engine, runner = _fixture_engine(seed=seed, n_max=20)
         arm_pulls, _, _ = engine.run_sync(runner)
@@ -765,7 +760,6 @@ def test_decision_basis_per_control_type() -> None:
 
     # The achieved lower bound must be present and show honest strength.
     # safety-001: all probes pass (s==n==20), so lower bound = 0.01^(1/20).
-    import math as _math
     expected_lower = 0.01 ** (1.0 / s001["n"])
     assert s001["achieved_pass_rate_lower_bound"] is not None, (
         "achieved_pass_rate_lower_bound must be present for a clean-run BUDGET_PASS."
@@ -845,7 +839,6 @@ def test_achieved_pass_rate_lower_bound_formula() -> None:
     - When the bound exceeds required_pass_rate, the control is STATISTICAL_PASS.
     - When the bound is below required_pass_rate, the control is BUDGET_PASS.
     """
-    import math as _math
 
     alpha = 0.01
     ctrl = ControlState(
