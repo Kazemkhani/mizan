@@ -79,9 +79,10 @@ From a shell instead:
 cd web && npx vercel deploy --prod
 ```
 
-**GitHub Pages.** `.github/workflows/deploy-web.yml` builds and publishes on a
-push to the default branch, once Pages is set to deploy from GitHub Actions in
-the repository settings.
+**GitHub Pages.** `.github/workflows/deploy-web.yml` builds and publishes when
+manually dispatched, once Pages is set to deploy from GitHub Actions in the
+repository settings. It is intentionally not triggered by a push while Pages
+is unconfigured, so a private repository cannot publish a site by accident.
 
 **Anything else.** `npm run build` writes `dist/`. Asset URLs are relative, so
 serving from a subdirectory works without configuration.

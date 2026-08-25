@@ -99,7 +99,9 @@ sequenceDiagram
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Kazemkhani/mizan)
 
-The Codespace installs the toolchain, seeds the registry, and **runs every gate before handing you a prompt**, so a fresh environment proves itself rather than assuming.
+The Codespace installs the pinned toolchain, seeds the registry, and **runs the
+core test, register and grounding gates before handing you a prompt**, so a
+fresh environment proves itself rather than assuming.
 
 Locally instead:
 
