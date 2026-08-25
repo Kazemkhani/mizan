@@ -69,3 +69,11 @@ Any determinism test needs a companion asserting that a different seed produces 
 Record consequential choices in `docs/DECISIONS.md`, with the reasoning and the alternatives rejected. Take the next free number and check the file first, because parallel contributors have collided on numbering before.
 
 Risks belong in `docs/RISKS.md`, each with a named mitigation. A risk without a mitigation is an excuse.
+
+## Contribution licence
+
+Unless you state otherwise, a contribution intentionally submitted for
+inclusion in MIZAN is provided under the Apache License 2.0, as described in
+section 5 of [`LICENSE`](LICENSE). Mark material that you do not intend as a
+contribution explicitly and do not submit third-party material without its
+licence and required attribution.
