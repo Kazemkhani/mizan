@@ -172,7 +172,7 @@ Required interface:
 
 ## 5. Verification commands and output
 
-All commands were run from the repository root (`/Users/amirhosseinkazemkhani/work/mizan`).
+All commands were run from the root of this checkout.
 
 ### Package importability
 

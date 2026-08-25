@@ -444,7 +444,7 @@ Key EPC insight from Citizens Advice research: 76% of people who have read an EP
 **Evidence quality indicators (GRADE framework):** In clinical evidence, the GRADE framework uses qualitative labels (High, Moderate, Low, Very Low evidence quality) combined with symbols (shaded circles, stars) to communicate epistemic uncertainty about the evidence base, not the conclusion. This is distinct from a confidence interval. The label tells the reader how much to trust the finding, not how probable the finding is.
 
 Source: https://www.gov.uk/government/publications/food-hygiene-rating-scheme/food-hygiene-rating-scheme (read 2026-08-20)  
-Source: https://assets.ctfassets.net/mfz4nbgura3g/.../Citizens_Advice_response_to_Home_Energy_Model_consultation__Energy_Performance_Certificates.pdf (read 2026-08-20)
+Source: https://assets.ctfassets.net/mfz4nbgura3g/1IKSUWnC84X7QqgRjPgmnI/b60cbb11afa0bfa31ddf3b32ef31b5b0/Citizens_Advice_response_to_Home_Energy_Model_consultation__Energy_Performance_Certificates.pdf (read 2026-08-20)
 
 ### 5.3 What this means for the MIZAN certificate
 

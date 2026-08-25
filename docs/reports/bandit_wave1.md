@@ -2,7 +2,7 @@
 
 Wave 1, Parallel Core. BANDIT, Principal Research Scientist, Sequential Decision-Making.
 Date: 2026-08-19 (revised post-coordinator review).
-Repository root: `/Users/amirhosseinkazemkhani/work/mizan`.
+Repository root: the root of this checkout.
 
 ---
 

@@ -3,7 +3,7 @@
 **Agent:** RASHID, Principal Arabic NLP and Localisation Lead  
 **Wave:** 1  
 **Date:** 2026-08-19  
-**Repository root:** `/Users/amirhosseinkazemkhani/work/mizan`
+**Repository root:** the root of this checkout
 
 ---
 
