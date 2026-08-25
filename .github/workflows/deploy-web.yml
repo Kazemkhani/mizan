@@ -5,16 +5,11 @@ name: deploy-web
 # The published build has no engine behind it, so it runs in replay mode
 # against the recorded runs committed in web/src/data/recorded_runs.json.
 #
-# Requires Pages to be set to "GitHub Actions" in the repository settings.
-# Until that is done the build step still runs and the publish step fails,
-# which is the intended signal rather than a silent no-op.
+# Publication remains manual until Pages is explicitly enabled in the
+# repository settings. This avoids guaranteed-failing default-branch runs and
+# prevents a private repository from publishing a site unintentionally.
 
 on:
-  push:
-    branches: [master]
-    paths:
-      - 'web/**'
-      - '.github/workflows/deploy-web.yml'
   workflow_dispatch:
 
 permissions:
