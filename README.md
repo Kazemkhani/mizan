@@ -110,7 +110,7 @@ fresh environment proves itself rather than assuming.
 Locally instead:
 
 ```bash
-uv sync && (cd web && npm install)
+uv sync --frozen --extra dev && (cd web && npm ci)
 make seed     # populate the registry
 make dev      # API on 8000, interface on 5173
 make test     # the full suite
