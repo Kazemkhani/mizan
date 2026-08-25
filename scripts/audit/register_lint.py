@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""MIZAN register discipline linter.
+"""MIZAN public-language linter.
 
-Enforces charter section 7 mechanically rather than by opinion.
+Enforces the repository's documented language policy mechanically.
 
 Rules:
   E001  em-dash or horizontal bar anywhere
   E002  emoji anywhere
   E003  American spelling in prose, in a comment, or in a user-facing string
-  E004  a Latin-script quotation mark pair used where the charter expects plain prose is not checked;
+  E004  a Latin-script quotation mark pair used where the policy expects plain prose is not checked;
         instead this slot flags mixed-direction punctuation errors in Arabic strings
 
 Prose files are scanned in full. Code files are scanned in their comments and
@@ -30,9 +30,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
-# The client's own source document, not our output. Excluded by design.
 EXCLUDED_FILES = {
-    "docs/CHARTER.md",
     "scripts/audit/register_lint.py",
     # Deliberate violations live here as test fixtures.
     "scripts/audit/test_register_lint.py",
@@ -90,7 +88,7 @@ DINGBAT_PATTERN = re.compile(
 USER_FACING_PREFIXES = ("web/src/", "web/public/", "suites/", "api/")
 
 # ---------------------------------------------------------------------------
-# E005, the precise language law. Charter Addendum 01 section 4.
+# E005, the precise public-language policy.
 # The judges' formula is: name the action, name the outcome, name the safeguard.
 # Marketing register is banned wherever a judge can read it. This is scoped to
 # pitch-facing surfaces rather than the whole repository, because an internal
@@ -335,9 +333,9 @@ def check_file(path: Path) -> list[Finding]:
     # E001 and E002 apply to the whole file regardless of type.
     for i, line in enumerate(text.splitlines(), start=1):
         if DASH_PATTERN.search(line):
-            findings.append(Finding(rel, i, "E001", "em-dash or horizontal bar is banned by charter section 7", line))
+            findings.append(Finding(rel, i, "E001", "em-dash or horizontal bar is banned by the public-language policy", line))
         for m in EMOJI_PATTERN.finditer(line):
-            findings.append(Finding(rel, i, "E002", f"emoji {m.group(0)!r} is banned by charter section 7", line))
+            findings.append(Finding(rel, i, "E002", f"emoji {m.group(0)!r} is banned by the public-language policy", line))
 
     # E004 applies to dingbats and arrows, but only where a string reaches a
     # human reading the product. Comments and documents may use them freely.
@@ -384,7 +382,7 @@ def check_file(path: Path) -> list[Finding]:
 
 
 def check_precise_language(rel: str, text: str, suffix: str) -> list["Finding"]:
-    """Enforce Charter Addendum 01 section 4 on one pitch-facing file."""
+    """Enforce the precise-language policy on one public-facing file."""
     findings: list[Finding] = []
 
     if suffix in PROSE_SUFFIXES:

@@ -37,7 +37,7 @@ Determinism:
     produce identical evidence bundles.
 
 Flakiness policy:
-    The MIZAN charter (section 7) prohibits papering over non-determinism
+    The MIZAN determinism policy prohibits papering over non-determinism
     with retries. The runner has no retry logic for individual probes. Any
     scoring error is recorded in scorer_metadata with 'runner_error', so
     the full suite completes and the gap is visible in the evidence table.

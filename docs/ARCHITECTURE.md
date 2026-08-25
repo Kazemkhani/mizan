@@ -1,20 +1,21 @@
 # MIZAN Architecture
 
 Sovereign AI Model Registry and Adaptive Compliance Engine.
-Version 0.1.0, Wave 0 Foundation.
+Current implementation contract. Last reviewed 2026-08-25.
 
 > **Read [`docs/FLOW.md`](FLOW.md) first** if you want to understand what
 > runs in what order. This document covers the schema, module boundaries,
-> and interface contracts. FLOW.md covers the evaluation sequence, how
-> UCB1 and MCSS compose, and the integration gap at the suite-runner
-> boundary.
+> and interface contracts. FLOW.md covers the evaluation sequence and the
+> current integration boundaries. Historical wave and role labels in later
+> design decisions identify the stage in which a contract was introduced;
+> they are not the current delivery status. See [`PROVENANCE.md`](PROVENANCE.md).
 
 ---
 
 ## 1. System overview
 
 MIZAN adjudicates AI models against a defined set of government controls
-and issues cryptographically signed bilingual certificates. The system
+and issues prototype-signed bilingual certificates. The system
 comprises four bounded layers:
 
 ```
@@ -24,7 +25,7 @@ API layer (FastAPI, Pydantic v2)
     |  Python function calls
 Evaluation engine (UCB1 bandit, MCSS, suite runners)
     |  SQLAlchemy Core
-Database (SQLite for demo; Postgres-ready DDL)
+Database (SQLite prototype; PostgreSQL is roadmap work)
 ```
 
 All four layers share a single schema, a single evidence model, and a
@@ -41,11 +42,11 @@ mizan/                     Python package (importable as "mizan")
       database.py          Engine initialisation, session factory,
                            SHA-256 content-addressing utilities
       __init__.py
-    bandit/                UCB1 allocator (BANDIT, Wave 1)
-    mcss/                  Monte Carlo Strategy Search (BANDIT, Wave 1)
+    bandit/                UCB1 allocator and stopping rules
+    mcss/                  Experimental cross-evaluation warm-start
   agents/
-    harness/               Suite runners and model adapters (HARNESS, Wave 1)
-    redteam/               Red-team probe engine (SENTINEL, Wave 1)
+    harness/               Suite runners, scorers and model adapters
+    redteam/               Red-team probe engine
   api/
     main.py                FastAPI application, lifespan, CORS
     schemas.py             All Pydantic request/response models
@@ -62,16 +63,15 @@ engine/                    Non-Python assets
   db/
     schema.sql             DDL: all tables, indices, constraints
 
-agents/                    Stub directory (HARNESS/SENTINEL populate in Wave 1)
-suites/                    Suite definitions (GOVERNANCE/RASHID populate in Wave 1)
+agents/data/               Open-data retrieval and hash verification
+suites/                    Control, Arabic, red-team and generated probe assets
   controls/
 scripts/
   seed.py                  Deterministic demo data seeder
   reset.py                 Database reset and re-seed
   audit/
     register_lint.py       Register discipline linter (British English, no em-dashes)
-tests/
-  test_health.py           Wave 0 acceptance tests (8 tests)
+tests/                     Unit, integration, determinism and evidence tests
 web/
   src/
     main.tsx               Entry point; imports ATELIER tokens.css and base.css
@@ -83,17 +83,17 @@ web/
     components/
       LanguageToggle.tsx   Language switch button
     styles/
-      tokens.css           ATELIER design tokens (ATELIER owns)
-      base.css             ATELIER base stylesheet (ATELIER owns)
+      tokens.css           Design tokens
+      base.css             Document and element defaults
 docs/
-  CHARTER.md               Project charter
-  DELIVERY_PLAN.md         Wave schedule and acceptance criteria
+  CHARTER.md               Product scope and release standard
+  ROADMAP.md               Readiness gates and remaining work
+  PROVENANCE.md            Guide to historical build and audit records
   ARCHITECTURE.md          This document
   DECISIONS.md             Consequential design decisions and rationale
-  audit/                   AUDITOR signoff files (per wave)
+  audit/                   Historical adversarial signoffs
   evidence/                Reproducible measurement outputs
-  reports/                 Agent completion reports (per agent per wave)
-  submission/              Final pitch artefacts (Wave 4)
+  reports/                 Historical role-based build reports
 ```
 
 ---

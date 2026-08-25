@@ -2,8 +2,7 @@
  * LanguageToggle component.
  *
  * Renders a button that switches between English (LTR) and Arabic (RTL).
- * Owned by ARCHITECT in Wave 0. ATELIER applies visual styling in Wave 3
- * using the design tokens from styles/tokens.css.
+ * Direction is owned by the i18n provider and styling uses the shared tokens.
  */
 
 import React from 'react'

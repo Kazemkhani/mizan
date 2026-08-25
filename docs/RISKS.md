@@ -1,6 +1,7 @@
 # MIZAN Implementation Risks
 
-Charter Addendum 01 section 5. Risks are volunteered, not hidden. Each carries a named mitigation that sits inside the ninety-day pilot plan, and DIRECTOR prepares each as a spoken answer offered before a judge finishes asking.
+Risks are part of the product record, not presentation notes. Each carries a
+named mitigation that can be tested during a controlled pilot.
 
 Present-tense claims in this document are pilot-scale: one entity, one use case, ninety days. National figures appear only as labelled assumptions.
 
@@ -12,7 +13,7 @@ MIZAN adjudicates models against a control set of which twenty-eight controls ci
 
 ### R2. The Arabic test sets need native review
 
-The Arabic evaluation content is Arabic-native rather than translated, and every item records that provenance [source: suites/arabic/, verified by AUDITOR]. It has not yet been reviewed by an independent native Gulf-governmental reader. An attack set that reads as the wrong register tests the wrong thing, and a safety probe that a native speaker would phrase differently may under-detect.
+The Arabic evaluation content is Arabic-native rather than translated, and every item records that provenance [source: suites/arabic/, verified by the repository audit gates]. It has not yet been reviewed by an independent native Gulf-governmental reader. An attack set that reads as the wrong register tests the wrong thing, and a safety probe that a native speaker would phrase differently may under-detect.
 
 **Mitigation, a day-thirty milestone.** Independent native review of the full Arabic corpus by a reader drawn from the host entity's own Arabic content team, scoped as a fixed review pass rather than an open-ended engagement. Items that fail review are replaced, not patched, and the replacement carries its own provenance record. The review itself becomes the first entry in the register's linguistic audit trail.
 

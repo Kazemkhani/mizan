@@ -12,6 +12,10 @@
 
 </div>
 
+<p align="center">
+  <img src="docs/assets/mizan-landing.png" alt="MIZAN introduction showing the model assurance proposition, 36 controls, five government use cases and native Arabic and English support">
+</p>
+
 ---
 
 ## The question
@@ -106,7 +110,7 @@ fresh environment proves itself rather than assuming.
 Locally instead:
 
 ```bash
-uv sync && (cd web && npm install)
+uv sync --frozen --extra dev && (cd web && npm ci)
 make seed     # populate the registry
 make dev      # API on 8000, interface on 5173
 make test     # the full suite
@@ -131,6 +135,21 @@ work, and hands the retrained version back to the engine as a new version.
 The gap analysis is measurement and is labelled so. The plan and the retraining
 are projection and are labelled so: MIZAN does not train models, and no
 projection can issue a certificate.
+
+<table>
+<tr>
+<td width="50%" valign="top">
+<img src="docs/assets/mizan-evaluation.png" alt="MIZAN evaluation console showing a rejected recorded run, its verification log and the Arabic exchange behind a failed control">
+</td>
+<td width="50%" valign="top">
+<img src="docs/assets/mizan-certificate-ar.png" alt="MIZAN bilingual certificate rendered in Arabic with a visible not-certified verdict and per-control evidence bases">
+</td>
+</tr>
+<tr>
+<td valign="top"><sub>The evaluation view keeps the replay disclosure visible and opens the exact exchange, scorer and SHA-256 evidence hash behind a failed control.</sub></td>
+<td valign="top"><sub>The certificate mirrors fully in Arabic and separates unassessed, budget-decided and statistically decided controls. <a href="docs/assets/mizan-certificate-ar-full.png">Open the full certificate</a>.</sub></td>
+</tr>
+</table>
 
 Three prepared submissions are offered in the submit panel: one that certifies,
 one that is rejected after nineteen probes on Arabic language accuracy, and one
@@ -194,7 +213,7 @@ suites/arabic          Arabic-native items, attacks, generation grammars
 suites/data            verbatim cached government datasets with manifests
 web                    React and Vite, bilingual, true RTL mirroring
 scripts/audit          the gates
-docs/audit             adversarial wave signoffs, including their own false positives
+docs/audit             historical adversarial signoffs, including their own false positives
 docs/evidence          every number, with the run that produced it
 ```
 
@@ -203,11 +222,12 @@ docs/evidence          every number, with the run that produced it
 | | |
 |---|---|
 | [`docs/FLOW.md`](docs/FLOW.md) | **Start here.** What runs in what order; how UCB1, MCSS, stopping bounds and the control register compose |
-| [`docs/CHARTER.md`](docs/CHARTER.md) | The engagement charter and its addendum |
-| [`docs/DELIVERY_PLAN.md`](docs/DELIVERY_PLAN.md) | Build order, dependency graph, acceptance criteria |
+| [`docs/CHARTER.md`](docs/CHARTER.md) | Product scope, non-negotiable principles and release standard |
+| [`docs/ROADMAP.md`](docs/ROADMAP.md) | Readiness gates from research prototype to controlled pilot |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Schema, module boundaries, interface contracts |
 | [`docs/DECISIONS.md`](docs/DECISIONS.md) | Every consequential choice, with the alternatives rejected |
 | [`docs/RISKS.md`](docs/RISKS.md) | Implementation risks, each with a named mitigation |
+| [`docs/PROVENANCE.md`](docs/PROVENANCE.md) | How to read the historical AI-assisted build and audit record |
 | [`docs/evidence/reduction_report.md`](docs/evidence/reduction_report.md) | The measured proof |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | How to work here, and what will be rejected |
 | [`SECURITY.md`](SECURITY.md) | Private vulnerability reporting and supported versions |

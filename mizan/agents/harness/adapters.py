@@ -3,10 +3,10 @@
 Two concrete adapters are provided:
 
 MockEndpoint
-    The primary path for the live pitch. Deterministic: the same probe_id
+    The primary path for the offline demonstration. Deterministic: the same probe_id
     and the same seed always produce the same response, on any machine, with
-    no network access. The mock is not a stub to be replaced; it is the demo
-    path by charter design.
+    no network access. The mock is a declared demonstration adapter rather than
+    an unlabelled substitute for a live model.
 
     Determinism guarantee: responses are selected by indexing into a fixed
     template bank using SHA-256(f"{probe_id}:{seed}") modulo bank length.

@@ -320,7 +320,7 @@ contribute to any reported number.
 | Reduction (non_compliant_bias, median/20 seeds) | 96.4% (range 7-353/3026) | same | on-demand pair calling |
 | Corpus (current, merged) | 3026 items | | |
 | Generated corpus present | yes | | |
-| Charter target (80% reduction) | distribution median vs target: see section 5 | | |
+| Prototype target (80% reduction) | distribution median vs target: see section 5 | | |
 
 **Design decisions**:
 

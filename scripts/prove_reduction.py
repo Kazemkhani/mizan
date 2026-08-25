@@ -1843,7 +1843,7 @@ def generate_report(
     lines += [
         f"| Corpus (current, merged) | {sum(corpus_sizes.values())} items | | |",
         f"| Generated corpus present | {'yes' if _USE_GENERATED_CORPUS else 'no'} | | |",
-        f"| Charter target (80% reduction) | distribution median vs target:"
+        f"| Prototype target (80% reduction) | distribution median vs target:"
         f" see section 5 | | |",
         "",
         "**Design decisions**:",

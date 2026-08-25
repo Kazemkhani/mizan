@@ -28,7 +28,7 @@ replays evaluations the engine recorded earlier, and says so in the header.
 Interface only, no Python needed:
 
 ```bash
-cd web && npm install && npm run dev
+cd web && npm ci && npm run dev
 ```
 
 ## Try it

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """BAYAN Open-Data Integration: live fetch and hash-verified cache comparison.
 
-Charter Addendum 01, section 2, point 2.
+Implements the source-integrity policy in docs/CHARTER.md.
 
 This script handles two portals:
 

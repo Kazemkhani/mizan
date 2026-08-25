@@ -28,7 +28,7 @@ EvaluationStatus = Literal["pending", "running", "completed", "failed"]
 Verdict = Literal["certified", "rejected"]
 
 # Which deterministic mock adapter serves a submission that carries no live
-# endpoint URL. The mock is the offline evaluation path by charter design
+# endpoint URL. The mock is the offline evaluation path by project design
 # (see mizan/agents/harness/adapters.py); the profile is declared by the
 # submitter and is printed on the certificate face, so a reader can tell a
 # mock-served evaluation from one served by a live endpoint.

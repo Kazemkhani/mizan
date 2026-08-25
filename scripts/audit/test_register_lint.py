@@ -115,7 +115,7 @@ def test_tick_in_a_string_catalogue_is_caught(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# E005, the precise language law. Charter Addendum 01 section 4.
+# E005, the precise public-language policy.
 # ---------------------------------------------------------------------------
 
 def pitch(tmp_path: Path, body: str, name: str = "README.md") -> Path:

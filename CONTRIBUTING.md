@@ -8,6 +8,18 @@ Every production defect this project has recorded was the same shape: a property
 
 None of those were caught by reading more carefully. Each was caught by a script that recomputed the claim from the artefact. Write that script.
 
+## Set up a clean checkout
+
+Install the exact committed Python and interface dependency sets:
+
+```bash
+uv sync --frozen --extra dev
+(cd web && npm ci)
+```
+
+The `dev` extra is required for the test and audit commands below. Do not use
+an unlocked install when reporting a reproducibility result.
+
 ## Before you open a pull request
 
 Run every gate and paste the real, unpiped output into the description. Not a summary of it, and not an assurance that it passed.

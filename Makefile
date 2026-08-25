@@ -1,6 +1,4 @@
 # MIZAN Makefile
-# Repository root: ~/work/mizan
-#
 # Targets:
 #   dev    -- start API (port 8000) and web shell (port 5173) concurrently
 #   api    -- start the FastAPI server only
@@ -11,7 +9,6 @@
 #   lint   -- run the register discipline linter
 #   clean  -- remove generated files (database, Python caches)
 #
-# Wave 3 additions (hooks left clean):
 #   demo   -- run the choreographed demo flow
 #   prove  -- run the reduction proof script
 
@@ -73,7 +70,7 @@ clean:
 # ---------------------------------------------------------------------------
 # demo: run the Fatima Arabic Citizen Chatbot journey end to end.
 #
-# Performs the full pitch flow offline:
+# Performs the full demonstration flow offline:
 #   1. Submit Fatima's model against the Arabic Citizen Chatbot use case.
 #   2. BanditEngine adjudicates via the deterministic mock endpoint.
 #   3. A verdict is reached (certified or rejected).
