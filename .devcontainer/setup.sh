@@ -3,7 +3,7 @@
 set -euo pipefail
 
 echo "==> Installing uv"
-curl -LsSf https://astral.sh/uv/install.sh | sh
+curl -LsSf https://astral.sh/uv/0.12.5/install.sh | sh
 export PATH="$HOME/.local/bin:$PATH"
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
 
@@ -11,13 +11,13 @@ echo "==> Python dependencies"
 uv sync --extra dev
 
 echo "==> Interface dependencies"
-(cd web && npm install --no-audit --no-fund)
+(cd web && npm ci --no-audit --no-fund)
 
 echo "==> Seeding the registry"
 uv run python scripts/seed.py || true
 
 echo
-echo "==> Verifying the gates, so a fresh Codespace proves itself rather than assuming"
+echo "==> Verifying the core gates, so a fresh Codespace proves itself rather than assuming"
 uv run python -m pytest -q
 python3 scripts/audit/register_lint.py
 python3 scripts/audit/verify_grounding.py
