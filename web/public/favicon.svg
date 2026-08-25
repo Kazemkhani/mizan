@@ -1,18 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- Navy background -->
-  <rect width="32" height="32" rx="3" fill="#0A1628"/>
-  <!-- Beam (horizontal bar) -->
-  <rect x="4" y="10" width="24" height="2" rx="1" fill="#F0B52A"/>
-  <!-- Centre post -->
-  <rect x="15" y="10" width="2" height="13" fill="#F0B52A"/>
-  <!-- Base -->
-  <rect x="10" y="22" width="12" height="2" rx="1" fill="#F0B52A"/>
-  <!-- Left arm drop -->
-  <rect x="4" y="12" width="2" height="4" fill="#F0B52A"/>
-  <!-- Left pan -->
-  <rect x="2" y="16" width="6" height="2" rx="1" fill="#F0B52A"/>
-  <!-- Right arm drop -->
-  <rect x="26" y="12" width="2" height="4" fill="#F0B52A"/>
-  <!-- Right pan -->
-  <rect x="24" y="16" width="6" height="2" rx="1" fill="#F0B52A"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" fill="#0A1628" rx="3"/><rect width="24" height="2" x="4" y="10" fill="#F0B52A" rx="1"/><rect width="2" height="13" x="15" y="10" fill="#F0B52A"/><rect width="12" height="2" x="10" y="22" fill="#F0B52A" rx="1"/><rect width="2" height="4" x="4" y="12" fill="#F0B52A"/><rect width="6" height="2" x="2" y="16" fill="#F0B52A" rx="1"/><rect width="2" height="4" x="26" y="12" fill="#F0B52A"/><rect width="6" height="2" x="24" y="16" fill="#F0B52A" rx="1"/></svg>
