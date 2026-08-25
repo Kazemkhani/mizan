@@ -1,0 +1,45 @@
+name: Feature request
+description: Propose a grounded improvement to MIZAN.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Which user, evaluation or governance problem needs to be solved?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Proposed outcome
+      description: Describe observable behaviour and acceptance evidence, not only an implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: grounding
+    attributes:
+      label: Grounding
+      description: Link the control, source, dataset, user evidence or measured limitation that justifies this work.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What simpler approaches or existing capabilities did you evaluate?
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission checks
+      options:
+        - label: I searched existing issues and documentation for this request.
+          required: true
+        - label: I can describe how completion would be verified.
+          required: true
+        - label: I have read and will follow the Code of Conduct.
+          required: true

@@ -54,7 +54,7 @@ Live fetch output on 2026-08-19 (unpiped, verbatim):
 ```
 BAYAN Dataset Fetch and Verify
 Mode: LIVE fetch and hash comparison
-Cache directory: /Users/amirhosseinkazemkhani/work/mizan/suites/data
+Cache directory: `suites/data`
 ========================================================================
 [PASS] uc-001  speed-center-services-names-and-fees
        Status: OK
@@ -127,7 +127,7 @@ Output (verbatim, exit code 1):
 ```
 BAYAN Dataset Fetch and Verify
 Mode: LIVE fetch and hash comparison
-Cache directory: /Users/amirhosseinkazemkhani/work/mizan/suites/data
+Cache directory: `suites/data`
 ========================================================================
 [FAIL] uc-001  speed-center-services-names-and-fees
        Status: HASH_MISMATCH

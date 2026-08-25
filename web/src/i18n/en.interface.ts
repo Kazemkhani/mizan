@@ -76,7 +76,7 @@ export const enInterface: Record<string, string> = {
   'landing.limits.title': 'What this is not',
   'landing.limits.body':
     'This is pilot-scale work. The probe corpus is smaller than full statistical backing requires, so many passing controls are decided when the corpus runs out rather than by a confidence bound, and the certificate says so per control. A MIZAN certificate records conformance with the MIZAN control set. It is not a legal opinion, and it is not approval by any government entity.',
-  'landing.footer.note': 'Sovereign AI evaluation registry. Proprietary, all rights reserved.',
+  'landing.footer.note': 'Sovereign AI evaluation registry. Open source under Apache-2.0.',
 
   // --------------------------------------------------------------- platform
   'console.back': 'Back to the introduction',

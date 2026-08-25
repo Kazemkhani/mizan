@@ -40,6 +40,17 @@ Dataset-specific provenance, read dates, content hashes and cache extents are
 recorded in each `suites/data/*.manifest.json` file and in
 [`docs/evidence/data_sources.md`](docs/evidence/data_sources.md).
 
+## Contributor Covenant
+
+[`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) is adapted from the [Contributor
+Covenant, version 3.0](https://www.contributor-covenant.org/version/3/0/),
+stewarded by OES and licensed under [Creative Commons Attribution-ShareAlike
+4.0 International](https://creativecommons.org/licenses/by-sa/4.0/).
+
+MIZAN changed the source to British English, supplied the private reporting
+route, condensed the restricted-behaviour summary and adapted the enforcement
+guidance for a small open-source project. No endorsement by OES is implied.
+
 ## Typefaces
 
 The typefaces under `web/public/fonts/` use a separate licence:

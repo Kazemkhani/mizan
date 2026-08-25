@@ -210,6 +210,8 @@ docs/evidence          every number, with the run that produced it
 | [`docs/RISKS.md`](docs/RISKS.md) | Implementation risks, each with a named mitigation |
 | [`docs/evidence/reduction_report.md`](docs/evidence/reduction_report.md) | The measured proof |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | How to work here, and what will be rejected |
+| [`SECURITY.md`](SECURITY.md) | Private vulnerability reporting and supported versions |
+| [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) | Community standards and private conduct reporting |
 
 ## Status and honest limits
 
