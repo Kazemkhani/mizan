@@ -8,37 +8,37 @@ license-files = ["LICENSE", "NOTICE"]
 requires-python = ">=3.12"
 dependencies = [
     # API layer
-    "fastapi>=0.111.0",
-    "uvicorn[standard]>=0.30.0",
-    "pydantic>=2.7.0",
+    "fastapi>=0.141.1",
+    "uvicorn[standard]>=0.52.4",
+    "pydantic>=2.13.4",
     # Data access: SQLAlchemy Core provides a dialect-agnostic query layer.
     # Switching to Postgres requires only a connection-string change; no DDL
     # or query rewrites. We do NOT use the ORM; all SQL is explicit.
-    "sqlalchemy>=2.0.0",
+    "sqlalchemy>=2.0.52",
     # Scientific computing for the bandit engine
-    "numpy>=1.26.0",
-    "matplotlib>=3.9.0",
+    "numpy>=2.5.2",
+    "matplotlib>=3.11.1",
     # PDF certificate generation.
     # WeasyPrint renders HTML/CSS to PDF and handles RTL Arabic layout via
     # Pango. It is the correct choice for a bilingual certificate because
     # the certificate template reuses the same CSS design tokens as the web
     # layer. System prerequisites: pango, cairo, gobject-introspection.
     # See docs/DECISIONS.md item D-005.
-    "weasyprint>=61.0",
+    "weasyprint>=69.0",
     # Cryptographic signing (signature stub in Wave 0, wired in Wave 3)
-    "cryptography>=42.0.0",
+    "cryptography>=50.0.0",
     # HTTP client used by the evaluation harness and test suite
-    "httpx>=0.27.0",
+    "httpx>=0.28.1",
     # Async database driver used by the SQLAlchemy engine under asyncio
-    "aiosqlite>=0.20.0",
+    "aiosqlite>=0.22.1",
     "greenlet>=3.5.5",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=8.0.0",
-    "pytest-asyncio>=0.23.0",
-    "ruff>=0.4.0",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "ruff>=0.16.4",
 ]
 
 [build-system]
