@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1270" height="760" viewBox="0 0 1270 760">
+  <rect width="1270" height="760" fill="#071426"/>
+  <g stroke="#10233b" stroke-width="1"><path d="M0 95H1270M0 665H1270"/><path d="M72 0V760M1198 0V760"/></g>
+  <text x="88" y="82" fill="#f5f0e6" font-family="Arial, sans-serif" font-size="25" font-weight="700" letter-spacing="6">MIZAN</text>
+  <text x="216" y="82" fill="#f0ac00" font-family="Arial, sans-serif" font-size="27" font-weight="700">ميزان</text>
+  <text x="88" y="185" fill="#f0ac00" font-family="Arial, sans-serif" font-size="15" font-weight="700" letter-spacing="4">OPEN-SOURCE AI ASSURANCE / ARABIC + ENGLISH</text>
+  <text x="88" y="252" fill="#f5f0e6" font-family="Arial, sans-serif" font-size="56" font-weight="700">Evaluate AI for</text>
+  <text x="88" y="316" fill="#f5f0e6" font-family="Arial, sans-serif" font-size="56" font-weight="700">public service.</text>
+  <text x="88" y="380" fill="#f5f0e6" font-family="Arial, sans-serif" font-size="56" font-weight="700">Keep the evidence.</text>
+  <text x="90" y="431" fill="#aebcd0" font-family="Arial, sans-serif" font-size="20">Adaptive evaluation, tamper-evident proof and a signed</text>
+  <text x="90" y="461" fill="#aebcd0" font-family="Arial, sans-serif" font-size="20">bilingual assurance record—without hiding uncertainty.</text>
+  <g transform="translate(810 150)">
+    <rect width="370" height="390" rx="22" fill="#0b1b30" stroke="#29405f" stroke-width="2"/>
+    <text x="28" y="42" fill="#7f94ae" font-family="monospace" font-size="12" letter-spacing="3">EVIDENCE CHAIN / VERIFIED</text>
+    <path d="M72 108H296M72 190H296M72 272H296" stroke="#35506e" stroke-width="3"/>
+    <g fill="#071426" stroke="#66809f" stroke-width="3"><circle cx="72" cy="108" r="13"/><circle cx="184" cy="108" r="13"/><circle cx="296" cy="108" r="13"/><circle cx="72" cy="190" r="13"/><circle cx="184" cy="190" r="13"/><circle cx="296" cy="190" r="13"/><circle cx="72" cy="272" r="13"/><circle cx="184" cy="272" r="13"/><circle cx="296" cy="272" r="13"/></g>
+    <circle cx="72" cy="108" r="7" fill="#f0ac00"/><circle cx="184" cy="190" r="7" fill="#f0ac00"/><circle cx="296" cy="272" r="7" fill="#f0ac00"/>
+    <text x="28" y="340" fill="#f5f0e6" font-family="Arial, sans-serif" font-size="18" font-weight="700">Every verdict links to its probe.</text>
+    <text x="28" y="368" fill="#879bb3" font-family="monospace" font-size="12">SHA-256 · APPEND-ONLY · INSPECTABLE</text>
+  </g>
+  <g transform="translate(88 628)" font-family="Arial, sans-serif">
+    <text x="0" y="0" fill="#f0ac00" font-size="34" font-weight="700">36</text><text x="72" y="0" fill="#aebcd0" font-size="16">controls</text>
+    <text x="240" y="0" fill="#f0ac00" font-size="34" font-weight="700">5</text><text x="274" y="0" fill="#aebcd0" font-size="16">use-case suites</text>
+    <text x="510" y="0" fill="#f0ac00" font-size="34" font-weight="700">AR + EN</text><text x="660" y="0" fill="#aebcd0" font-size="16">native output</text>
+    <text x="900" y="0" fill="#f0ac00" font-size="34" font-weight="700">Apache 2.0</text>
+  </g>
+</svg>

@@ -2,13 +2,12 @@
 
 # MIZAN &nbsp;·&nbsp; ميزان
 
-### A sovereign registry, an adaptive evaluation engine, and a signed bilingual certificate for AI models entering government service
+### An adaptive evaluation engine, evidence registry, and bilingual assurance record for AI entering public service
 
 [![gates](https://github.com/Kazemkhani/mizan/actions/workflows/gates.yml/badge.svg)](https://github.com/Kazemkhani/mizan/actions/workflows/gates.yml)
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Kazemkhani/mizan)
 
-**Nations certify aircraft before they fly and medicines before they ship.**
-**No equivalent authority exists for AI models entering government service.**
+**Public-service AI needs more than a model card. It needs evidence tied to every control.**
 
 </div>
 

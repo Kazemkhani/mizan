@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1270" height="760" viewBox="0 0 1270 760">
+  <rect width="1270" height="760" fill="#071426"/>
+  <text x="80" y="86" fill="#f0ac00" font-family="monospace" font-size="14" letter-spacing="4">TRUST STARTS WITH A BOUNDARY</text>
+  <text x="80" y="164" fill="#f5f0e6" font-family="Arial, sans-serif" font-size="58" font-weight="700">Assurance, not approval.</text>
+  <text x="80" y="212" fill="#9dafc5" font-family="Arial, sans-serif" font-size="21">MIZAN shows its working and states what the record cannot prove.</text>
+  <g transform="translate(80 292)" font-family="Arial, sans-serif">
+    <rect width="520" height="330" rx="24" fill="#0b1b30" stroke="#f0ac00" stroke-width="2"/>
+    <text x="32" y="52" fill="#f0ac00" font-family="monospace" font-size="14" letter-spacing="3">WHAT IT IS</text>
+    <g fill="#f5f0e6" font-size="24" font-weight="700"><text x="58" y="114">Control-by-control evidence</text><text x="58" y="176">Visible uncertainty and limits</text><text x="58" y="238">Reproducible recorded runs</text><text x="58" y="300">An inspectable bilingual record</text></g>
+    <g fill="#f0ac00"><circle cx="34" cy="106" r="6"/><circle cx="34" cy="168" r="6"/><circle cx="34" cy="230" r="6"/><circle cx="34" cy="292" r="6"/></g>
+    <g transform="translate(570)"><rect width="520" height="330" rx="24" fill="#091727" stroke="#263d59" stroke-width="2"/><text x="32" y="52" fill="#7f94ae" font-family="monospace" font-size="14" letter-spacing="3">WHAT IT IS NOT</text><g fill="#9dafc5" font-size="24" font-weight="700"><text x="58" y="114">Government endorsement</text><text x="58" y="176">A legal opinion</text><text x="58" y="238">A production safety guarantee</text><text x="58" y="300">A hidden black-box score</text></g><g stroke="#6d8098" stroke-width="3"><path d="M28 100l12 12M40 100l-12 12"/><path d="M28 162l12 12M40 162l-12 12"/><path d="M28 224l12 12M40 224l-12 12"/><path d="M28 286l12 12M40 286l-12 12"/></g></g>
+  </g>
+</svg>

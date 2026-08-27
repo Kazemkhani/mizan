@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1270" height="760" viewBox="0 0 1270 760">
+  <rect width="1270" height="760" fill="#071426"/>
+  <text x="80" y="88" fill="#f0ac00" font-family="monospace" font-size="14" letter-spacing="4">ONE MODEL / ONE USE CASE / A TRACEABLE DECISION</text>
+  <text x="80" y="158" fill="#f5f0e6" font-family="Arial, sans-serif" font-size="52" font-weight="700">The assurance loop</text>
+  <text x="80" y="202" fill="#9dafc5" font-family="Arial, sans-serif" font-size="21">The engine spends probes where they can settle a control fastest.</text>
+  <g transform="translate(80 285)" font-family="Arial, sans-serif">
+    <g><rect width="235" height="210" rx="20" fill="#0b1b30" stroke="#263d59" stroke-width="2"/><text x="24" y="38" fill="#f0ac00" font-family="monospace" font-size="13">01 / REGISTER</text><text x="24" y="86" fill="#f5f0e6" font-size="29" font-weight="700">Model card</text><text x="24" y="126" fill="#9dafc5" font-size="16">Provider, training data,</text><text x="24" y="151" fill="#9dafc5" font-size="16">personal data and limits.</text></g>
+    <path d="M250 105H302" stroke="#f0ac00" stroke-width="3"/><path d="M292 96l10 9-10 9" fill="none" stroke="#f0ac00" stroke-width="3"/>
+    <g transform="translate(317)"><rect width="235" height="210" rx="20" fill="#0b1b30" stroke="#263d59" stroke-width="2"/><text x="24" y="38" fill="#f0ac00" font-family="monospace" font-size="13">02 / SELECT</text><text x="24" y="86" fill="#f5f0e6" font-size="29" font-weight="700">Use case</text><text x="24" y="126" fill="#9dafc5" font-size="16">Controls, weights and</text><text x="24" y="151" fill="#9dafc5" font-size="16">confidence threshold.</text></g>
+    <path d="M568 105H620" stroke="#f0ac00" stroke-width="3"/><path d="M610 96l10 9-10 9" fill="none" stroke="#f0ac00" stroke-width="3"/>
+    <g transform="translate(635)"><rect width="235" height="210" rx="20" fill="#0b1b30" stroke="#263d59" stroke-width="2"/><text x="24" y="38" fill="#f0ac00" font-family="monospace" font-size="13">03 / EVALUATE</text><text x="24" y="86" fill="#f5f0e6" font-size="29" font-weight="700">Adaptive tests</text><text x="24" y="126" fill="#9dafc5" font-size="16">UCB1 chooses the next</text><text x="24" y="151" fill="#9dafc5" font-size="16">most-informative probe.</text></g>
+    <path d="M886 105H938" stroke="#f0ac00" stroke-width="3"/><path d="M928 96l10 9-10 9" fill="none" stroke="#f0ac00" stroke-width="3"/>
+    <g transform="translate(953)"><rect width="235" height="210" rx="20" fill="#0b1b30" stroke="#f0ac00" stroke-width="2"/><text x="24" y="38" fill="#f0ac00" font-family="monospace" font-size="13">04 / VERIFY</text><text x="24" y="82" fill="#f5f0e6" font-size="25" font-weight="700">Assurance</text><text x="24" y="112" fill="#f5f0e6" font-size="25" font-weight="700">record</text><text x="24" y="151" fill="#9dafc5" font-size="16">Bilingual verdicts tied</text><text x="24" y="176" fill="#9dafc5" font-size="16">to hashes and evidence.</text></g>
+  </g>
+  <rect x="80" y="548" width="1108" height="116" rx="18" fill="#0b1b30" stroke="#263d59"/>
+  <text x="112" y="592" fill="#f5f0e6" font-family="Arial, sans-serif" font-size="22" font-weight="700">The limit is part of the result.</text>
+  <text x="112" y="628" fill="#9dafc5" font-family="Arial, sans-serif" font-size="18">Each control states whether evidence settled by confidence bound or by budget exhaustion.</text>
+</svg>

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#071426"/>
+  <g stroke="#10233b"><path d="M0 80H1200M0 550H1200"/><path d="M70 0V630M1130 0V630"/></g>
+  <text x="82" y="66" fill="#f5f0e6" font-family="Arial, sans-serif" font-size="24" font-weight="700" letter-spacing="6">MIZAN</text>
+  <text x="205" y="66" fill="#f0ac00" font-family="Arial, sans-serif" font-size="26" font-weight="700">ميزان</text>
+  <text x="82" y="180" fill="#f0ac00" font-family="monospace" font-size="14" letter-spacing="4">OPEN-SOURCE AI ASSURANCE / ARABIC + ENGLISH</text>
+  <text x="82" y="270" fill="#f5f0e6" font-family="Arial, sans-serif" font-size="64" font-weight="700">Evaluate AI for public service.</text>
+  <text x="82" y="344" fill="#f5f0e6" font-family="Arial, sans-serif" font-size="64" font-weight="700">Keep the evidence.</text>
+  <text x="84" y="405" fill="#9dafc5" font-family="Arial, sans-serif" font-size="21">36 controls · 5 use-case suites · tamper-evident proof</text>
+  <g transform="translate(880 150)" fill="none" stroke="#516d8d" stroke-width="3"><circle cx="0" cy="0" r="13"/><circle cx="90" cy="70" r="13"/><circle cx="180" cy="0" r="13"/><circle cx="270" cy="70" r="13"/><path d="M13 8L77 61M103 61L167 8M193 8l64 53"/></g>
+  <g fill="#f0ac00"><circle cx="880" cy="150" r="6"/><circle cx="970" cy="220" r="6"/><circle cx="1060" cy="150" r="6"/><circle cx="1150" cy="220" r="6"/></g>
+  <text x="82" y="590" fill="#6f849e" font-family="monospace" font-size="13" letter-spacing="2">ADAPTIVE EVALUATION · HASH-CHAINED EVIDENCE · SIGNED BILINGUAL RECORD</text>
+</svg>
