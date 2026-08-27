@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="104" fill="#071426"/>
+  <path d="M72 112H440M72 400H440M112 72V440M400 72V440" stroke="#1a2b42" stroke-width="2"/>
+  <circle cx="256" cy="256" r="142" fill="#0b1b30" stroke="#2a3d57" stroke-width="2"/>
+  <path d="M180 315V190h34l42 67 42-67h34v125h-33v-74l-43 66-43-66v74z" fill="#f5f0e6"/>
+  <circle cx="375" cy="139" r="14" fill="#f0ac00"/>
+  <path d="M367 139l6 6 11-13" fill="none" stroke="#071426" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="256" y="376" text-anchor="middle" fill="#f0ac00" font-family="Arial, sans-serif" font-size="28" font-weight="700">ميزان</text>
+</svg>
